@@ -9,7 +9,7 @@ const adapter = new PrismaMariaDb({
   database: process.env.DATABASE_NAME || 'ampath_facility_tool',
   connectionLimit: 20,
   acquireTimeout: 60000,
-  timeout: 60000
+  connectTimeout: 60000
 });
 const prisma = new PrismaClient({ adapter });
 

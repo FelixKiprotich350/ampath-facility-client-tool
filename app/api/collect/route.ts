@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { collectFacilityData, collectFromAPI } from '@/lib/data-collector'
+import { collectAllData, collectFromAPI } from '@/lib/data-collector'
 
 export async function POST(request: NextRequest) {
   try {
-    const { source, apiUrl } = await request.json()
+    const { source, apiUrl, dataType } = await request.json()
     
     let result
     if (source === 'database') {
-      result = await collectFacilityData()
+      result = await collectAllData()
     } else if (source === 'api' && apiUrl) {
-      result = await collectFromAPI(apiUrl)
+      result = await collectFromAPI(apiUrl, dataType)
     } else {
       return NextResponse.json({ error: 'Invalid source or missing apiUrl' }, { status: 400 })
     }

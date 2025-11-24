@@ -44,3 +44,13 @@ export { Prisma }
  * 
  */
 export type Facility = Prisma.FacilityModel
+/**
+ * Model Indicator
+ * 
+ */
+export type Indicator = Prisma.IndicatorModel
+/**
+ * Model LineList
+ * 
+ */
+export type LineList = Prisma.LineListModel

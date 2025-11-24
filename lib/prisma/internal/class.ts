@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.0.0",
   "engineVersion": "0c19ccc313cf9911a90d99d2ac2eb0280c76c513",
   "activeProvider": "mysql",
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../lib/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n}\n\nmodel Facility {\n  id        Int       @id @default(autoincrement())\n  name      String\n  location  String?\n  data      Json?\n  createdAt DateTime  @default(now()) @map(\"created_at\")\n  synced    Boolean   @default(false)\n  syncedAt  DateTime? @map(\"synced_at\")\n\n  @@map(\"facilities\")\n}\n",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../lib/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n}\n\nmodel Facility {\n  id        Int       @id @default(autoincrement())\n  name      String\n  location  String?\n  data      Json?\n  createdAt DateTime  @default(now()) @map(\"created_at\")\n  synced    Boolean   @default(false)\n  syncedAt  DateTime? @map(\"synced_at\")\n\n  @@map(\"facilities\")\n}\n\nmodel Indicator {\n  id          Int       @id @default(autoincrement())\n  facilityId  String\n  indicatorId String\n  name        String\n  value       String\n  period      String\n  data        Json?\n  createdAt   DateTime  @default(now()) @map(\"created_at\")\n  synced      Boolean   @default(false)\n  syncedAt    DateTime? @map(\"synced_at\")\n\n  @@map(\"indicators\")\n}\n\nmodel LineList {\n  id         Int       @id @default(autoincrement())\n  facilityId String\n  patientId  String?\n  data       Json\n  createdAt  DateTime  @default(now()) @map(\"created_at\")\n  synced     Boolean   @default(false)\n  syncedAt   DateTime? @map(\"synced_at\")\n\n  @@map(\"line_lists\")\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -28,7 +28,7 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Facility\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"location\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"data\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"synced\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"syncedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"synced_at\"}],\"dbName\":\"facilities\"}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Facility\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"location\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"data\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"synced\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"syncedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"synced_at\"}],\"dbName\":\"facilities\"},\"Indicator\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"facilityId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"indicatorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"value\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"period\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"data\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"synced\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"syncedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"synced_at\"}],\"dbName\":\"indicators\"},\"LineList\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"facilityId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"data\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"created_at\"},{\"name\":\"synced\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"syncedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"synced_at\"}],\"dbName\":\"line_lists\"}},\"enums\":{},\"types\":{}}")
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
   const { Buffer } = await import('node:buffer')
@@ -183,6 +183,26 @@ export interface PrismaClient<
     * ```
     */
   get facility(): Prisma.FacilityDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.indicator`: Exposes CRUD operations for the **Indicator** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Indicators
+    * const indicators = await prisma.indicator.findMany()
+    * ```
+    */
+  get indicator(): Prisma.IndicatorDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.lineList`: Exposes CRUD operations for the **LineList** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LineLists
+    * const lineLists = await prisma.lineList.findMany()
+    * ```
+    */
+  get lineList(): Prisma.LineListDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {

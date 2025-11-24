@@ -384,7 +384,9 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  Facility: 'Facility'
+  Facility: 'Facility',
+  Indicator: 'Indicator',
+  LineList: 'LineList'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -400,7 +402,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "facility"
+    modelProps: "facility" | "indicator" | "lineList"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -470,6 +472,138 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Indicator: {
+      payload: Prisma.$IndicatorPayload<ExtArgs>
+      fields: Prisma.IndicatorFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IndicatorFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IndicatorFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorPayload>
+        }
+        findFirst: {
+          args: Prisma.IndicatorFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IndicatorFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorPayload>
+        }
+        findMany: {
+          args: Prisma.IndicatorFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorPayload>[]
+        }
+        create: {
+          args: Prisma.IndicatorCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorPayload>
+        }
+        createMany: {
+          args: Prisma.IndicatorCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.IndicatorDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorPayload>
+        }
+        update: {
+          args: Prisma.IndicatorUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorPayload>
+        }
+        deleteMany: {
+          args: Prisma.IndicatorDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IndicatorUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.IndicatorUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorPayload>
+        }
+        aggregate: {
+          args: Prisma.IndicatorAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIndicator>
+        }
+        groupBy: {
+          args: Prisma.IndicatorGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IndicatorGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IndicatorCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IndicatorCountAggregateOutputType> | number
+        }
+      }
+    }
+    LineList: {
+      payload: Prisma.$LineListPayload<ExtArgs>
+      fields: Prisma.LineListFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LineListFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LineListPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LineListFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LineListPayload>
+        }
+        findFirst: {
+          args: Prisma.LineListFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LineListPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LineListFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LineListPayload>
+        }
+        findMany: {
+          args: Prisma.LineListFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LineListPayload>[]
+        }
+        create: {
+          args: Prisma.LineListCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LineListPayload>
+        }
+        createMany: {
+          args: Prisma.LineListCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.LineListDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LineListPayload>
+        }
+        update: {
+          args: Prisma.LineListUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LineListPayload>
+        }
+        deleteMany: {
+          args: Prisma.LineListDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LineListUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.LineListUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LineListPayload>
+        }
+        aggregate: {
+          args: Prisma.LineListAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLineList>
+        }
+        groupBy: {
+          args: Prisma.LineListGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LineListGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LineListCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LineListCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -522,6 +656,35 @@ export const FacilityScalarFieldEnum = {
 export type FacilityScalarFieldEnum = (typeof FacilityScalarFieldEnum)[keyof typeof FacilityScalarFieldEnum]
 
 
+export const IndicatorScalarFieldEnum = {
+  id: 'id',
+  facilityId: 'facilityId',
+  indicatorId: 'indicatorId',
+  name: 'name',
+  value: 'value',
+  period: 'period',
+  data: 'data',
+  createdAt: 'createdAt',
+  synced: 'synced',
+  syncedAt: 'syncedAt'
+} as const
+
+export type IndicatorScalarFieldEnum = (typeof IndicatorScalarFieldEnum)[keyof typeof IndicatorScalarFieldEnum]
+
+
+export const LineListScalarFieldEnum = {
+  id: 'id',
+  facilityId: 'facilityId',
+  patientId: 'patientId',
+  data: 'data',
+  createdAt: 'createdAt',
+  synced: 'synced',
+  syncedAt: 'syncedAt'
+} as const
+
+export type LineListScalarFieldEnum = (typeof LineListScalarFieldEnum)[keyof typeof LineListScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -536,6 +699,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const JsonNullValueFilter = {
@@ -569,6 +739,25 @@ export const FacilityOrderByRelevanceFieldEnum = {
 } as const
 
 export type FacilityOrderByRelevanceFieldEnum = (typeof FacilityOrderByRelevanceFieldEnum)[keyof typeof FacilityOrderByRelevanceFieldEnum]
+
+
+export const IndicatorOrderByRelevanceFieldEnum = {
+  facilityId: 'facilityId',
+  indicatorId: 'indicatorId',
+  name: 'name',
+  value: 'value',
+  period: 'period'
+} as const
+
+export type IndicatorOrderByRelevanceFieldEnum = (typeof IndicatorOrderByRelevanceFieldEnum)[keyof typeof IndicatorOrderByRelevanceFieldEnum]
+
+
+export const LineListOrderByRelevanceFieldEnum = {
+  facilityId: 'facilityId',
+  patientId: 'patientId'
+} as const
+
+export type LineListOrderByRelevanceFieldEnum = (typeof LineListOrderByRelevanceFieldEnum)[keyof typeof LineListOrderByRelevanceFieldEnum]
 
 
 
@@ -705,6 +894,8 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   facility?: Prisma.FacilityOmit
+  indicator?: Prisma.IndicatorOmit
+  lineList?: Prisma.LineListOmit
 }
 
 /* Types for Logging */

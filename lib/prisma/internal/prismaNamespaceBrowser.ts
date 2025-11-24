@@ -51,7 +51,9 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  Facility: 'Facility'
+  Facility: 'Facility',
+  Indicator: 'Indicator',
+  LineList: 'LineList'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -83,6 +85,35 @@ export const FacilityScalarFieldEnum = {
 export type FacilityScalarFieldEnum = (typeof FacilityScalarFieldEnum)[keyof typeof FacilityScalarFieldEnum]
 
 
+export const IndicatorScalarFieldEnum = {
+  id: 'id',
+  facilityId: 'facilityId',
+  indicatorId: 'indicatorId',
+  name: 'name',
+  value: 'value',
+  period: 'period',
+  data: 'data',
+  createdAt: 'createdAt',
+  synced: 'synced',
+  syncedAt: 'syncedAt'
+} as const
+
+export type IndicatorScalarFieldEnum = (typeof IndicatorScalarFieldEnum)[keyof typeof IndicatorScalarFieldEnum]
+
+
+export const LineListScalarFieldEnum = {
+  id: 'id',
+  facilityId: 'facilityId',
+  patientId: 'patientId',
+  data: 'data',
+  createdAt: 'createdAt',
+  synced: 'synced',
+  syncedAt: 'syncedAt'
+} as const
+
+export type LineListScalarFieldEnum = (typeof LineListScalarFieldEnum)[keyof typeof LineListScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -97,6 +128,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: 'JsonNull'
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const JsonNullValueFilter = {
@@ -130,4 +168,23 @@ export const FacilityOrderByRelevanceFieldEnum = {
 } as const
 
 export type FacilityOrderByRelevanceFieldEnum = (typeof FacilityOrderByRelevanceFieldEnum)[keyof typeof FacilityOrderByRelevanceFieldEnum]
+
+
+export const IndicatorOrderByRelevanceFieldEnum = {
+  facilityId: 'facilityId',
+  indicatorId: 'indicatorId',
+  name: 'name',
+  value: 'value',
+  period: 'period'
+} as const
+
+export type IndicatorOrderByRelevanceFieldEnum = (typeof IndicatorOrderByRelevanceFieldEnum)[keyof typeof IndicatorOrderByRelevanceFieldEnum]
+
+
+export const LineListOrderByRelevanceFieldEnum = {
+  facilityId: 'facilityId',
+  patientId: 'patientId'
+} as const
+
+export type LineListOrderByRelevanceFieldEnum = (typeof LineListOrderByRelevanceFieldEnum)[keyof typeof LineListOrderByRelevanceFieldEnum]
 

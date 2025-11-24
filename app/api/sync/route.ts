@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { syncLocalData } from '@/lib/data-service'
+import { manualSync } from '@/lib/sync-scheduler'
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    const { targetUrl } = await request.json()
-    const url = targetUrl || process.env.SYNC_API_URL
-    
-    if (!url) {
-      return NextResponse.json({ error: 'Target URL required' }, { status: 400 })
-    }
-    
-    const result = await syncLocalData(url)
+    const result = await manualSync()
     return NextResponse.json(result)
   } catch (error) {
     return NextResponse.json({ error: 'Sync failed' }, { status: 500 })
