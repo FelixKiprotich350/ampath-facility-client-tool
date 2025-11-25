@@ -60,7 +60,7 @@ export default function Home() {
     try {
       const response = await fetch("/api/collect", {
         method: "POST",
-        body: JSON.stringify({ source, apiUrl:"", dataType :"indicators"}),
+        body: JSON.stringify({ source, apiUrl: "", dataType: "indicators" }),
         headers: { "Content-Type": "application/json" },
       });
       const result = await response.json();
@@ -72,7 +72,8 @@ export default function Home() {
         setStatus(`✅ Collected ${result.collected} ${result.type} records`);
       }
       loadSummary();
-    } catch {
+    } catch (error) {
+      console.log(error);
       setStatus("❌ Collection failed");
     } finally {
       setLoading(false);

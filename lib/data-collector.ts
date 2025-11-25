@@ -1,6 +1,13 @@
 import { fetchFromKenyaEMRDatabase } from "./database";
 import createKenyaEMRSession from "./kenyaemr";
 import { addIndicator, addLineList } from "./local-db";
+import { chromium, Browser, BrowserContext, Page } from "playwright";
+import * as fs from "fs";
+import * as path from "path";
+
+let sharedBrowser: Browser | null = null;
+let sharedContext: BrowserContext | null = null;
+let isLoggedIn = false;
 
 export async function collectIndicators() {
   try {
@@ -71,49 +78,159 @@ export async function collectLineList() {
   }
 }
 
-export async function collectFromAPI(
-  dataType: "indicators" | "lineList" = "indicators"
-) {
-  try {
-    const sessionId = await createKenyaEMRSession();
+async function getAuthenticatedPage(): Promise<Page> {
+  if (!sharedBrowser) {
+    sharedBrowser = await chromium.launch({ headless: true });
+    sharedContext = await sharedBrowser.newContext();
+  }
 
-    const url = `${process.env.KENYAEMR_SERVER}/kenyaemr/report/reportUtils/requestReport.action?appId=kenyaemr.reports&reportUuid=28a9006e-7826-11e8-adc0-fa7ae01bbebc&param[startDate]=2025-11-01%2000%3A00%3A00.000&param[endDate]=2025-11-10%2000%3A00%3A00.000&param[dateBasedReporting]=-1&returnUrl=&successUrl=`;
+  const page = await sharedContext!.newPage();
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json", // <- JSON may fail
-        Cookie: `JSESSIONID=${sessionId}`,
-      },
-      body: `reportDefinition[uuid]=28a9006e-7826-11e8-adc0-fa7ae01bbebc&parameters[startDate]=2025-01-01&parameters[endDate]=2025-01-31`,
-    });
+  if (!isLoggedIn) {
+    await page.goto(`${process.env.KENYAEMR_SERVER}/spa/login`);
+    await page.fill(
+      'input[name="username"]',
+      process.env.KENYAEMR_API_USERNAME!
+    );
+    await page.fill(
+      'input[name="password"]',
+      process.env.KENYAEMR_API_PASSWORD!
+    );
+    await page.click('button[type="submit"], input[type="submit"]');
+    await page.waitForNavigation();
 
-    // Properly await JSON before throwing error
-    if (!response.ok) {
-      let errorBody;
-      try {
-        errorBody = await response.json();
-      } catch {
-        errorBody = await response.text();
-      }
-      throw new Error(`API call failed: ${JSON.stringify(errorBody)}`);
+    // Check if location selection is needed
+    const locationRadio = await page
+      .locator("label.cds--radio-button__label")
+      .first();
+    if (await locationRadio.isVisible()) {
+      await page.click("label.cds--radio-button__label:first-of-type");
+      await page.click(
+        'button:has-text("Confirm"), input[value="Confirm"], button[type="submit"]'
+      );
     }
 
-    const data = await response.json();
+    isLoggedIn = true;
+  }
 
-    // Example processing
-    // if (dataType === "indicators") {
-    //   for (const item of data) await addIndicator(...);
-    // } else {
-    //   for (const item of data) await addLineList(...);
-    // }
+  return page;
+}
 
-    return { collected: data.length, type: dataType };
+export async function collectFromBroswer() {
+  try {
+    const page = await getAuthenticatedPage();
+    console.log("Login success Navigating to reports page...");
+    const reportPageUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/report.page`;
+    const reports = [
+      "9952e9d5-b5cf-4c59-ab36-b961c11f6930", // covid 19 indicators
+      "5609a402-94b2-11e3-9ca9-93351facf9dd", //art indicators
+      "28a9006e-7826-11e8-adc0-fa7ae01bbebc", //hts monthly indicators
+    ]; //  report UUIDs
+    getSingleReport(page, reports[0], reportPageUrl);
   } catch (error) {
-    console.error("API collection failed:", error);
+    console.error("Playwright collection failed:", error);
     throw error;
   }
-} 
+}
+
+export async function getSingleReport(
+  page: Page,
+  reportUuid: string,
+  reportPage: string
+) {
+  try {
+    const reportHomePath = `${process.env.KENYAEMR_SERVER}/kenyaemr/reports/reportsHome.page`;
+    const reportPageUrl = `${reportPage}?appId=kenyaemr.reports&reportUuid=${reportUuid}&returnUrl=${reportHomePath}`;
+    await page.goto(reportPageUrl);
+    console.log("Navigated to report page:", reportPageUrl);
+    // await page.click(`div.ke-stack-item[onclick*="${reportUuid}"]`);
+
+    // Click Request report button
+    await page.click('div.ke-menu-item[onclick="requestReport()"]');
+
+    // Handle dialog - check if it's date range or month
+    const isDateRange = await page
+      .locator('div.ke-field-label:has-text("Date Range")')
+      .isVisible();
+    const isMonth = await page
+      .locator('div.ke-field-label:has-text("Month")')
+      .isVisible();
+
+    if (isDateRange) {
+      await page.fill("#startDate_date", "01-Jan-25");
+      await page.fill("#endDate_date", "31-Jan-25");
+    } else if (isMonth) {
+      await page.selectOption("select", { index: 0 });
+    }
+
+    // Intercept API response to get request ID
+    let requestId: number | null = null;
+    page.on("response", async (response) => {
+      if (
+        response.url().includes("requestReport.action") ||
+        response.url().includes("reportUuid")
+      ) {
+        try {
+          const responseBody = await response.json();
+          if (responseBody && responseBody.id) {
+            requestId = responseBody.id;
+          }
+        } catch (e) {
+          // Response might not be JSON
+        }
+      }
+    });
+
+    await page.click('button[id*="btn"]:has-text("Request")');
+
+    console.log("Report requested, waiting for completion...");
+    // Wait for request ID to be captured
+    await page.waitForTimeout(3000);
+    console.log("Captured request ID:", requestId);
+    if (requestId === null) {
+      throw new Error("Failed to capture request ID");
+    }
+
+    // Poll for report completion and download
+    const downloadUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/reportExport.page?appId=kenyaemr.reports&request=${requestId}&type=csv`;
+
+    const downloadPath = path.join(process.cwd(), "downloads");
+    if (!fs.existsSync(downloadPath)) {
+      fs.mkdirSync(downloadPath, { recursive: true });
+    }
+
+    // Get cookies from the browser context
+    const cookies = await sharedContext!.cookies();
+    const cookieString = cookies.map((c) => `${c.name}=${c.value}`).join("; ");
+
+    // Download using fetch with session cookies
+    console.log("Downloading with fetch:", downloadUrl);
+    const response = await fetch(downloadUrl, {
+      headers: {
+        Cookie: cookieString,
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Download failed: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const fileBuffer = await response.arrayBuffer();
+    const filePath = path.join(downloadPath, `report-${Date.now()}.csv`);
+    fs.writeFileSync(filePath, Buffer.from(fileBuffer));
+    console.log("Downloaded file:", filePath);
+    const csvData = fs.readFileSync(filePath, "utf-8");
+    const lines = csvData.split("\n").filter((line) => line.trim());
+    return { collected: lines.length - 1, filePath };
+  } catch (error) {
+    console.error("Data collection failed:", error);
+    throw error;
+  }
+}
 
 export async function collectAllData() {
   try {
