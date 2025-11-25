@@ -1,9 +1,10 @@
-import { fetchFromKenyaEMRDatabase } from './database'
-import { addIndicator, addLineList } from './local-db'
+import { fetchFromKenyaEMRDatabase } from "./database";
+import createKenyaEMRSession from "./kenyaemr";
+import { addIndicator, addLineList } from "./local-db";
 
 export async function collectIndicators() {
   try {
-    const indicators = await fetchFromKenyaEMRDatabase(
+    const indicators = (await fetchFromKenyaEMRDatabase(
       `SELECT 
         f.uuid as facility_id,
         i.indicator_id,
@@ -15,8 +16,8 @@ export async function collectIndicators() {
       JOIN facilities f ON i.facility_id = f.id 
       WHERE i.created_date > ?`,
       [new Date(Date.now() - 24 * 60 * 60 * 1000)]
-    ) as any[]
-    
+    )) as any[];
+
     for (const indicator of indicators) {
       await addIndicator(
         indicator.facility_id,
@@ -25,19 +26,19 @@ export async function collectIndicators() {
         indicator.value,
         indicator.period,
         { createdDate: indicator.created_date }
-      )
+      );
     }
-    
-    return { collected: indicators.length, type: 'indicators' }
+
+    return { collected: indicators.length, type: "indicators" };
   } catch (error) {
-    console.error('Indicator collection failed:', error)
-    throw error
+    console.error("Indicator collection failed:", error);
+    throw error;
   }
 }
 
 export async function collectLineList() {
   try {
-    const lineList = await fetchFromKenyaEMRDatabase(
+    const lineList = (await fetchFromKenyaEMRDatabase(
       `SELECT 
         f.uuid as facility_id,
         p.patient_id,
@@ -51,93 +52,99 @@ export async function collectLineList() {
       JOIN location f ON e.location_id = f.location_id
       WHERE e.encounter_datetime > ?`,
       [new Date(Date.now() - 24 * 60 * 60 * 1000)]
-    ) as any[]
-    
+    )) as any[];
+
     for (const record of lineList) {
-      await addLineList(
-        record.facility_id,
-        record.patient_id,
-        {
-          gender: record.gender,
-          birthdate: record.birthdate,
-          dateCreated: record.date_created,
-          encounterDatetime: record.encounter_datetime,
-          encounterType: record.encounter_type
-        }
-      )
+      await addLineList(record.facility_id, record.patient_id, {
+        gender: record.gender,
+        birthdate: record.birthdate,
+        dateCreated: record.date_created,
+        encounterDatetime: record.encounter_datetime,
+        encounterType: record.encounter_type,
+      });
     }
-    
-    return { collected: lineList.length, type: 'lineList' }
+
+    return { collected: lineList.length, type: "lineList" };
   } catch (error) {
-    console.error('Line list collection failed:', error)
-    throw error
+    console.error("Line list collection failed:", error);
+    throw error;
   }
 }
 
-export async function collectFromAPI(apiUrl: string, dataType: 'indicators' | 'lineList' = 'indicators') {
+export async function collectFromAPI(
+  dataType: "indicators" | "lineList" = "indicators"
+) {
   try {
-    const response = await fetch(apiUrl, {
+    const sessionId = await createKenyaEMRSession();
+
+    const url = `${process.env.KENYAEMR_SERVER}/kenyaemr/report/reportUtils/requestReport.action?appId=kenyaemr.reports&reportUuid=28a9006e-7826-11e8-adc0-fa7ae01bbebc&param[startDate]=2025-11-01%2000%3A00%3A00.000&param[endDate]=2025-11-10%2000%3A00%3A00.000&param[dateBasedReporting]=-1&returnUrl=&successUrl=`;
+
+    const response = await fetch(url, {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${process.env.FACILITY_KEY}`,
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json", // <- JSON may fail
+        Cookie: `JSESSIONID=${sessionId}`,
+      },
+      body: `reportDefinition[uuid]=28a9006e-7826-11e8-adc0-fa7ae01bbebc&parameters[startDate]=2025-01-01&parameters[endDate]=2025-01-31`,
+    });
+
+    // Properly await JSON before throwing error
+    if (!response.ok) {
+      let errorBody;
+      try {
+        errorBody = await response.json();
+      } catch {
+        errorBody = await response.text();
       }
-    })
-    
-    if (!response.ok) throw new Error(`API call failed: ${response.status}`)
-    
-    const data = await response.json()
-    
-    if (dataType === 'indicators') {
-      for (const item of data) {
-        await addIndicator(
-          item.facilityId,
-          item.indicatorId,
-          item.name,
-          item.value,
-          item.period,
-          item
-        )
-      }
-    } else {
-      for (const item of data) {
-        await addLineList(
-          item.facilityId,
-          item.patientId,
-          item
-        )
-      }
+      throw new Error(`API call failed: ${JSON.stringify(errorBody)}`);
     }
-    
-    return { collected: data.length, type: dataType }
+
+    const data = await response.json();
+
+    // Example processing
+    // if (dataType === "indicators") {
+    //   for (const item of data) await addIndicator(...);
+    // } else {
+    //   for (const item of data) await addLineList(...);
+    // }
+
+    return { collected: data.length, type: dataType };
   } catch (error) {
-    console.error('API collection failed:', error)
-    throw error
+    console.error("API collection failed:", error);
+    throw error;
   }
-}
+} 
 
 export async function collectAllData() {
+  try {
+  } catch (error) {
+    console.error("Data collection failed:", error);
+    throw error;
+  }
   const results = await Promise.allSettled([
     collectIndicators(),
-    collectLineList()
-  ])
-  
+    collectLineList(),
+  ]);
+
   const summary = {
     indicators: 0,
     lineList: 0,
-    errors: [] as string[]
-  }
-  
+    errors: [] as string[],
+  };
+
   results.forEach((result, index) => {
-    if (result.status === 'fulfilled') {
-      if (result.value.type === 'indicators') {
-        summary.indicators = result.value.collected
+    if (result.status === "fulfilled") {
+      if (result.value.type === "indicators") {
+        summary.indicators = result.value.collected;
       } else {
-        summary.lineList = result.value.collected
+        summary.lineList = result.value.collected;
       }
     } else {
-      summary.errors.push(`${index === 0 ? 'Indicators' : 'Line List'}: ${result.reason}`)
+      summary.errors.push(
+        `${index === 0 ? "Indicators" : "Line List"}: ${result.reason}`
+      );
     }
-  })
-  
-  return summary
+  });
+
+  return summary;
 }
