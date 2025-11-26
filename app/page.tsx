@@ -13,6 +13,16 @@ interface DataSummary {
   lineList: { total: number; unsynced: number };
 }
 
+interface ReportType {
+  kenyaEmrReportUuid: string;
+  name: string;
+  reportType: string;
+  isReporting: boolean;
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState("home");
   const [status, setStatus] = useState("");
@@ -23,8 +33,7 @@ export default function Home() {
   const [pendingLoading, setPendingLoading] = useState(false);
   const [syncHistory, setSyncHistory] = useState<ReportDownload[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [masterReportList, setMasterReportList] = useState<any[]>();
-
+  const [masterReportList, setMasterReportList] = useState<ReportType[]>();
   useEffect(() => {
     const loadData = async () => {
       console.log("Loading master report list...");
@@ -398,12 +407,12 @@ export default function Home() {
                           <tr key={item.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               {masterReportList.find(
-                                (k) => k.uuid === item.reportUuid
+                                (k) => k.kenyaEmrReportUuid === item.reportUuid
                               )?.name || "Unknown Report"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {masterReportList.find(
-                                (k) => k.uuid === item.reportUuid
+                                (k) => k.kenyaEmrReportUuid === item.reportUuid
                               )?.reportType || "Unknown Report"}
                             </td>
 
@@ -494,12 +503,12 @@ export default function Home() {
                           <tr key={item.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               {masterReportList?.find(
-                                (k) => k.uuid === item.reportUuid
+                                (k) => k.kenyaEmrReportUuid === item.reportUuid
                               )?.name || "Unknown Report"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {masterReportList?.find(
-                                (k) => k.uuid === item.reportUuid
+                                (k) => k.kenyaEmrReportUuid === item.reportUuid
                               )?.reportType || "Unknown"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

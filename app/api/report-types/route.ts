@@ -4,11 +4,10 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const serverUrl = process.env.SERVER_URL;
-    console.log("Fetched reports list:", serverUrl);
 
     const response = await fetch(`${serverUrl}/report-types`);
     const reports = await response.json();
-    return reports;
+    return NextResponse.json(reports);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch Report Types" },
