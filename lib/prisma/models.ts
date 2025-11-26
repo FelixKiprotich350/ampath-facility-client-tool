@@ -11,4 +11,6 @@
 export type * from './models/Facility'
 export type * from './models/Indicator'
 export type * from './models/LineList'
+export type * from './models/IndicatorType'
+export type * from './models/ReportDownload'
 export type * from './commonInputTypes'

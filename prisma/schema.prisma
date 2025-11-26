@@ -14,39 +14,39 @@ datasource db {
 }
 
 model Facility {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
   location  String?
   data      Json?
-  createdAt DateTime @default(now()) @map("created_at")
-  synced    Boolean  @default(false)
+  createdAt DateTime  @default(now()) @map("created_at")
+  synced    Boolean   @default(false)
   syncedAt  DateTime? @map("synced_at")
 
   @@map("facilities")
 }
 
 model Indicator {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   facilityId  String
   indicatorId String
   name        String
   value       String
   period      String
   data        Json?
-  createdAt   DateTime @default(now()) @map("created_at")
-  synced      Boolean  @default(false)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  synced      Boolean   @default(false)
   syncedAt    DateTime? @map("synced_at")
 
   @@map("indicators")
 }
 
 model LineList {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   facilityId String
   patientId  String?
   data       Json
-  createdAt  DateTime @default(now()) @map("created_at")
-  synced     Boolean  @default(false)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  synced     Boolean   @default(false)
   syncedAt   DateTime? @map("synced_at")
 
   @@map("line_lists")
@@ -57,11 +57,26 @@ model IndicatorType {
   name        String
   description String?
   query       String
-  source      String   // 'database' or 'api'
+  source      String // 'database' or 'api'
   apiUrl      String?
   active      Boolean  @default(true)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("indicator_types")
+}
+
+model ReportDownload {
+  id           Int       @id @default(autoincrement())
+  reportUuid   String
+  filePath     String
+  requestUrl   String
+  response     String
+  reportPeriod String
+  requestedAt  DateTime  @default(now()) @map("requested_at")
+  recordCount  Int?
+  synced       Boolean   @default(false)
+  syncedAt     DateTime? @map("synced_at")
+
+  @@map("report_downloads")
 }

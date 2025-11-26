@@ -53,7 +53,9 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Facility: 'Facility',
   Indicator: 'Indicator',
-  LineList: 'LineList'
+  LineList: 'LineList',
+  IndicatorType: 'IndicatorType',
+  ReportDownload: 'ReportDownload'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -112,6 +114,37 @@ export const LineListScalarFieldEnum = {
 } as const
 
 export type LineListScalarFieldEnum = (typeof LineListScalarFieldEnum)[keyof typeof LineListScalarFieldEnum]
+
+
+export const IndicatorTypeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  query: 'query',
+  source: 'source',
+  apiUrl: 'apiUrl',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IndicatorTypeScalarFieldEnum = (typeof IndicatorTypeScalarFieldEnum)[keyof typeof IndicatorTypeScalarFieldEnum]
+
+
+export const ReportDownloadScalarFieldEnum = {
+  id: 'id',
+  reportUuid: 'reportUuid',
+  filePath: 'filePath',
+  requestUrl: 'requestUrl',
+  response: 'response',
+  reportPeriod: 'reportPeriod',
+  requestedAt: 'requestedAt',
+  recordCount: 'recordCount',
+  synced: 'synced',
+  syncedAt: 'syncedAt'
+} as const
+
+export type ReportDownloadScalarFieldEnum = (typeof ReportDownloadScalarFieldEnum)[keyof typeof ReportDownloadScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -187,4 +220,26 @@ export const LineListOrderByRelevanceFieldEnum = {
 } as const
 
 export type LineListOrderByRelevanceFieldEnum = (typeof LineListOrderByRelevanceFieldEnum)[keyof typeof LineListOrderByRelevanceFieldEnum]
+
+
+export const IndicatorTypeOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description',
+  query: 'query',
+  source: 'source',
+  apiUrl: 'apiUrl'
+} as const
+
+export type IndicatorTypeOrderByRelevanceFieldEnum = (typeof IndicatorTypeOrderByRelevanceFieldEnum)[keyof typeof IndicatorTypeOrderByRelevanceFieldEnum]
+
+
+export const ReportDownloadOrderByRelevanceFieldEnum = {
+  reportUuid: 'reportUuid',
+  filePath: 'filePath',
+  requestUrl: 'requestUrl',
+  response: 'response',
+  reportPeriod: 'reportPeriod'
+} as const
+
+export type ReportDownloadOrderByRelevanceFieldEnum = (typeof ReportDownloadOrderByRelevanceFieldEnum)[keyof typeof ReportDownloadOrderByRelevanceFieldEnum]
 

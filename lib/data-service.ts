@@ -1,60 +1,56 @@
-import { getUnsyncedIndicators, getUnsyncedLineList, markIndicatorsAsSynced, markLineListAsSynced } from './local-db'
+import { getUnsyncedLineList } from "./local-db";
+import { readFileSync } from "fs";
+import { prisma } from "./prisma";
 
 export async function syncLocalData(targetUrl: string) {
   try {
-    const [indicators, lineList] = await Promise.all([
-      getUnsyncedIndicators(),
-      getUnsyncedLineList()
-    ])
-    
-    let syncedCount = 0
-    
-    if (indicators.length > 0) {
-      const response = await fetch(`${targetUrl}/indicators`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.FACILITY_KEY}`
-        },
-        body: JSON.stringify({ data: indicators })
-      })
-      
-      if (response.ok) {
-        await markIndicatorsAsSynced(indicators.map(i => i.id))
-        syncedCount += indicators.length
-      }
-    }
-    
+    const facilityKey = process.env.FACILITY_KEY;
+
+    const lineList = await getUnsyncedLineList();
+    const report = lineList[0];
+    let syncedCount = 0;
+
     if (lineList.length > 0) {
-      const response = await fetch(`${targetUrl}/linelist`, {
-        method: 'POST',
+      const formData = new FormData();
+      const csvFile = readFileSync(report.filePath);
+      formData.append(
+        "file",
+        new Blob([csvFile], { type: "text/csv" }),
+        "report.csv"
+      );
+      formData.append("reportTypeId", report.reportUuid);
+
+      const response = await fetch(targetUrl, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.FACILITY_KEY}`
+          Authorization: `Bearer ${process.env.FACILITY_KEY}`,
+          "x-key": process.env.FACILITY_KEY || "",
         },
-        body: JSON.stringify({ data: lineList })
-      })
-      
+        body: formData,
+      });
+
       if (response.ok) {
-        await markLineListAsSynced(lineList.map(l => l.id))
-        syncedCount += lineList.length
+        await prisma.reportDownload.update({
+          where: { id: report.id },
+          data: { synced: true, syncedAt: new Date() },
+        });
+        syncedCount += 1;
       }
     }
-    
+
     return {
       success: true,
-      message: 'Sync completed',
+      message: "Sync completed",
       count: syncedCount,
       details: {
-        indicators: indicators.length,
-        lineList: lineList.length
-      }
-    }
+        lineList: lineList.length,
+      },
+    };
   } catch (error) {
-    console.error('Sync failed:', error)
+    console.error("Sync failed:", error);
     return {
       success: false,
-      error: 'Sync failed'
-    }
+      error: "Sync failed",
+    };
   }
 }

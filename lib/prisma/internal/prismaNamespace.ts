@@ -386,7 +386,9 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   Facility: 'Facility',
   Indicator: 'Indicator',
-  LineList: 'LineList'
+  LineList: 'LineList',
+  IndicatorType: 'IndicatorType',
+  ReportDownload: 'ReportDownload'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -402,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "facility" | "indicator" | "lineList"
+    modelProps: "facility" | "indicator" | "lineList" | "indicatorType" | "reportDownload"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -604,6 +606,138 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    IndicatorType: {
+      payload: Prisma.$IndicatorTypePayload<ExtArgs>
+      fields: Prisma.IndicatorTypeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IndicatorTypeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorTypePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IndicatorTypeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorTypePayload>
+        }
+        findFirst: {
+          args: Prisma.IndicatorTypeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorTypePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IndicatorTypeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorTypePayload>
+        }
+        findMany: {
+          args: Prisma.IndicatorTypeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorTypePayload>[]
+        }
+        create: {
+          args: Prisma.IndicatorTypeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorTypePayload>
+        }
+        createMany: {
+          args: Prisma.IndicatorTypeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.IndicatorTypeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorTypePayload>
+        }
+        update: {
+          args: Prisma.IndicatorTypeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorTypePayload>
+        }
+        deleteMany: {
+          args: Prisma.IndicatorTypeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IndicatorTypeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.IndicatorTypeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IndicatorTypePayload>
+        }
+        aggregate: {
+          args: Prisma.IndicatorTypeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIndicatorType>
+        }
+        groupBy: {
+          args: Prisma.IndicatorTypeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IndicatorTypeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IndicatorTypeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IndicatorTypeCountAggregateOutputType> | number
+        }
+      }
+    }
+    ReportDownload: {
+      payload: Prisma.$ReportDownloadPayload<ExtArgs>
+      fields: Prisma.ReportDownloadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReportDownloadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReportDownloadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
+        }
+        findFirst: {
+          args: Prisma.ReportDownloadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReportDownloadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
+        }
+        findMany: {
+          args: Prisma.ReportDownloadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>[]
+        }
+        create: {
+          args: Prisma.ReportDownloadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
+        }
+        createMany: {
+          args: Prisma.ReportDownloadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.ReportDownloadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
+        }
+        update: {
+          args: Prisma.ReportDownloadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReportDownloadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReportDownloadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.ReportDownloadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
+        }
+        aggregate: {
+          args: Prisma.ReportDownloadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReportDownload>
+        }
+        groupBy: {
+          args: Prisma.ReportDownloadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReportDownloadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReportDownloadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReportDownloadCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -685,6 +819,37 @@ export const LineListScalarFieldEnum = {
 export type LineListScalarFieldEnum = (typeof LineListScalarFieldEnum)[keyof typeof LineListScalarFieldEnum]
 
 
+export const IndicatorTypeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  query: 'query',
+  source: 'source',
+  apiUrl: 'apiUrl',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IndicatorTypeScalarFieldEnum = (typeof IndicatorTypeScalarFieldEnum)[keyof typeof IndicatorTypeScalarFieldEnum]
+
+
+export const ReportDownloadScalarFieldEnum = {
+  id: 'id',
+  reportUuid: 'reportUuid',
+  filePath: 'filePath',
+  requestUrl: 'requestUrl',
+  response: 'response',
+  reportPeriod: 'reportPeriod',
+  requestedAt: 'requestedAt',
+  recordCount: 'recordCount',
+  synced: 'synced',
+  syncedAt: 'syncedAt'
+} as const
+
+export type ReportDownloadScalarFieldEnum = (typeof ReportDownloadScalarFieldEnum)[keyof typeof ReportDownloadScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -758,6 +923,28 @@ export const LineListOrderByRelevanceFieldEnum = {
 } as const
 
 export type LineListOrderByRelevanceFieldEnum = (typeof LineListOrderByRelevanceFieldEnum)[keyof typeof LineListOrderByRelevanceFieldEnum]
+
+
+export const IndicatorTypeOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description',
+  query: 'query',
+  source: 'source',
+  apiUrl: 'apiUrl'
+} as const
+
+export type IndicatorTypeOrderByRelevanceFieldEnum = (typeof IndicatorTypeOrderByRelevanceFieldEnum)[keyof typeof IndicatorTypeOrderByRelevanceFieldEnum]
+
+
+export const ReportDownloadOrderByRelevanceFieldEnum = {
+  reportUuid: 'reportUuid',
+  filePath: 'filePath',
+  requestUrl: 'requestUrl',
+  response: 'response',
+  reportPeriod: 'reportPeriod'
+} as const
+
+export type ReportDownloadOrderByRelevanceFieldEnum = (typeof ReportDownloadOrderByRelevanceFieldEnum)[keyof typeof ReportDownloadOrderByRelevanceFieldEnum]
 
 
 
@@ -896,6 +1083,8 @@ export type GlobalOmitConfig = {
   facility?: Prisma.FacilityOmit
   indicator?: Prisma.IndicatorOmit
   lineList?: Prisma.LineListOmit
+  indicatorType?: Prisma.IndicatorTypeOmit
+  reportDownload?: Prisma.ReportDownloadOmit
 }
 
 /* Types for Logging */

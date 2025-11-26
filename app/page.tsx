@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { IndicatorTypesPage } from "@/components/indicator-types-page";
+import { ReportDownload } from "@/lib/prisma/client";
 
 interface DataSummary {
   indicators: { total: number; unsynced: number };
@@ -18,12 +19,31 @@ export default function Home() {
   const [summary, setSummary] = useState<DataSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [schedulerRunning, setSchedulerRunning] = useState(false);
+  const [pendingData, setPendingData] = useState<ReportDownload[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [syncHistory, setSyncHistory] = useState<ReportDownload[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [masterReportList, setMasterReportList] = useState<any[]>();
 
   useEffect(() => {
+    const loadData = async () => {
+      console.log("Loading master report list...");
+      const response = await fetch(`/api/report-types`);
+      setMasterReportList(response.ok ? await response.json() : []);
+    };
+    loadData();
     loadSummary();
     const interval = setInterval(loadSummary, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "pending") {
+      loadPendingData();
+    } else if (activeTab === "history") {
+      loadSyncHistory();
+    }
+  }, [activeTab]);
 
   const loadSummary = async () => {
     try {
@@ -32,6 +52,32 @@ export default function Home() {
       setSummary(data);
     } catch {
       setStatus("Failed to load data summary");
+    }
+  };
+
+  const loadPendingData = async () => {
+    setPendingLoading(true);
+    try {
+      const response = await fetch("/api/pendingdata");
+      const data = await response.json();
+      setPendingData(data);
+    } catch {
+      setStatus("Failed to load pending data");
+    } finally {
+      setPendingLoading(false);
+    }
+  };
+
+  const loadSyncHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const response = await fetch("/api/synchistory");
+      const data = await response.json();
+      setSyncHistory(data);
+    } catch {
+      setStatus("Failed to load sync history");
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -44,6 +90,8 @@ export default function Home() {
       if (result.success) {
         setStatus(`✅ Sync completed: ${result.count} records synced`);
         loadSummary();
+        if (activeTab === "pending") loadPendingData();
+        if (activeTab === "history") loadSyncHistory();
       } else {
         setStatus("❌ Sync failed");
       }
@@ -247,13 +295,7 @@ export default function Home() {
                     >
                       <span className="mr-2">🔍</span> Collect Data
                     </Button>
-                    <Button
-                      onClick={handleSync}
-                      disabled={loading}
-                      className="h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                    >
-                      <span className="mr-2">🔄</span> Sync Now
-                    </Button>
+
                     <Button
                       onClick={startCron}
                       disabled={loading || schedulerRunning}
@@ -298,76 +340,199 @@ export default function Home() {
           )}
 
           {activeTab === "pending" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-xl">⏳</span> Pending Data to Sync
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {summary ? (
-                  <div className="space-y-4">
-                    <div className="grid gap-4">
-                      <div className="flex justify-between items-center p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">📊</span>
-                          <span className="font-medium">
-                            Indicators pending sync
-                          </span>
-                        </div>
-                        <span className="font-bold text-orange-700 bg-orange-200 px-3 py-1 rounded-full">
-                          {summary.indicators.unsynced}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">📋</span>
-                          <span className="font-medium">
-                            Line list records pending sync
-                          </span>
-                        </div>
-                        <span className="font-bold text-orange-700 bg-orange-200 px-3 py-1 rounded-full">
-                          {summary.lineList.unsynced}
-                        </span>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleSync}
-                      disabled={loading}
-                      className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                    >
-                      <span className="mr-2">🚀</span> Sync All Pending Data
-                    </Button>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Pending Data
+                  </h2>
+                  <p className="text-gray-600">
+                    Records waiting to be synchronized
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={loadPendingData}
+                    disabled={pendingLoading}
+                    variant="outline"
+                  >
+                    {pendingLoading ? "🔄 Loading..." : "🔄 Refresh"}
+                  </Button>
+                  <Button
+                    onClick={handleSync}
+                    disabled={loading}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {loading ? "🔄 Syncing..." : "🚀 Sync Now"}
+                  </Button>
+                </div>
+              </div>
+
+              {pendingLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading pending data...</p>
+                </div>
+              ) : pendingData.length > 0 ? (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Report Name
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Type
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Requested At
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Period
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {pendingData.map((item) => (
+                          <tr key={item.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {masterReportList.find(
+                                (k) => k.uuid === item.reportUuid
+                              )?.name || "Unknown Report"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {masterReportList.find(
+                                (k) => k.uuid === item.reportUuid
+                              )?.reportType || "Unknown Report"}
+                            </td>
+
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(item.requestedAt).toLocaleString()}
+                            </td>
+
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {item.reportPeriod}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                ⏳ Pending
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="animate-spin w-8 h-8 border-4 border-orange-200 border-t-orange-600 rounded-full mx-auto mb-4"></div>
-                    <div className="text-gray-600">Loading pending data...</div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
+              ) : (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <div className="text-6xl mb-4">📄</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No Pending Data
+                    </h3>
+                    <p className="text-gray-500">
+                      All data has been synchronized successfully.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
 
           {activeTab === "history" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-xl">📜</span> Sync History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Sync History
+                  </h2>
+                  <p className="text-gray-600">
+                    Previously synchronized records
+                  </p>
+                </div>
+                <Button
+                  onClick={loadSyncHistory}
+                  disabled={historyLoading}
+                  variant="outline"
+                >
+                  {historyLoading ? "🔄 Loading..." : "🔄 Refresh"}
+                </Button>
+              </div>
+
+              {historyLoading ? (
                 <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📊</div>
-                  <div className="text-gray-500 text-lg mb-2">
-                    No sync history yet
-                  </div>
-                  <div className="text-gray-400 text-sm">
-                    Sync history will appear here after your first sync
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading sync history...</p>
+                </div>
+              ) : syncHistory.length > 0 ? (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Report Name
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Type
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Period
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Synced At
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Records
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {syncHistory.map((item) => (
+                          <tr key={item.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {masterReportList?.find(
+                                (k) => k.uuid === item.reportUuid
+                              )?.name || "Unknown Report"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {masterReportList?.find(
+                                (k) => k.uuid === item.reportUuid
+                              )?.reportType || "Unknown"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {item.reportPeriod}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {item.syncedAt
+                                ? new Date(item.syncedAt).toLocaleString()
+                                : "N/A"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {item.recordCount || 0}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              ) : (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <div className="text-6xl mb-4">📚</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No Sync History
+                    </h3>
+                    <p className="text-gray-500">
+                      Sync history will appear here after your first sync.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
         </main>
       </div>

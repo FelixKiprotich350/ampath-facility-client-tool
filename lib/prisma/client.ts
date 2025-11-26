@@ -54,3 +54,13 @@ export type Indicator = Prisma.IndicatorModel
  * 
  */
 export type LineList = Prisma.LineListModel
+/**
+ * Model IndicatorType
+ * 
+ */
+export type IndicatorType = Prisma.IndicatorTypeModel
+/**
+ * Model ReportDownload
+ * 
+ */
+export type ReportDownload = Prisma.ReportDownloadModel

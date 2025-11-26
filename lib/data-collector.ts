@@ -1,9 +1,9 @@
 import { fetchFromKenyaEMRDatabase } from "./database";
-import createKenyaEMRSession from "./kenyaemr";
-import { addIndicator, addLineList } from "./local-db";
+import { addIndicator, addLineList, addReportDownload } from "./local-db";
 import { chromium, Browser, BrowserContext, Page } from "playwright";
 import * as fs from "fs";
 import * as path from "path";
+import getReportsList, { KenyaEMRReport } from "./masterReportList";
 
 let sharedBrowser: Browser | null = null;
 let sharedContext: BrowserContext | null = null;
@@ -121,12 +121,21 @@ export async function collectFromBroswer() {
     const page = await getAuthenticatedPage();
     console.log("Login success Navigating to reports page...");
     const reportPageUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/report.page`;
-    const reports = [
-      "9952e9d5-b5cf-4c59-ab36-b961c11f6930", // covid 19 indicators
-      "5609a402-94b2-11e3-9ca9-93351facf9dd", //art indicators
-      "28a9006e-7826-11e8-adc0-fa7ae01bbebc", //hts monthly indicators
-    ]; //  report UUIDs
-    getSingleReport(page, reports[0], reportPageUrl);
+    const reports = await getReportsList();
+
+    const results = [];
+    const errors = [];
+    for (const report of reports) {
+      try {
+        const result = await getSingleReport(page, report, reportPageUrl);
+        results.push({ uuid: report.uuid, result: result });
+      } catch (error) {
+        console.error(`Failed to process report ${report.uuid}:`, error);
+        errors.push({ uuid: report.uuid, error: error.message });
+      }
+    }
+
+    return { completed: results.length, results, errors };
   } catch (error) {
     console.error("Playwright collection failed:", error);
     throw error;
@@ -135,12 +144,13 @@ export async function collectFromBroswer() {
 
 export async function getSingleReport(
   page: Page,
-  reportUuid: string,
+  report: KenyaEMRReport,
   reportPage: string
 ) {
+  const startTime = Date.now();
   try {
     const reportHomePath = `${process.env.KENYAEMR_SERVER}/kenyaemr/reports/reportsHome.page`;
-    const reportPageUrl = `${reportPage}?appId=kenyaemr.reports&reportUuid=${reportUuid}&returnUrl=${reportHomePath}`;
+    const reportPageUrl = `${reportPage}?appId=kenyaemr.reports&reportUuid=${report.uuid}&returnUrl=${reportHomePath}`;
     await page.goto(reportPageUrl);
     console.log("Navigated to report page:", reportPageUrl);
     // await page.click(`div.ke-stack-item[onclick*="${reportUuid}"]`);
@@ -156,11 +166,20 @@ export async function getSingleReport(
       .locator('div.ke-field-label:has-text("Month")')
       .isVisible();
 
+    const startdate = "01-Jan-25";
+    const enddate = "31-Jan-25";
+    let reportMonth = null;
     if (isDateRange) {
-      await page.fill("#startDate_date", "01-Jan-25");
-      await page.fill("#endDate_date", "31-Jan-25");
+      await page.fill("#startDate_date", startdate);
+      await page.fill("#endDate_date", enddate);
     } else if (isMonth) {
-      await page.selectOption("select", { index: 0 });
+      reportMonth = await page.$eval(
+        "select:first-of-type",
+        (select: HTMLSelectElement) => {
+          return select.options[0].value;
+        }
+      );
+      await page.selectOption("select:first-of-type", reportMonth);
     }
 
     // Intercept API response to get request ID
@@ -191,8 +210,12 @@ export async function getSingleReport(
       throw new Error("Failed to capture request ID");
     }
 
-    // Poll for report completion and download
+    // Poll for report completion
     const downloadUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/reportExport.page?appId=kenyaemr.reports&request=${requestId}&type=csv`;
+    
+    // Wait for report to be ready by polling the status
+    console.log("Waiting for report to be ready...");
+    await page.waitForTimeout(10000); // Wait 10 seconds for report generation
 
     const downloadPath = path.join(process.cwd(), "downloads");
     if (!fs.existsSync(downloadPath)) {
@@ -203,20 +226,49 @@ export async function getSingleReport(
     const cookies = await sharedContext!.cookies();
     const cookieString = cookies.map((c) => `${c.name}=${c.value}`).join("; ");
 
-    // Download using fetch with session cookies
+    // Download using fetch with session cookies and retry logic
     console.log("Downloading with fetch:", downloadUrl);
-    const response = await fetch(downloadUrl, {
-      headers: {
-        Cookie: cookieString,
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
-    });
+    let response;
+    let lastError;
 
-    if (!response.ok) {
-      throw new Error(
-        `Download failed: ${response.status} ${response.statusText}`
-      );
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
+        response = await fetch(downloadUrl, {
+          headers: {
+            Cookie: cookieString,
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "text/csv,application/csv,*/*",
+            "Referer": reportPageUrl
+          },
+        });
+
+        if (response.ok) {
+          const contentType = response.headers.get('content-type');
+          console.log(`Download successful, content-type: ${contentType}`);
+          break;
+        }
+
+        lastError = new Error(
+          `Download failed: ${response.status} ${response.statusText}`
+        );
+        console.log(`Attempt ${attempt} failed:`, lastError.message);
+
+        if (attempt < 5) {
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+      } catch (error) {
+        lastError = error;
+        console.log(`Attempt ${attempt} failed:`, error.message);
+
+        if (attempt < 5) {
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+      }
+    }
+
+    if (!response || !response.ok) {
+      throw lastError || new Error("Download failed after 5 attempts");
     }
 
     const fileBuffer = await response.arrayBuffer();
@@ -225,43 +277,24 @@ export async function getSingleReport(
     console.log("Downloaded file:", filePath);
     const csvData = fs.readFileSync(filePath, "utf-8");
     const lines = csvData.split("\n").filter((line) => line.trim());
-    return { collected: lines.length - 1, filePath };
+    const recordCount = lines.length - 1;
+
+    const duration = isDateRange ? `${startdate} to ${enddate}` : reportMonth;
+    const responseStatus = `${response.status} ${response.statusText}`;
+
+    await addReportDownload(
+      report.uuid,
+      filePath,
+      downloadUrl,
+      responseStatus,
+      duration,
+      recordCount
+    );
+
+    return { records: recordCount, message: "suceess" };
   } catch (error) {
     console.error("Data collection failed:", error);
     throw error;
   }
 }
-
-export async function collectAllData() {
-  try {
-  } catch (error) {
-    console.error("Data collection failed:", error);
-    throw error;
-  }
-  const results = await Promise.allSettled([
-    collectIndicators(),
-    collectLineList(),
-  ]);
-
-  const summary = {
-    indicators: 0,
-    lineList: 0,
-    errors: [] as string[],
-  };
-
-  results.forEach((result, index) => {
-    if (result.status === "fulfilled") {
-      if (result.value.type === "indicators") {
-        summary.indicators = result.value.collected;
-      } else {
-        summary.lineList = result.value.collected;
-      }
-    } else {
-      summary.errors.push(
-        `${index === 0 ? "Indicators" : "Line List"}: ${result.reason}`
-      );
-    }
-  });
-
-  return summary;
-}
+ 
