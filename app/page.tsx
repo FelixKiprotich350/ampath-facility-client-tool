@@ -28,18 +28,24 @@ export default function Home() {
   const [status, setStatus] = useState("");
   const [summary, setSummary] = useState<DataSummary | null>(null);
   const [loading, setLoading] = useState(false);
-  const [schedulerRunning, setSchedulerRunning] = useState(false);
+  const [facilityDetails, setFacilityDetails] = useState<{
+    facilityName: string;
+    lastSync: string;
+  }>();
   const [pendingData, setPendingData] = useState<ReportDownload[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [syncHistory, setSyncHistory] = useState<ReportDownload[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [masterReportList, setMasterReportList] = useState<ReportType[]>();
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState("");
   useEffect(() => {
     const loadData = async () => {
       console.log("Loading master report list...");
       const response = await fetch(`/api/report-types`);
       setMasterReportList(response.ok ? await response.json() : []);
     };
+    fetchDashboard();
     loadData();
     loadSummary();
     const interval = setInterval(loadSummary, 30000);
@@ -111,13 +117,29 @@ export default function Home() {
     }
   };
 
-  const handleCollect = async (source: string) => {
+  const getLast12Months = () => {
+    const months = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const displayName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      months.push({ value: monthYear, label: displayName });
+    }
+    return months;
+  };
+
+  const handleCollectClick = () => {
+    setShowMonthPicker(true);
+  };
+
+  const handleCollect = async (source: string, month?: string) => {
     setLoading(true);
-    setStatus(`🔍 Collecting from ${source}...`);
+    setStatus(`🔍 Collecting from ${source}${month ? ` for ${month}` : ''}...`);
     try {
       const response = await fetch("/api/collect", {
         method: "POST",
-        body: JSON.stringify({ source, apiUrl: "", dataType: "indicators" }),
+        body: JSON.stringify({ source, apiUrl: "", dataType: "indicators", month }),
         headers: { "Content-Type": "application/json" },
       });
       const result = await response.json();
@@ -129,6 +151,8 @@ export default function Home() {
         setStatus(`✅ Collected ${result.collected} ${result.type} records`);
       }
       loadSummary();
+      setShowMonthPicker(false);
+      setSelectedMonth("");
     } catch (error) {
       console.log(error);
       setStatus("❌ Collection failed");
@@ -137,15 +161,12 @@ export default function Home() {
     }
   };
 
-  const startCron = async () => {
+  const fetchDashboard = async () => {
     try {
-      const response = await fetch("/api/cron/start", { method: "POST" });
+      const response = await fetch("/api/dashboard", { method: "GET" });
       const result = await response.json();
-      setStatus(`⏰ ${result.message}`);
-      setSchedulerRunning(true);
-    } catch {
-      setStatus("❌ Failed to start scheduler");
-    }
+      setFacilityDetails(result);
+    } catch {}
   };
 
   const getPageTitle = () => {
@@ -242,30 +263,28 @@ export default function Home() {
                     <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg hover:shadow-xl transition-shadow">
                       <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-blue-800">
-                          <span className="text-2xl">⚡</span> Status
+                          <span className="text-2xl">⚡</span> Facility Details
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">
-                              Scheduler:
+                              Name :
                             </span>
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                schedulerRunning
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-gray-100 text-gray-600"
-                              }`}
+                              className={`px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600`}
                             >
-                              {schedulerRunning ? "🟢 Running" : "⚪ Stopped"}
+                              {facilityDetails?.facilityName || "--"}
                             </span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">
                               Last sync:
                             </span>
-                            <span className="text-xs text-gray-500">Never</span>
+                            <span className="text-xs text-gray-500">
+                              {facilityDetails.lastSync}
+                            </span>
                           </div>
                         </div>
                       </CardContent>
@@ -290,24 +309,15 @@ export default function Home() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Button
-                      onClick={() => handleCollect("api")}
+                      onClick={handleCollectClick}
                       disabled={loading}
                       className="h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                     >
                       <span className="mr-2">🔍</span> Collect Data
                     </Button>
 
-                    <Button
-                      onClick={startCron}
-                      disabled={loading || schedulerRunning}
-                      variant="outline"
-                      className="h-12"
-                    >
-                      <span className="mr-2">⏰</span>{" "}
-                      {schedulerRunning ? "Running" : "Start Scheduler"}
-                    </Button>
                     <Button
                       onClick={loadSummary}
                       disabled={loading}
@@ -317,6 +327,44 @@ export default function Home() {
                       <span className="mr-2">🔄</span> Refresh
                     </Button>
                   </div>
+
+                  {showMonthPicker && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                      <h4 className="font-medium text-gray-900 mb-3">Select Month and Year</h4>
+                      <div className="flex gap-3 items-end">
+                        <div className="flex-1">
+                          <select
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select month...</option>
+                            {getLast12Months().map((month) => (
+                              <option key={month.value} value={month.value}>
+                                {month.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <Button
+                          onClick={() => handleCollect("api", selectedMonth)}
+                          disabled={!selectedMonth || loading}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Collect
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setShowMonthPicker(false);
+                            setSelectedMonth("");
+                          }}
+                          variant="outline"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

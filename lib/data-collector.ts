@@ -8,39 +8,6 @@ let sharedBrowser: Browser | null = null;
 let sharedContext: BrowserContext | null = null;
 let isLoggedIn = false;
 
-export async function collectIndicators() {
-  try {
-    const indicators = (await fetchFromKenyaEMRDatabase(
-      `SELECT 
-        f.uuid as facility_id,
-        i.indicator_id,
-        i.name,
-        i.value,
-        i.period,
-        i.created_date
-      FROM indicators i 
-      JOIN facilities f ON i.facility_id = f.id 
-      WHERE i.created_date > ?`,
-      [new Date(Date.now() - 24 * 60 * 60 * 1000)]
-    )) as any[];
-
-    for (const indicator of indicators) {
-      await addIndicator(
-        indicator.facility_id,
-        indicator.indicator_id,
-        indicator.name,
-        indicator.value,
-        indicator.period,
-        { createdDate: indicator.created_date }
-      );
-    }
-
-    return { collected: indicators.length, type: "indicators" };
-  } catch (error) {
-    console.error("Indicator collection failed:", error);
-    throw error;
-  }
-}
 
 export async function collectLineList() {
   try {
