@@ -39,7 +39,6 @@ export type ReportDownloadSumAggregateOutputType = {
 export type ReportDownloadMinAggregateOutputType = {
   id: number | null
   reportUuid: string | null
-  filePath: string | null
   requestUrl: string | null
   response: string | null
   reportPeriod: string | null
@@ -52,7 +51,6 @@ export type ReportDownloadMinAggregateOutputType = {
 export type ReportDownloadMaxAggregateOutputType = {
   id: number | null
   reportUuid: string | null
-  filePath: string | null
   requestUrl: string | null
   response: string | null
   reportPeriod: string | null
@@ -65,7 +63,7 @@ export type ReportDownloadMaxAggregateOutputType = {
 export type ReportDownloadCountAggregateOutputType = {
   id: number
   reportUuid: number
-  filePath: number
+  csvContent: number
   requestUrl: number
   response: number
   reportPeriod: number
@@ -90,7 +88,6 @@ export type ReportDownloadSumAggregateInputType = {
 export type ReportDownloadMinAggregateInputType = {
   id?: true
   reportUuid?: true
-  filePath?: true
   requestUrl?: true
   response?: true
   reportPeriod?: true
@@ -103,7 +100,6 @@ export type ReportDownloadMinAggregateInputType = {
 export type ReportDownloadMaxAggregateInputType = {
   id?: true
   reportUuid?: true
-  filePath?: true
   requestUrl?: true
   response?: true
   reportPeriod?: true
@@ -116,7 +112,7 @@ export type ReportDownloadMaxAggregateInputType = {
 export type ReportDownloadCountAggregateInputType = {
   id?: true
   reportUuid?: true
-  filePath?: true
+  csvContent?: true
   requestUrl?: true
   response?: true
   reportPeriod?: true
@@ -216,7 +212,7 @@ export type ReportDownloadGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 export type ReportDownloadGroupByOutputType = {
   id: number
   reportUuid: string
-  filePath: string
+  csvContent: runtime.JsonValue
   requestUrl: string
   response: string
   reportPeriod: string
@@ -252,7 +248,7 @@ export type ReportDownloadWhereInput = {
   NOT?: Prisma.ReportDownloadWhereInput | Prisma.ReportDownloadWhereInput[]
   id?: Prisma.IntFilter<"ReportDownload"> | number
   reportUuid?: Prisma.StringFilter<"ReportDownload"> | string
-  filePath?: Prisma.StringFilter<"ReportDownload"> | string
+  csvContent?: Prisma.JsonFilter<"ReportDownload">
   requestUrl?: Prisma.StringFilter<"ReportDownload"> | string
   response?: Prisma.StringFilter<"ReportDownload"> | string
   reportPeriod?: Prisma.StringFilter<"ReportDownload"> | string
@@ -265,7 +261,7 @@ export type ReportDownloadWhereInput = {
 export type ReportDownloadOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   reportUuid?: Prisma.SortOrder
-  filePath?: Prisma.SortOrder
+  csvContent?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
@@ -282,7 +278,7 @@ export type ReportDownloadWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ReportDownloadWhereInput[]
   NOT?: Prisma.ReportDownloadWhereInput | Prisma.ReportDownloadWhereInput[]
   reportUuid?: Prisma.StringFilter<"ReportDownload"> | string
-  filePath?: Prisma.StringFilter<"ReportDownload"> | string
+  csvContent?: Prisma.JsonFilter<"ReportDownload">
   requestUrl?: Prisma.StringFilter<"ReportDownload"> | string
   response?: Prisma.StringFilter<"ReportDownload"> | string
   reportPeriod?: Prisma.StringFilter<"ReportDownload"> | string
@@ -295,7 +291,7 @@ export type ReportDownloadWhereUniqueInput = Prisma.AtLeast<{
 export type ReportDownloadOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   reportUuid?: Prisma.SortOrder
-  filePath?: Prisma.SortOrder
+  csvContent?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
@@ -316,7 +312,7 @@ export type ReportDownloadScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ReportDownloadScalarWhereWithAggregatesInput | Prisma.ReportDownloadScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"ReportDownload"> | number
   reportUuid?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
-  filePath?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
+  csvContent?: Prisma.JsonWithAggregatesFilter<"ReportDownload">
   requestUrl?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
   response?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
   reportPeriod?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
@@ -328,7 +324,7 @@ export type ReportDownloadScalarWhereWithAggregatesInput = {
 
 export type ReportDownloadCreateInput = {
   reportUuid: string
-  filePath: string
+  csvContent: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl: string
   response: string
   reportPeriod: string
@@ -341,7 +337,7 @@ export type ReportDownloadCreateInput = {
 export type ReportDownloadUncheckedCreateInput = {
   id?: number
   reportUuid: string
-  filePath: string
+  csvContent: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl: string
   response: string
   reportPeriod: string
@@ -353,7 +349,7 @@ export type ReportDownloadUncheckedCreateInput = {
 
 export type ReportDownloadUpdateInput = {
   reportUuid?: Prisma.StringFieldUpdateOperationsInput | string
-  filePath?: Prisma.StringFieldUpdateOperationsInput | string
+  csvContent?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
   response?: Prisma.StringFieldUpdateOperationsInput | string
   reportPeriod?: Prisma.StringFieldUpdateOperationsInput | string
@@ -366,7 +362,7 @@ export type ReportDownloadUpdateInput = {
 export type ReportDownloadUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   reportUuid?: Prisma.StringFieldUpdateOperationsInput | string
-  filePath?: Prisma.StringFieldUpdateOperationsInput | string
+  csvContent?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
   response?: Prisma.StringFieldUpdateOperationsInput | string
   reportPeriod?: Prisma.StringFieldUpdateOperationsInput | string
@@ -379,7 +375,7 @@ export type ReportDownloadUncheckedUpdateInput = {
 export type ReportDownloadCreateManyInput = {
   id?: number
   reportUuid: string
-  filePath: string
+  csvContent: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl: string
   response: string
   reportPeriod: string
@@ -391,7 +387,7 @@ export type ReportDownloadCreateManyInput = {
 
 export type ReportDownloadUpdateManyMutationInput = {
   reportUuid?: Prisma.StringFieldUpdateOperationsInput | string
-  filePath?: Prisma.StringFieldUpdateOperationsInput | string
+  csvContent?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
   response?: Prisma.StringFieldUpdateOperationsInput | string
   reportPeriod?: Prisma.StringFieldUpdateOperationsInput | string
@@ -404,7 +400,7 @@ export type ReportDownloadUpdateManyMutationInput = {
 export type ReportDownloadUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   reportUuid?: Prisma.StringFieldUpdateOperationsInput | string
-  filePath?: Prisma.StringFieldUpdateOperationsInput | string
+  csvContent?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
   response?: Prisma.StringFieldUpdateOperationsInput | string
   reportPeriod?: Prisma.StringFieldUpdateOperationsInput | string
@@ -423,7 +419,7 @@ export type ReportDownloadOrderByRelevanceInput = {
 export type ReportDownloadCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reportUuid?: Prisma.SortOrder
-  filePath?: Prisma.SortOrder
+  csvContent?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
@@ -441,7 +437,6 @@ export type ReportDownloadAvgOrderByAggregateInput = {
 export type ReportDownloadMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reportUuid?: Prisma.SortOrder
-  filePath?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
@@ -454,7 +449,6 @@ export type ReportDownloadMaxOrderByAggregateInput = {
 export type ReportDownloadMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reportUuid?: Prisma.SortOrder
-  filePath?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
@@ -482,7 +476,7 @@ export type NullableIntFieldUpdateOperationsInput = {
 export type ReportDownloadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   reportUuid?: boolean
-  filePath?: boolean
+  csvContent?: boolean
   requestUrl?: boolean
   response?: boolean
   reportPeriod?: boolean
@@ -497,7 +491,7 @@ export type ReportDownloadSelect<ExtArgs extends runtime.Types.Extensions.Intern
 export type ReportDownloadSelectScalar = {
   id?: boolean
   reportUuid?: boolean
-  filePath?: boolean
+  csvContent?: boolean
   requestUrl?: boolean
   response?: boolean
   reportPeriod?: boolean
@@ -507,7 +501,7 @@ export type ReportDownloadSelectScalar = {
   syncedAt?: boolean
 }
 
-export type ReportDownloadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reportUuid" | "filePath" | "requestUrl" | "response" | "reportPeriod" | "requestedAt" | "recordCount" | "synced" | "syncedAt", ExtArgs["result"]["reportDownload"]>
+export type ReportDownloadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reportUuid" | "csvContent" | "requestUrl" | "response" | "reportPeriod" | "requestedAt" | "recordCount" | "synced" | "syncedAt", ExtArgs["result"]["reportDownload"]>
 
 export type $ReportDownloadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ReportDownload"
@@ -515,7 +509,7 @@ export type $ReportDownloadPayload<ExtArgs extends runtime.Types.Extensions.Inte
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     reportUuid: string
-    filePath: string
+    csvContent: runtime.JsonValue
     requestUrl: string
     response: string
     reportPeriod: string
@@ -894,7 +888,7 @@ export interface Prisma__ReportDownloadClient<T, Null = never, ExtArgs extends r
 export interface ReportDownloadFieldRefs {
   readonly id: Prisma.FieldRef<"ReportDownload", 'Int'>
   readonly reportUuid: Prisma.FieldRef<"ReportDownload", 'String'>
-  readonly filePath: Prisma.FieldRef<"ReportDownload", 'String'>
+  readonly csvContent: Prisma.FieldRef<"ReportDownload", 'Json'>
   readonly requestUrl: Prisma.FieldRef<"ReportDownload", 'String'>
   readonly response: Prisma.FieldRef<"ReportDownload", 'String'>
   readonly reportPeriod: Prisma.FieldRef<"ReportDownload", 'String'>

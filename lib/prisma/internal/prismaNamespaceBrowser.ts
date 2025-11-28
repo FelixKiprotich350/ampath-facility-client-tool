@@ -134,7 +134,7 @@ export type IndicatorTypeScalarFieldEnum = (typeof IndicatorTypeScalarFieldEnum)
 export const ReportDownloadScalarFieldEnum = {
   id: 'id',
   reportUuid: 'reportUuid',
-  filePath: 'filePath',
+  csvContent: 'csvContent',
   requestUrl: 'requestUrl',
   response: 'response',
   reportPeriod: 'reportPeriod',
@@ -235,7 +235,6 @@ export type IndicatorTypeOrderByRelevanceFieldEnum = (typeof IndicatorTypeOrderB
 
 export const ReportDownloadOrderByRelevanceFieldEnum = {
   reportUuid: 'reportUuid',
-  filePath: 'filePath',
   requestUrl: 'requestUrl',
   response: 'response',
   reportPeriod: 'reportPeriod'

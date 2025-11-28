@@ -69,7 +69,7 @@ model IndicatorType {
 model ReportDownload {
   id           Int       @id @default(autoincrement())
   reportUuid   String
-  filePath     String
+  csvContent   Json
   requestUrl   String
   response     String
   reportPeriod String

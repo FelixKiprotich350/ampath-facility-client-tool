@@ -1,5 +1,7 @@
 import { prisma } from "./prisma";
 
+// the whole CSV as array of rows
+
 export async function addIndicator(
   facilityId: string,
   indicatorId: string,
@@ -22,7 +24,6 @@ export async function addLineList(
     data: { facilityId, patientId, data },
   });
 }
- 
 
 export async function getUnsyncedReports() {
   return prisma.reportDownload.findMany({
@@ -36,11 +37,10 @@ export async function markIndicatorsAsSynced(ids: number[]) {
     data: { synced: true, syncedAt: new Date() },
   });
 }
- 
 
 export async function addReportDownload(
   reportUuid: string,
-  filePath: string,
+  csvContent: any,
   requestUrl: string,
   response: string,
   period: string,
@@ -49,7 +49,7 @@ export async function addReportDownload(
   return prisma.reportDownload.create({
     data: {
       reportUuid,
-      filePath,
+      csvContent,
       requestUrl,
       response,
       reportPeriod: period,

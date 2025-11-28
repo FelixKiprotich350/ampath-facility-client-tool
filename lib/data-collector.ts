@@ -3,14 +3,569 @@ import { addIndicator, addLineList, addReportDownload } from "./local-db";
 import { chromium, Browser, BrowserContext, Page } from "playwright";
 import * as fs from "fs";
 import * as path from "path";
+import { parse } from "csv-parse/sync";
+
+type ReportType = {
+  kenyaEmrReportUuid: string;
+  name?: string;
+  [k: string]: any;
+};
 
 let sharedBrowser: Browser | null = null;
 let sharedContext: BrowserContext | null = null;
+let sharedPage: Page | null = null;
 let isLoggedIn = false;
 
+/**
+ * ---------- CONFIG ----------
+ */
+const DOWNLOAD_DIR = path.join(process.cwd(), "downloads");
+const REPORT_POLL_INTERVAL_MS = 5000;
+const REPORT_POLL_MAX_ITER = 60; // ~5 minutes by default (60 * 5s)
+const DOWNLOAD_RETRY = 5;
+const DOWNLOAD_RETRY_DELAY_MS = 5000;
 
+/**
+ * Initialize browser and context (singletons).
+ */
+async function initBrowser(headless = true) {
+  if (!sharedBrowser) {
+    sharedBrowser = await chromium.launch({ headless });
+    sharedContext = await sharedBrowser.newContext();
+  }
+}
+
+/**
+ * Get a single reusable page (creates/returns sharedPage)
+ */
+async function getPage(): Promise<Page> {
+  if (!sharedContext) {
+    await initBrowser();
+  }
+  if (!sharedPage) {
+    sharedPage = await sharedContext!.newPage();
+  }
+  return sharedPage!;
+}
+
+/**
+ * Login to KenyaEMR SPA if not already logged in.
+ * Uses standard selectors but tries to be resilient.
+ */
+async function ensureLoggedIn() {
+  if (isLoggedIn && sharedPage) return sharedPage;
+
+  const page = await getPage();
+  const server = process.env.KENYAEMR_SERVER;
+  if (!server) throw new Error("KENYAEMR_SERVER env var not set");
+
+  const username = process.env.KENYAEMR_API_USERNAME;
+  const password = process.env.KENYAEMR_API_PASSWORD;
+  if (!username || !password) {
+    throw new Error("KENYAEMR_API_USERNAME / KENYAEMR_API_PASSWORD required");
+  }
+
+  // Navigate to login page
+  await page.goto(`${server}/spa/login`, { waitUntil: "networkidle" });
+
+  // Fill credentials (try multiple possible selectors)
+  try {
+    await page.fill('input[name="username"]', username);
+  } catch {
+    await page.fill('input[type="text"]', username);
+  }
+
+  try {
+    await page.fill('input[name="password"]', password);
+  } catch {
+    await page.fill('input[type="password"]', password);
+  }
+
+  // Submit the form (try button or input)
+  const submitBtn = page.locator(
+    'button[type="submit"], input[type="submit"], button:has-text("Login")'
+  );
+  await Promise.all([
+    submitBtn
+      .first()
+      .click()
+      .catch(() =>
+        page.evaluate(() =>
+          (document.querySelector("form") as HTMLFormElement)?.submit()
+        )
+      ),
+    page
+      .waitForNavigation({ waitUntil: "networkidle", timeout: 30_000 })
+      .catch(() => null),
+  ]);
+
+  // If location selection appears, choose the first available
+  const locationRadio = page.locator("label.cds--radio-button__label").first();
+  if (await locationRadio.isVisible().catch(() => false)) {
+    await locationRadio.click().catch(() => null);
+    const confirmBtn = page.locator(
+      'button:has-text("Confirm"), input[value="Confirm"], button[type="submit"]'
+    );
+    await Promise.all([
+      confirmBtn
+        .first()
+        .click()
+        .catch(() => null),
+      page
+        .waitForNavigation({ waitUntil: "networkidle", timeout: 20_000 })
+        .catch(() => null),
+    ]);
+  }
+
+  isLoggedIn = true;
+  return page;
+}
+
+/**
+ * Helper: capture requestId emitted by page responses.
+ * Listens for responses with requestReport.action or reportUuid and extracts an "id" using regex.
+ * Returns the first id found or null.
+ */
+async function captureRequestIdOnce(
+  page: Page,
+  timeoutMs = 15_000
+): Promise<number | null> {
+  return new Promise((resolve) => {
+    let resolved = false;
+    const onResponse = async (response: any) => {
+      try {
+        const url = response.url();
+        if (
+          !url.includes("requestReport.action") &&
+          !url.includes("reportUuid")
+        )
+          return;
+
+        const text = await response.text().catch(() => "");
+        // Look for JSON-like id:  { "id": 123 } possibly embedded in HTML
+        const match =
+          text.match(/"id"\s*:\s*(\d+)/i) ||
+          text.match(/id\s*=\s*(\d+)/i) ||
+          text.match(/"requestId"\s*:\s*(\d+)/i);
+        if (match) {
+          const id = parseInt(match[1], 10);
+          if (!isNaN(id) && !resolved) {
+            resolved = true;
+            page.removeListener("response", onResponse);
+            resolve(id);
+          }
+        }
+      } catch {
+        // ignore parsing errors
+      }
+    };
+
+    page.on("response", onResponse);
+
+    // timeout fallback
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        page.removeListener("response", onResponse);
+        resolve(null);
+      }
+    }, timeoutMs);
+  });
+}
+
+/**
+ * Poll the report status endpoint until it is completed or failed.
+ * Returns true when completed, throws on failure or timeout.
+ */
+async function waitForReportReady(requestId: number, cookieString: string) {
+  const server = process.env.KENYAEMR_SERVER;
+  if (!server) throw new Error("KENYAEMR_SERVER env var not set");
+
+  const statusUrl = `${server}/kenyaemr/reportStatus.action?request=${requestId}`;
+
+  for (let i = 0; i < REPORT_POLL_MAX_ITER; i++) {
+    try {
+      const res = await fetch(statusUrl, {
+        headers: {
+          Cookie: cookieString,
+          Accept: "text/plain, text/html, application/json",
+          "User-Agent": "Mozilla/5.0 (Playwright)",
+        },
+      });
+      const text = await res.text();
+
+      // Adjust detection to how your server reports states.
+      // Look for common words like COMPLETED / FAILED or status field
+      if (
+        /COMPLETED|SUCCESS/i.test(text) ||
+        /"status"\s*:\s*"COMPLETED"/i.test(text)
+      ) {
+        return true;
+      }
+      if (/FAILED|ERROR/i.test(text) || /"status"\s*:\s*"FAILED"/i.test(text)) {
+        throw new Error(`Report generation failed for request ${requestId}`);
+      }
+    } catch (err) {
+      // continue to retry until max iterations
+      console.warn("Status check error:", (err as Error).message);
+    }
+
+    await new Promise((r) => setTimeout(r, REPORT_POLL_INTERVAL_MS));
+  }
+
+  throw new Error(
+    `Report not ready after ${
+      (REPORT_POLL_MAX_ITER * REPORT_POLL_INTERVAL_MS) / 1000
+    }s`
+  );
+}
+async function waitForReportReadyNew(
+  reportUuid: string,
+  requestId: number,
+  cookieString: string
+): Promise<{ status: "COMPLETED" | "FAILED"; error: string | null }> {
+  const server = process.env.KENYAEMR_SERVER;
+  if (!server) throw new Error("KENYAEMR_SERVER env var required for polling");
+
+  const statusUrl = `${server}/kenyaemr/report/reportUtils/getFinishedRequests.action?reportUuid=${reportUuid}&`;
+
+  for (let i = 0; i < REPORT_POLL_MAX_ITER; i++) {
+    try {
+      const res = await fetch(statusUrl, {
+        headers: {
+          Cookie: cookieString,
+          Accept: "application/json,text/plain,*/*",
+          "User-Agent": "Mozilla/5.0 (Playwright)",
+        },
+      });
+
+      if (!res.ok) {
+        console.log(`Status check failed HTTP ${res.status}`);
+        continue;
+      }
+
+      const json = await res.json().catch(() => []);
+      if (Array.isArray(json) && json.length > 0) {
+        const request = json.find(
+          (r) => r.status === "COMPLETED" && r.id === requestId
+        );
+        if (request) {
+          return { status: "COMPLETED", error: null };
+        }
+      }
+    } catch (err) {
+      console.log(`Status check error: ${(err as Error).message}`);
+    }
+
+    await new Promise((r) => setTimeout(r, REPORT_POLL_INTERVAL_MS));
+  }
+
+  // If loop exits without finding the completed request
+  return { status: "FAILED", error: "timeout" };
+}
+
+/**
+ * Download the report CSV using session cookies and retry logic.
+ * Returns absolute file path.
+ */
+async function downloadReportCsv(downloadUrl: string, cookieString: string) {
+  let lastErr: any = null;
+
+  for (let attempt = 1; attempt <= DOWNLOAD_RETRY; attempt++) {
+    try {
+      const res = await fetch(downloadUrl, {
+        headers: {
+          Cookie: cookieString,
+          Accept: "text/csv,application/csv,*/*",
+          Referer: downloadUrl,
+          "User-Agent": "Mozilla/5.0 (Playwright)",
+        },
+      });
+
+      if (!res.ok) {
+        lastErr = new Error(`HTTP ${res.status} ${res.statusText}`);
+        console.warn(`Download attempt ${attempt} failed: ${lastErr.message}`);
+        if (attempt < DOWNLOAD_RETRY)
+          await new Promise((r) => setTimeout(r, DOWNLOAD_RETRY_DELAY_MS));
+        continue;
+      }
+
+      const contentType = (res.headers.get("content-type") || "").toLowerCase();
+      if (
+        !contentType.includes("text/csv") &&
+        !contentType.includes("application/csv")
+      ) {
+        throw new Error(`Downloaded content-type is not CSV: ${contentType}`);
+      }
+
+      const buffer = Buffer.from(await res.arrayBuffer());
+
+      // Quick HTML sanity check
+      const head = buffer.toString("utf8", 0, 200).toLowerCase();
+      if (head.includes("<!doctype html") || head.includes("<html")) {
+        throw new Error("Downloaded file appears to be HTML, not CSV");
+      }
+
+      // Parse CSV in memory
+      const csvText = buffer.toString("utf8");
+      const records = parse(csvText, {
+        columns: false, // dynamic columns
+        skip_empty_lines: true,
+        trim: false,
+      });
+
+      const csvContent = records.map((row: string[]) => {
+        const obj: Record<string, string> = {};
+        row.forEach((value, index) => {
+          obj[`column${index}`] = value;
+        });
+        return obj;
+      });
+
+      return {
+        status: `${res.status} ${res.statusText}`,
+        data: csvContent,
+      };
+    } catch (err) {
+      lastErr = err;
+      console.warn(
+        `Download attempt ${attempt} error: ${(err as Error).message}`
+      );
+      if (attempt < DOWNLOAD_RETRY)
+        await new Promise((r) => setTimeout(r, DOWNLOAD_RETRY_DELAY_MS));
+    }
+  }
+
+  throw lastErr || new Error("Failed to download report after retries");
+}
+
+/**
+ * Request a single report using the Playwright page.
+ * This implements the robust flow:
+ *  - navigate to report page
+ *  - click to open dialog
+ *  - fill date or month
+ *  - click request and capture requestId
+ *  - poll until report ready
+ *  - download csv using session cookies
+ */
+export async function getSingleReport(
+  page: Page,
+  report: ReportType,
+  reportPageBase: string
+) {
+  const startTime = Date.now();
+  const server = process.env.KENYAEMR_SERVER;
+  if (!server) throw new Error("KENYAEMR_SERVER env var not set");
+
+  try {
+    const reportHomePath = `${server}/kenyaemr/reports/reportsHome.page`;
+    const reportPageUrl = `${reportPageBase}?appId=kenyaemr.reports&reportUuid=${
+      report.kenyaEmrReportUuid
+    }&returnUrl=${encodeURIComponent(reportHomePath)}`;
+
+    console.log("Navigating to report page:", reportPageUrl);
+    await page.goto(reportPageUrl, { waitUntil: "networkidle" });
+
+    // Click Request report (try robust locators)
+    const requestMenu = page.locator("div.ke-menu-item", {
+      hasText: "Request",
+    });
+    if (await requestMenu.count()) {
+      await requestMenu
+        .first()
+        .click()
+        .catch(() => null);
+    } else {
+      // fallback to calling the JS function if exposed
+      await page.evaluate(() => {
+        try {
+          // @ts-ignore
+          if (typeof requestReport === "function") requestReport();
+        } catch {}
+      });
+    }
+
+    // Detect if dialog expects a Date Range or Month
+    const isDateRange = await page
+      .locator('div.ke-field-label:has-text("Date Range")')
+      .isVisible()
+      .catch(() => false);
+    const isMonth = await page
+      .locator('div.ke-field-label:has-text("Month")')
+      .isVisible()
+      .catch(() => false);
+
+    const startdate = "01-Jan-25";
+    const enddate = "31-Jan-25";
+    let reportMonth: string | null = null;
+
+    if (isDateRange) {
+      // Try multiple possible selectors for date inputs
+      try {
+        await page.fill("#startDate_date", startdate);
+        await page.fill("#endDate_date", enddate);
+      } catch {
+        // fallback selectors
+        await page.fill('input[name="startDate"]', startdate).catch(() => null);
+        await page.fill('input[name="endDate"]', enddate).catch(() => null);
+      }
+    } else if (isMonth) {
+      // select last option (usually the latest)
+      reportMonth = await page
+        .$eval("select:first-of-type", (sel: HTMLSelectElement) => {
+          const opts = Array.from(sel.options).filter(
+            (o) => o.value && o.value.trim() !== ""
+          );
+          const opt = opts[opts.length - 1] || sel.options[0];
+          return opt.value;
+        })
+        .catch(() => null);
+      if (reportMonth)
+        await page
+          .selectOption("select:first-of-type", reportMonth)
+          .catch(() => null);
+    }
+
+    // Prepare to capture requestId
+    const capturePromise = captureRequestIdOnce(page, 20_000);
+
+    // Click Request/Submit on dialog
+    const submitBtn = page.locator(
+      'button[id*="btn"]:has-text("Request"), button:has-text("Request"), input[value="Request"]'
+    );
+    await Promise.all([
+      submitBtn
+        .first()
+        .click()
+        .catch(() => null),
+      // The submit may not trigger navigation; we rely on response listener instead
+    ]);
+
+    const capturedId = await capturePromise;
+    if (!capturedId) {
+      // give a short additional wait then try to find request id via page content
+      await page.waitForTimeout(3000);
+      // try scanning page HTML for id
+      const html = await page.content();
+      const match =
+        html.match(/"id"\s*:\s*(\d+)/i) || html.match(/request\s*:\s*(\d+)/i);
+      if (match) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (capturedId as number) = parseInt(match[1], 10);
+      }
+    }
+
+    const requestId = capturedId;
+    if (!requestId) {
+      throw new Error(
+        "Failed to capture request ID after submitting report request"
+      );
+    }
+
+    console.log("Captured request ID:", requestId);
+
+    // Build download URL
+    const downloadUrl = `${server}/kenyaemr/reportExport.page?appId=kenyaemr.reports&request=${requestId}&type=csv`;
+
+    // Get cookies to use with fetch
+    const cookies = (await sharedContext!.cookies())
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
+
+    // Wait for report ready by polling the status endpoint
+    console.log("Polling report status for completion...");
+    const requeststatus = await waitForReportReadyNew(
+      report.kenyaEmrReportUuid,
+      requestId,
+      cookies
+    );
+
+    if (requeststatus.status !== "COMPLETED") {
+      throw new Error(
+        `Report generation failed: ${requeststatus.error || "unknown error"}`
+      );
+    }
+    // Download CSV using session cookies and retry logic
+    console.log("Downloading report:", downloadUrl);
+    const { data, status } = await downloadReportCsv(downloadUrl, cookies);
+
+    // Read CSV to count records reliably (skip header)
+    const csvContent = JSON.stringify(data);
+
+    const recordCount = Math.max(0, csvContent.length - 1);
+
+    const duration = isDateRange
+      ? `${startdate} to ${enddate}`
+      : reportMonth || "N/A";
+
+    await addReportDownload(
+      report.kenyaEmrReportUuid,
+      csvContent,
+      downloadUrl,
+      status,
+      duration,
+      recordCount
+    );
+
+    console.log(
+      `Report ${report.kenyaEmrReportUuid} saved: (${recordCount} records)`
+    );
+
+    return { records: recordCount, message: "success" };
+  } catch (error) {
+    console.error("Data collection failed:", (error as Error).message);
+    throw error;
+  } finally {
+    // small delay to avoid hammering the server
+    await new Promise((r) => setTimeout(r, 500));
+  }
+}
+
+/**
+ * collectFromBrowser - iterate reports and call getSingleReport
+ */
+export async function collectFromBroswer() {
+  try {
+    const page = await ensureLoggedIn();
+    console.log("Logged in. Navigating reports...");
+
+    const reportPageUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/report.page`;
+    const reports = await getReportsList();
+
+    console.log(`Found ${reports.length} report types to process.`);
+    const results: any[] = [];
+    const errors: any[] = [];
+
+    for (const report of reports) {
+      try {
+        const result = await getSingleReport(page, report, reportPageUrl);
+        results.push({ uuid: report.kenyaEmrReportUuid, result });
+      } catch (error) {
+        console.error(
+          `Failed to process report ${report.kenyaEmrReportUuid}:`,
+          (error as Error).message
+        );
+        errors.push({
+          uuid: report.kenyaEmrReportUuid,
+          error: (error as Error).message,
+        });
+      }
+    }
+
+    return { completed: results.length, results, errors };
+  } catch (error) {
+    console.error("Playwright collection failed:", (error as Error).message);
+    throw error;
+  }
+}
+
+/**
+ * collectLineList - improved but mostly the same as your original
+ */
 export async function collectLineList() {
   try {
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const lineList = (await fetchFromKenyaEMRDatabase(
       `SELECT 
         f.uuid as facility_id,
@@ -24,7 +579,7 @@ export async function collectLineList() {
       JOIN encounter e ON p.patient_id = e.patient_id
       JOIN location f ON e.location_id = f.location_id
       WHERE e.encounter_datetime > ?`,
-      [new Date(Date.now() - 24 * 60 * 60 * 1000)]
+      [yesterday]
     )) as any[];
 
     for (const record of lineList) {
@@ -39,242 +594,65 @@ export async function collectLineList() {
 
     return { collected: lineList.length, type: "lineList" };
   } catch (error) {
-    console.error("Line list collection failed:", error);
+    console.error("Line list collection failed:", (error as Error).message);
     throw error;
   }
 }
 
-export async function getReportsList() {
+/**
+ * getReportsList - fetch report types from API
+ */
+export async function getReportsList(): Promise<ReportType[]> {
   try {
     const serverUrl = process.env.SERVER_URL;
-    const response = await fetch(`${serverUrl}/report-types`);
+    if (!serverUrl) {
+      console.warn("SERVER_URL not set - returning empty reports list");
+      return [];
+    }
+    const response = await fetch(`${serverUrl}/report-types`, {
+      headers: { Accept: "application/json" },
+    });
     const reports = await response.json();
-    return reports ?? [];
+    return Array.isArray(reports) ? reports : [];
   } catch (error) {
-    console.error("Failed to fetch reports types:", error);
+    console.error("Failed to fetch reports types:", (error as Error).message);
     return [];
   }
 }
-async function getAuthenticatedPage(): Promise<Page> {
-  if (!sharedBrowser) {
-    sharedBrowser = await chromium.launch({ headless: true });
-    sharedContext = await sharedBrowser.newContext();
-  }
 
-  const page = await sharedContext!.newPage();
-
-  if (!isLoggedIn) {
-    await page.goto(`${process.env.KENYAEMR_SERVER}/spa/login`);
-    await page.fill(
-      'input[name="username"]',
-      process.env.KENYAEMR_API_USERNAME!
-    );
-    await page.fill(
-      'input[name="password"]',
-      process.env.KENYAEMR_API_PASSWORD!
-    );
-    await page.click('button[type="submit"], input[type="submit"]');
-    await page.waitForNavigation();
-
-    // Check if location selection is needed
-    const locationRadio = await page
-      .locator("label.cds--radio-button__label")
-      .first();
-    if (await locationRadio.isVisible()) {
-      await page.click("label.cds--radio-button__label:first-of-type");
-      await page.click(
-        'button:has-text("Confirm"), input[value="Confirm"], button[type="submit"]'
-      );
-    }
-
-    isLoggedIn = true;
-  }
-
-  return page;
-}
-
-export async function collectFromBroswer() {
+/**
+ * cleanup - close browser and clear shared instances
+ */
+export async function cleanup() {
   try {
-    const page = await getAuthenticatedPage();
-    console.log("Login success Navigating to reports page...");
-    const reportPageUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/report.page`;
-    const reports = await getReportsList();
-
-    console.log(`Found ${reports.length} report types to process.`);
-    const results = [];
-    const errors = [];
-    for (const report of reports) {
-      try {
-        const result = await getSingleReport(page, report, reportPageUrl);
-        results.push({ uuid: report.kenyaEmrReportUuid, result: result });
-      } catch (error) {
-        console.error(
-          `Failed to process report ${report.kenyaEmrReportUuid}:`,
-          error
-        );
-        errors.push({ uuid: report.kenyaEmrReportUuid, error: error.message });
-      }
+    if (sharedPage) {
+      await sharedPage.close().catch(() => null);
+      sharedPage = null;
     }
-
-    return { completed: results.length, results, errors };
-  } catch (error) {
-    console.error("Playwright collection failed:", error);
-    throw error;
+    if (sharedContext) {
+      await sharedContext.close().catch(() => null);
+      sharedContext = null;
+    }
+    if (sharedBrowser) {
+      await sharedBrowser.close().catch(() => null);
+      sharedBrowser = null;
+    }
+    isLoggedIn = false;
+  } catch (err) {
+    console.warn("Error during cleanup:", (err as Error).message);
   }
 }
 
-export async function getSingleReport(
-  page: Page,
-  report: any,
-  reportPage: string
-) {
-  const startTime = Date.now();
-  try {
-    console.log("Processing report:", report.name);
-    const reportHomePath = `${process.env.KENYAEMR_SERVER}/kenyaemr/reports/reportsHome.page`;
-    const reportPageUrl = `${reportPage}?appId=kenyaemr.reports&reportUuid=${report.kenyaEmrReportUuid}&returnUrl=${reportHomePath}`;
-    await page.goto(reportPageUrl);
-    console.log("Navigated to report page:", reportPageUrl);
-
-    // Click Request report button
-    await page.click('div.ke-menu-item[onclick="requestReport()"]');
-
-    // Handle dialog - check if it's date range or month
-    const isDateRange = await page
-      .locator('div.ke-field-label:has-text("Date Range")')
-      .isVisible();
-    const isMonth = await page
-      .locator('div.ke-field-label:has-text("Month")')
-      .isVisible();
-
-    const startdate = "01-Jan-25";
-    const enddate = "31-Jan-25";
-    let reportMonth = null;
-    if (isDateRange) {
-      await page.fill("#startDate_date", startdate);
-      await page.fill("#endDate_date", enddate);
-    } else if (isMonth) {
-      reportMonth = await page.$eval(
-        "select:first-of-type",
-        (select: HTMLSelectElement) => {
-          return select.options[0].value;
-        }
-      );
-      await page.selectOption("select:first-of-type", reportMonth);
-    }
-
-    // Intercept API response to get request ID
-    let requestId: number | null = null;
-    page.on("response", async (response) => {
-      if (
-        response.url().includes("requestReport.action") ||
-        response.url().includes("reportUuid")
-      ) {
-        try {
-          const responseBody = await response.json();
-          if (responseBody && responseBody.id) {
-            requestId = responseBody.id;
-          }
-        } catch (e) {
-          // Response might not be JSON
-        }
-      }
-    });
-
-    await page.click('button[id*="btn"]:has-text("Request")');
-
-    console.log("Report requested, waiting for completion...");
-    // Wait for request ID to be captured
-    await page.waitForTimeout(5000);
-    console.log("Captured request ID:", requestId);
-    if (requestId === null) {
-      throw new Error("Failed to capture request ID");
-    }
-
-    // Poll for report completion
-    const downloadUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/reportExport.page?appId=kenyaemr.reports&request=${requestId}&type=csv`;
-
-    // Wait for report to be ready by polling the status
-    console.log("Waiting for report to be ready...");
-    await page.waitForTimeout(10000); // Wait 10 seconds for report generation
-
-    const downloadPath = path.join(process.cwd(), "downloads");
-    if (!fs.existsSync(downloadPath)) {
-      fs.mkdirSync(downloadPath, { recursive: true });
-    }
-
-    // Get cookies from the browser context
-    const cookies = await sharedContext!.cookies();
-    const cookieString = cookies.map((c) => `${c.name}=${c.value}`).join("; ");
-
-    // Download using fetch with session cookies and retry logic
-    console.log("Downloading with fetch:", downloadUrl);
-    let response;
-    let lastError;
-
-    for (let attempt = 1; attempt <= 5; attempt++) {
-      try {
-        response = await fetch(downloadUrl, {
-          headers: {
-            Cookie: cookieString,
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            Accept: "text/csv,application/csv,*/*",
-            Referer: reportPageUrl,
-          },
-        });
-
-        if (response.ok) {
-          const contentType = response.headers.get("content-type");
-          console.log(`Download successful, content-type: ${contentType}`);
-          break;
-        }
-
-        lastError = new Error(
-          `Download failed: ${response.status} ${response.statusText}`
-        );
-        console.log(`Attempt ${attempt} failed:`, lastError.message);
-
-        if (attempt < 5) {
-          await new Promise((resolve) => setTimeout(resolve, 5000));
-        }
-      } catch (error) {
-        lastError = error;
-        console.log(`Attempt ${attempt} failed:`, error.message);
-
-        if (attempt < 5) {
-          await new Promise((resolve) => setTimeout(resolve, 5000));
-        }
-      }
-    }
-
-    if (!response || !response.ok) {
-      throw lastError || new Error("Download failed after 5 attempts");
-    }
-
-    const fileBuffer = await response.arrayBuffer();
-    const filePath = path.join(downloadPath, `report-${Date.now()}.csv`);
-    fs.writeFileSync(filePath, Buffer.from(fileBuffer));
-    console.log("Downloaded file:", filePath);
-    const csvData = fs.readFileSync(filePath, "utf-8");
-    const lines = csvData.split("\n").filter((line) => line.trim());
-    const recordCount = lines.length - 1;
-
-    const duration = isDateRange ? `${startdate} to ${enddate}` : reportMonth;
-    const responseStatus = `${response.status} ${response.statusText}`;
-
-    await addReportDownload(
-      report.kenyaEmrReportUuid,
-      filePath,
-      downloadUrl,
-      responseStatus,
-      duration,
-      recordCount
-    );
-
-    return { records: recordCount, message: "suceess" };
-  } catch (error) {
-    console.error("Data collection failed:", error);
-    throw error;
-  }
-}
+/**
+ * Expose a graceful shutdown handler in case the process is terminated.
+ */
+process.on("SIGINT", async () => {
+  console.log("SIGINT received. Cleaning up...");
+  await cleanup();
+  process.exit(0);
+});
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received. Cleaning up...");
+  await cleanup();
+  process.exit(0);
+});

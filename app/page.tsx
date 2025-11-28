@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { IndicatorTypesPage } from "@/components/indicator-types-page";
@@ -26,12 +32,13 @@ interface ReportType {
 export default function Home() {
   const [activeTab, setActiveTab] = useState("home");
   const [status, setStatus] = useState("");
-  const [summary, setSummary] = useState<DataSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [facilityDetails, setFacilityDetails] = useState<{
     facilityName: string;
     lastSync: string;
-  }>();
+    pendingData: number;
+    syncedData: number;
+  }>({ facilityName: "", lastSync: "", pendingData: 0, syncedData: 0 });
   const [pendingData, setPendingData] = useState<ReportDownload[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [syncHistory, setSyncHistory] = useState<ReportDownload[]>([]);
@@ -39,6 +46,11 @@ export default function Home() {
   const [masterReportList, setMasterReportList] = useState<ReportType[]>();
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [previewDialog, setPreviewDialog] = useState<{
+    open: boolean;
+    data: any[] | null;
+    reportName: string;
+  }>({ open: false, data: null, reportName: "" });
   useEffect(() => {
     const loadData = async () => {
       console.log("Loading master report list...");
@@ -47,9 +59,6 @@ export default function Home() {
     };
     fetchDashboard();
     loadData();
-    loadSummary();
-    const interval = setInterval(loadSummary, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -59,16 +68,6 @@ export default function Home() {
       loadSyncHistory();
     }
   }, [activeTab]);
-
-  const loadSummary = async () => {
-    try {
-      const response = await fetch("/api/status");
-      const data = await response.json();
-      setSummary(data);
-    } catch {
-      setStatus("Failed to load data summary");
-    }
-  };
 
   const loadPendingData = async () => {
     setPendingLoading(true);
@@ -104,7 +103,6 @@ export default function Home() {
       const result = await response.json();
       if (result.success) {
         setStatus(`✅ Sync completed: ${result.count} records synced`);
-        loadSummary();
         if (activeTab === "pending") loadPendingData();
         if (activeTab === "history") loadSyncHistory();
       } else {
@@ -122,8 +120,13 @@ export default function Home() {
     const now = new Date();
     for (let i = 0; i < 12; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const displayName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      const monthYear = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}`;
+      const displayName = date.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
       months.push({ value: monthYear, label: displayName });
     }
     return months;
@@ -135,11 +138,16 @@ export default function Home() {
 
   const handleCollect = async (source: string, month?: string) => {
     setLoading(true);
-    setStatus(`🔍 Collecting from ${source}${month ? ` for ${month}` : ''}...`);
+    setStatus(`🔍 Collecting from ${source}${month ? ` for ${month}` : ""}...`);
     try {
       const response = await fetch("/api/collect", {
         method: "POST",
-        body: JSON.stringify({ source, apiUrl: "", dataType: "indicators", month }),
+        body: JSON.stringify({
+          source,
+          apiUrl: "",
+          dataType: "indicators",
+          month,
+        }),
         headers: { "Content-Type": "application/json" },
       });
       const result = await response.json();
@@ -150,7 +158,6 @@ export default function Home() {
       } else {
         setStatus(`✅ Collected ${result.collected} ${result.type} records`);
       }
-      loadSummary();
       setShowMonthPicker(false);
       setSelectedMonth("");
     } catch (error) {
@@ -167,6 +174,29 @@ export default function Home() {
       const result = await response.json();
       setFacilityDetails(result);
     } catch {}
+  };
+
+  const handlePreview = async (item: ReportDownload) => {
+    try {
+      const reportName =
+        masterReportList?.find((k) => k.kenyaEmrReportUuid === item.reportUuid)
+          ?.name || "Unknown Report";
+
+      // Normalize CSV content
+      let data: any[] = [];
+      if (Array.isArray(item.csvContent)) {
+        // Already parsed JSON
+        data = item.csvContent;
+      } else if (typeof item.csvContent === "string") {
+        // Stored as JSON string in DB
+        data = JSON.parse(item.csvContent);
+      }
+
+      setPreviewDialog({ open: true, data, reportName });
+    } catch (err) {
+      console.error(err);
+      setStatus("❌ Failed to preview data");
+    }
   };
 
   const getPageTitle = () => {
@@ -206,7 +236,7 @@ export default function Home() {
           {activeTab === "home" && (
             <div className="space-y-6">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {summary ? (
+                {facilityDetails ? (
                   <>
                     <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 shadow-lg hover:shadow-xl transition-shadow">
                       <CardHeader className="pb-3">
@@ -221,7 +251,7 @@ export default function Home() {
                         <div className="space-y-2">
                           <div className="flex items-end gap-2">
                             <span className="text-4xl font-bold text-orange-700">
-                              {summary.pendingReports.total}
+                              {facilityDetails.pendingData}
                             </span>
                             <span className="text-sm text-orange-600 mb-1">
                               reports
@@ -247,7 +277,7 @@ export default function Home() {
                         <div className="space-y-2">
                           <div className="flex items-end gap-2">
                             <span className="text-4xl font-bold text-green-700">
-                              {summary.syncedReports.total}
+                              {facilityDetails.syncedData}
                             </span>
                             <span className="text-sm text-green-600 mb-1">
                               reports
@@ -317,20 +347,13 @@ export default function Home() {
                     >
                       <span className="mr-2">🔍</span> Collect Data
                     </Button>
-
-                    <Button
-                      onClick={loadSummary}
-                      disabled={loading}
-                      variant="ghost"
-                      className="h-12"
-                    >
-                      <span className="mr-2">🔄</span> Refresh
-                    </Button>
                   </div>
 
                   {showMonthPicker && (
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
-                      <h4 className="font-medium text-gray-900 mb-3">Select Month and Year</h4>
+                      <h4 className="font-medium text-gray-900 mb-3">
+                        Select Month and Year
+                      </h4>
                       <div className="flex gap-3 items-end">
                         <div className="flex-1">
                           <select
@@ -442,18 +465,21 @@ export default function Home() {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Period
                           </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {pendingData.map((item) => (
                           <tr key={item.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {masterReportList.find(
+                              {masterReportList?.find(
                                 (k) => k.kenyaEmrReportUuid === item.reportUuid
                               )?.name || "Unknown Report"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {masterReportList.find(
+                              {masterReportList?.find(
                                 (k) => k.kenyaEmrReportUuid === item.reportUuid
                               )?.reportType || "Unknown Report"}
                             </td>
@@ -466,9 +492,16 @@ export default function Home() {
                               {item.reportPeriod}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                ⏳ Pending
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  onClick={() => handlePreview(item)}
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  👁️ Preview
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -587,6 +620,64 @@ export default function Home() {
           )}
         </main>
       </div>
+
+      <Dialog
+        open={previewDialog.open}
+        onOpenChange={(open) => setPreviewDialog({ ...previewDialog, open })}
+      >
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Preview: {previewDialog.reportName}</DialogTitle>
+            <Button
+              onClick={() =>
+                setPreviewDialog({ open: false, data: null, reportName: "" })
+              }
+              variant="outline"
+              size="sm"
+            >
+              ✕ Close
+            </Button>
+          </DialogHeader>
+          <div className="mt-4">
+            {previewDialog.data && previewDialog.data.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {Object.keys(previewDialog.data[0]).map((key) => (
+                        <th
+                          key={key}
+                          className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                        >
+                          {key}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {previewDialog.data.map((row, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        {Object.values(row).map((value, i) => (
+                          <td
+                            key={i}
+                            className="px-3 py-2 whitespace-nowrap text-xs text-gray-900"
+                          >
+                            {value?.toString() || ""}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">
+                No data available
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
