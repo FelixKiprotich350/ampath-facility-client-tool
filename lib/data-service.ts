@@ -12,12 +12,12 @@ export async function syncLocalData(targetUrl: string) {
 
     if (lineList.length > 0) {
       const formData = new FormData();
-      const csvFile = readFileSync(report.filePath);
-      formData.append(
-        "file",
-        new Blob([csvFile], { type: "text/csv" }),
-        "report.csv"
-      );
+      // const csvFile = readFileSync(report.filePath);
+      // formData.append(
+      //   "file",
+      //   new Blob([csvFile], { type: "text/csv" }),
+      //   "report.csv"
+      // );
       formData.append("reportTypeId", report.reportUuid);
 
       const response = await fetch(targetUrl, {
