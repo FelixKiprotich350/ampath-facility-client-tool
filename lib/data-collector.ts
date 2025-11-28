@@ -3,7 +3,6 @@ import { addIndicator, addLineList, addReportDownload } from "./local-db";
 import { chromium, Browser, BrowserContext, Page } from "playwright";
 import * as fs from "fs";
 import * as path from "path";
-import getReportsList, { KenyaEMRReport } from "./masterReportList";
 
 let sharedBrowser: Browser | null = null;
 let sharedContext: BrowserContext | null = null;
@@ -78,6 +77,17 @@ export async function collectLineList() {
   }
 }
 
+export async function getReportsList() {
+  try {
+    const serverUrl = process.env.SERVER_URL;
+    const response = await fetch(`${serverUrl}/report-types`);
+    const reports = await response.json();
+    return reports ?? [];
+  } catch (error) {
+    console.error("Failed to fetch reports types:", error);
+    return [];
+  }
+}
 async function getAuthenticatedPage(): Promise<Page> {
   if (!sharedBrowser) {
     sharedBrowser = await chromium.launch({ headless: true });
@@ -123,15 +133,19 @@ export async function collectFromBroswer() {
     const reportPageUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/report.page`;
     const reports = await getReportsList();
 
+    console.log(`Found ${reports.length} report types to process.`);
     const results = [];
     const errors = [];
     for (const report of reports) {
       try {
         const result = await getSingleReport(page, report, reportPageUrl);
-        results.push({ uuid: report.uuid, result: result });
+        results.push({ uuid: report.kenyaEmrReportUuid, result: result });
       } catch (error) {
-        console.error(`Failed to process report ${report.uuid}:`, error);
-        errors.push({ uuid: report.uuid, error: error.message });
+        console.error(
+          `Failed to process report ${report.kenyaEmrReportUuid}:`,
+          error
+        );
+        errors.push({ uuid: report.kenyaEmrReportUuid, error: error.message });
       }
     }
 
@@ -144,16 +158,16 @@ export async function collectFromBroswer() {
 
 export async function getSingleReport(
   page: Page,
-  report: KenyaEMRReport,
+  report: any,
   reportPage: string
 ) {
   const startTime = Date.now();
   try {
+    console.log("Processing report:", report.name);
     const reportHomePath = `${process.env.KENYAEMR_SERVER}/kenyaemr/reports/reportsHome.page`;
-    const reportPageUrl = `${reportPage}?appId=kenyaemr.reports&reportUuid=${report.uuid}&returnUrl=${reportHomePath}`;
+    const reportPageUrl = `${reportPage}?appId=kenyaemr.reports&reportUuid=${report.kenyaEmrReportUuid}&returnUrl=${reportHomePath}`;
     await page.goto(reportPageUrl);
     console.log("Navigated to report page:", reportPageUrl);
-    // await page.click(`div.ke-stack-item[onclick*="${reportUuid}"]`);
 
     // Click Request report button
     await page.click('div.ke-menu-item[onclick="requestReport()"]');
@@ -204,7 +218,7 @@ export async function getSingleReport(
 
     console.log("Report requested, waiting for completion...");
     // Wait for request ID to be captured
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(5000);
     console.log("Captured request ID:", requestId);
     if (requestId === null) {
       throw new Error("Failed to capture request ID");
@@ -212,7 +226,7 @@ export async function getSingleReport(
 
     // Poll for report completion
     const downloadUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/reportExport.page?appId=kenyaemr.reports&request=${requestId}&type=csv`;
-    
+
     // Wait for report to be ready by polling the status
     console.log("Waiting for report to be ready...");
     await page.waitForTimeout(10000); // Wait 10 seconds for report generation
@@ -238,13 +252,13 @@ export async function getSingleReport(
             Cookie: cookieString,
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Accept": "text/csv,application/csv,*/*",
-            "Referer": reportPageUrl
+            Accept: "text/csv,application/csv,*/*",
+            Referer: reportPageUrl,
           },
         });
 
         if (response.ok) {
-          const contentType = response.headers.get('content-type');
+          const contentType = response.headers.get("content-type");
           console.log(`Download successful, content-type: ${contentType}`);
           break;
         }
@@ -283,7 +297,7 @@ export async function getSingleReport(
     const responseStatus = `${response.status} ${response.statusText}`;
 
     await addReportDownload(
-      report.uuid,
+      report.kenyaEmrReportUuid,
       filePath,
       downloadUrl,
       responseStatus,
@@ -297,4 +311,3 @@ export async function getSingleReport(
     throw error;
   }
 }
- 

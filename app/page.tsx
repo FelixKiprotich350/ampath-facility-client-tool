@@ -9,8 +9,8 @@ import { IndicatorTypesPage } from "@/components/indicator-types-page";
 import { ReportDownload } from "@/lib/prisma/client";
 
 interface DataSummary {
-  indicators: { total: number; unsynced: number };
-  lineList: { total: number; unsynced: number };
+  pendingReports: { total: number };
+  syncedReports: { total: number };
 }
 
 interface ReportType {
@@ -187,59 +187,53 @@ export default function Home() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {summary ? (
                   <>
-                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg hover:shadow-xl transition-shadow">
+                    <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 shadow-lg hover:shadow-xl transition-shadow">
                       <CardHeader className="pb-3">
                         <CardTitle className="flex items-center justify-between">
-                          <span className="flex items-center gap-2 text-blue-800">
-                            <span className="text-2xl">📊</span> Indicators
+                          <span className="flex items-center gap-2 text-orange-800">
+                            <span className="text-2xl">⏳</span> Pending Reports
                           </span>
-                          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                          <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">
                           <div className="flex items-end gap-2">
-                            <span className="text-4xl font-bold text-blue-700">
-                              {summary.indicators.total}
+                            <span className="text-4xl font-bold text-orange-700">
+                              {summary.pendingReports.total}
                             </span>
-                            <span className="text-sm text-blue-600 mb-1">
-                              total
+                            <span className="text-sm text-orange-600 mb-1">
+                              reports
                             </span>
                           </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Pending sync:</span>
-                            <span className="font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
-                              {summary.indicators.unsynced}
-                            </span>
+                          <div className="text-sm text-gray-600">
+                            Awaiting synchronization
                           </div>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg hover:shadow-xl transition-shadow">
+                    <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-lg hover:shadow-xl transition-shadow">
                       <CardHeader className="pb-3">
                         <CardTitle className="flex items-center justify-between">
-                          <span className="flex items-center gap-2 text-blue-800">
-                            <span className="text-2xl">📋</span> Line List
+                          <span className="flex items-center gap-2 text-green-800">
+                            <span className="text-2xl">✅</span> Synced Reports
                           </span>
-                          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">
                           <div className="flex items-end gap-2">
-                            <span className="text-4xl font-bold text-blue-700">
-                              {summary.lineList.total}
+                            <span className="text-4xl font-bold text-green-700">
+                              {summary.syncedReports.total}
                             </span>
-                            <span className="text-sm text-blue-600 mb-1">
-                              total
+                            <span className="text-sm text-green-600 mb-1">
+                              reports
                             </span>
                           </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Pending sync:</span>
-                            <span className="font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
-                              {summary.lineList.unsynced}
-                            </span>
+                          <div className="text-sm text-gray-600">
+                            Successfully synchronized
                           </div>
                         </div>
                       </CardContent>

@@ -24,7 +24,7 @@ export async function addLineList(
 }
  
 
-export async function getUnsyncedLineList() {
+export async function getUnsyncedReports() {
   return prisma.reportDownload.findMany({
     where: { synced: false },
   });
@@ -59,16 +59,13 @@ export async function addReportDownload(
 }
 
 export async function getDataSummary() {
-  const [indicators, lineList, unsyncedIndicators, unsyncedLineList] =
-    await Promise.all([
-      prisma.indicator.count(),
-      prisma.lineList.count(),
-      prisma.indicator.count({ where: { synced: false } }),
-      prisma.lineList.count({ where: { synced: false } }),
-    ]);
+  const [pendingReports, syncedReports] = await Promise.all([
+    prisma.reportDownload.count({ where: { synced: false } }),
+    prisma.reportDownload.count({ where: { synced: true } }),
+  ]);
 
   return {
-    indicators: { total: indicators, unsynced: unsyncedIndicators },
-    lineList: { total: lineList, unsynced: unsyncedLineList },
+    pendingReports: { total: pendingReports },
+    syncedReports: { total: syncedReports },
   };
 }

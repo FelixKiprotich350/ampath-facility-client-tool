@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getReportsList } from "@/lib/data-collector";
 
 export async function GET() {
   try {
-    const serverUrl = process.env.SERVER_URL;
-
-    const response = await fetch(`${serverUrl}/report-types`);
-    const reports = await response.json();
+    console.log("Fetching Report Types");
+    const reports = await getReportsList();
     return NextResponse.json(reports);
   } catch (error) {
     return NextResponse.json(

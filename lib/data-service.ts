@@ -1,14 +1,14 @@
-import { getUnsyncedLineList } from "./local-db";
+import { getUnsyncedReports } from "./local-db";
 import { readFileSync } from "fs";
 import { prisma } from "./prisma";
+import { error } from "console";
 
 export async function syncLocalData(targetUrl: string) {
+  let successfullSync = [];
+  let failedSync = [];
   try {
-    const facilityKey = process.env.FACILITY_KEY;
-
-    const lineList = await getUnsyncedLineList();
+    const lineList = await getUnsyncedReports();
     const report = lineList[0];
-    let syncedCount = 0;
 
     if (lineList.length > 0) {
       const formData = new FormData();
@@ -34,23 +34,23 @@ export async function syncLocalData(targetUrl: string) {
           where: { id: report.id },
           data: { synced: true, syncedAt: new Date() },
         });
-        syncedCount += 1;
+        successfullSync.push(report.id);
+      } else {
+        failedSync.push({ id: report.id, error: `HTTP ${response.status}` });
       }
     }
 
     return {
-      success: true,
-      message: "Sync completed",
-      count: syncedCount,
-      details: {
-        lineList: lineList.length,
-      },
+      successfullSync,
+      failedSync,
+      error: null,
     };
   } catch (error) {
     console.error("Sync failed:", error);
     return {
-      success: false,
-      error: "Sync failed",
+      successfullSync,
+      failedSync,
+      error: error,
     };
   }
 }
