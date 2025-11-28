@@ -4,7 +4,6 @@ import { getReportsList } from "@/lib/data-collector";
 
 export async function GET() {
   try {
-    console.log("Fetching Report Types");
     const reports = await getReportsList();
     return NextResponse.json(reports);
   } catch (error) {

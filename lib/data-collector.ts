@@ -56,6 +56,9 @@ async function ensureLoggedIn() {
   if (isLoggedIn && sharedPage) return sharedPage;
 
   const page = await getPage();
+  page.setDefaultNavigationTimeout(120000);
+  page.setDefaultTimeout(60000);
+
   const server = process.env.KENYAEMR_SERVER;
   if (!server) throw new Error("KENYAEMR_SERVER env var not set");
 
@@ -66,7 +69,7 @@ async function ensureLoggedIn() {
   }
 
   // Navigate to login page
-  await page.goto(`${server}/spa/login`, { waitUntil: "networkidle" });
+  await page.goto(`${server}/spa/login`, { waitUntil: "domcontentloaded" }); //not load
 
   // Fill credentials (try multiple possible selectors)
   try {
@@ -531,9 +534,11 @@ export async function collectFromBroswer() {
     console.log("Logged in. Navigating reports...");
 
     const reportPageUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/report.page`;
-    const reports = await getReportsList();
-
-    console.log(`Found ${reports.length} report types to process.`);
+    const all_reports = await getReportsList();
+    const reports = all_reports.filter((r) => r.isReporting == true);
+    console.log(
+      `Found ${all_reports.length} report types. Processing ${reports.length} reports.`
+    );
     const results: any[] = [];
     const errors: any[] = [];
 
