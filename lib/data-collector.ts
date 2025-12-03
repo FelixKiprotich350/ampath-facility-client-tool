@@ -609,7 +609,7 @@ export async function collectLineList() {
  */
 export async function getReportsList(): Promise<ReportType[]> {
   try {
-    const serverUrl = process.env.SERVER_URL;
+    const serverUrl = process.env.AMPATH_SERVER_URL;
     if (!serverUrl) {
       console.warn("SERVER_URL not set - returning empty reports list");
       return [];

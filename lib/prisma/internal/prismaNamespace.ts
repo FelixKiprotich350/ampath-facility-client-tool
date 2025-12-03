@@ -385,10 +385,12 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   Facility: 'Facility',
+  FacilityReportType: 'FacilityReportType',
   Indicator: 'Indicator',
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
-  ReportDownload: 'ReportDownload'
+  ReportDownload: 'ReportDownload',
+  AmepElementstMapping: 'AmepElementstMapping'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -404,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "facility" | "indicator" | "lineList" | "indicatorType" | "reportDownload"
+    modelProps: "facility" | "facilityReportType" | "indicator" | "lineList" | "indicatorType" | "reportDownload" | "amepElementstMapping"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -471,6 +473,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.FacilityCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.FacilityCountAggregateOutputType> | number
+        }
+      }
+    }
+    FacilityReportType: {
+      payload: Prisma.$FacilityReportTypePayload<ExtArgs>
+      fields: Prisma.FacilityReportTypeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FacilityReportTypeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacilityReportTypePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FacilityReportTypeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacilityReportTypePayload>
+        }
+        findFirst: {
+          args: Prisma.FacilityReportTypeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacilityReportTypePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FacilityReportTypeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacilityReportTypePayload>
+        }
+        findMany: {
+          args: Prisma.FacilityReportTypeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacilityReportTypePayload>[]
+        }
+        create: {
+          args: Prisma.FacilityReportTypeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacilityReportTypePayload>
+        }
+        createMany: {
+          args: Prisma.FacilityReportTypeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.FacilityReportTypeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacilityReportTypePayload>
+        }
+        update: {
+          args: Prisma.FacilityReportTypeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacilityReportTypePayload>
+        }
+        deleteMany: {
+          args: Prisma.FacilityReportTypeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FacilityReportTypeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.FacilityReportTypeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacilityReportTypePayload>
+        }
+        aggregate: {
+          args: Prisma.FacilityReportTypeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFacilityReportType>
+        }
+        groupBy: {
+          args: Prisma.FacilityReportTypeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FacilityReportTypeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FacilityReportTypeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FacilityReportTypeCountAggregateOutputType> | number
         }
       }
     }
@@ -738,6 +806,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AmepElementstMapping: {
+      payload: Prisma.$AmepElementstMappingPayload<ExtArgs>
+      fields: Prisma.AmepElementstMappingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AmepElementstMappingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AmepElementstMappingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+        }
+        findFirst: {
+          args: Prisma.AmepElementstMappingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AmepElementstMappingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+        }
+        findMany: {
+          args: Prisma.AmepElementstMappingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>[]
+        }
+        create: {
+          args: Prisma.AmepElementstMappingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+        }
+        createMany: {
+          args: Prisma.AmepElementstMappingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.AmepElementstMappingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+        }
+        update: {
+          args: Prisma.AmepElementstMappingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+        }
+        deleteMany: {
+          args: Prisma.AmepElementstMappingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AmepElementstMappingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.AmepElementstMappingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+        }
+        aggregate: {
+          args: Prisma.AmepElementstMappingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAmepElementstMapping>
+        }
+        groupBy: {
+          args: Prisma.AmepElementstMappingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AmepElementstMappingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AmepElementstMappingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AmepElementstMappingCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -788,6 +922,19 @@ export const FacilityScalarFieldEnum = {
 } as const
 
 export type FacilityScalarFieldEnum = (typeof FacilityScalarFieldEnum)[keyof typeof FacilityScalarFieldEnum]
+
+
+export const FacilityReportTypeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
+  reportType: 'reportType',
+  isReporting: 'isReporting',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FacilityReportTypeScalarFieldEnum = (typeof FacilityReportTypeScalarFieldEnum)[keyof typeof FacilityReportTypeScalarFieldEnum]
 
 
 export const IndicatorScalarFieldEnum = {
@@ -850,6 +997,21 @@ export const ReportDownloadScalarFieldEnum = {
 export type ReportDownloadScalarFieldEnum = (typeof ReportDownloadScalarFieldEnum)[keyof typeof ReportDownloadScalarFieldEnum]
 
 
+export const AmepElementstMappingScalarFieldEnum = {
+  id: 'id',
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
+  reportVariableName: 'reportVariableName',
+  dataElementId: 'dataElementId',
+  categoryOptionComboId: 'categoryOptionComboId',
+  attributeOptionComboId: 'attributeOptionComboId',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AmepElementstMappingScalarFieldEnum = (typeof AmepElementstMappingScalarFieldEnum)[keyof typeof AmepElementstMappingScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -906,6 +1068,15 @@ export const FacilityOrderByRelevanceFieldEnum = {
 export type FacilityOrderByRelevanceFieldEnum = (typeof FacilityOrderByRelevanceFieldEnum)[keyof typeof FacilityOrderByRelevanceFieldEnum]
 
 
+export const FacilityReportTypeOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid'
+} as const
+
+export type FacilityReportTypeOrderByRelevanceFieldEnum = (typeof FacilityReportTypeOrderByRelevanceFieldEnum)[keyof typeof FacilityReportTypeOrderByRelevanceFieldEnum]
+
+
 export const IndicatorOrderByRelevanceFieldEnum = {
   facilityId: 'facilityId',
   indicatorId: 'indicatorId',
@@ -944,6 +1115,18 @@ export const ReportDownloadOrderByRelevanceFieldEnum = {
 } as const
 
 export type ReportDownloadOrderByRelevanceFieldEnum = (typeof ReportDownloadOrderByRelevanceFieldEnum)[keyof typeof ReportDownloadOrderByRelevanceFieldEnum]
+
+
+export const AmepElementstMappingOrderByRelevanceFieldEnum = {
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
+  reportVariableName: 'reportVariableName',
+  dataElementId: 'dataElementId',
+  categoryOptionComboId: 'categoryOptionComboId',
+  attributeOptionComboId: 'attributeOptionComboId',
+  description: 'description'
+} as const
+
+export type AmepElementstMappingOrderByRelevanceFieldEnum = (typeof AmepElementstMappingOrderByRelevanceFieldEnum)[keyof typeof AmepElementstMappingOrderByRelevanceFieldEnum]
 
 
 
@@ -991,6 +1174,13 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'FacilityReportTypeCategory'
+ */
+export type EnumFacilityReportTypeCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FacilityReportTypeCategory'>
     
 
 
@@ -1080,10 +1270,12 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   facility?: Prisma.FacilityOmit
+  facilityReportType?: Prisma.FacilityReportTypeOmit
   indicator?: Prisma.IndicatorOmit
   lineList?: Prisma.LineListOmit
   indicatorType?: Prisma.IndicatorTypeOmit
   reportDownload?: Prisma.ReportDownloadOmit
+  amepElementstMapping?: Prisma.AmepElementstMappingOmit
 }
 
 /* Types for Logging */

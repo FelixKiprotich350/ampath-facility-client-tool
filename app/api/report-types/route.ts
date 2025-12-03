@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getReportsList } from "@/lib/data-collector";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const reports = await getReportsList();
-    return NextResponse.json(reports);
+    const reportTypes = await prisma.facilityReportType.findMany({});
+    return NextResponse.json(reportTypes);
   } catch (error) {
+    console.error("Error fetching reportTypes:", error);
     return NextResponse.json(
-      { error: "Failed to fetch Report Types" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
-
 export async function POST(request: NextRequest) {
   try {
     const { name, description, query, source, apiUrl } = await request.json();

@@ -52,10 +52,12 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Facility: 'Facility',
+  FacilityReportType: 'FacilityReportType',
   Indicator: 'Indicator',
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
-  ReportDownload: 'ReportDownload'
+  ReportDownload: 'ReportDownload',
+  AmepElementstMapping: 'AmepElementstMapping'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -85,6 +87,19 @@ export const FacilityScalarFieldEnum = {
 } as const
 
 export type FacilityScalarFieldEnum = (typeof FacilityScalarFieldEnum)[keyof typeof FacilityScalarFieldEnum]
+
+
+export const FacilityReportTypeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
+  reportType: 'reportType',
+  isReporting: 'isReporting',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FacilityReportTypeScalarFieldEnum = (typeof FacilityReportTypeScalarFieldEnum)[keyof typeof FacilityReportTypeScalarFieldEnum]
 
 
 export const IndicatorScalarFieldEnum = {
@@ -147,6 +162,21 @@ export const ReportDownloadScalarFieldEnum = {
 export type ReportDownloadScalarFieldEnum = (typeof ReportDownloadScalarFieldEnum)[keyof typeof ReportDownloadScalarFieldEnum]
 
 
+export const AmepElementstMappingScalarFieldEnum = {
+  id: 'id',
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
+  reportVariableName: 'reportVariableName',
+  dataElementId: 'dataElementId',
+  categoryOptionComboId: 'categoryOptionComboId',
+  attributeOptionComboId: 'attributeOptionComboId',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AmepElementstMappingScalarFieldEnum = (typeof AmepElementstMappingScalarFieldEnum)[keyof typeof AmepElementstMappingScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -203,6 +233,15 @@ export const FacilityOrderByRelevanceFieldEnum = {
 export type FacilityOrderByRelevanceFieldEnum = (typeof FacilityOrderByRelevanceFieldEnum)[keyof typeof FacilityOrderByRelevanceFieldEnum]
 
 
+export const FacilityReportTypeOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid'
+} as const
+
+export type FacilityReportTypeOrderByRelevanceFieldEnum = (typeof FacilityReportTypeOrderByRelevanceFieldEnum)[keyof typeof FacilityReportTypeOrderByRelevanceFieldEnum]
+
+
 export const IndicatorOrderByRelevanceFieldEnum = {
   facilityId: 'facilityId',
   indicatorId: 'indicatorId',
@@ -241,4 +280,16 @@ export const ReportDownloadOrderByRelevanceFieldEnum = {
 } as const
 
 export type ReportDownloadOrderByRelevanceFieldEnum = (typeof ReportDownloadOrderByRelevanceFieldEnum)[keyof typeof ReportDownloadOrderByRelevanceFieldEnum]
+
+
+export const AmepElementstMappingOrderByRelevanceFieldEnum = {
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
+  reportVariableName: 'reportVariableName',
+  dataElementId: 'dataElementId',
+  categoryOptionComboId: 'categoryOptionComboId',
+  attributeOptionComboId: 'attributeOptionComboId',
+  description: 'description'
+} as const
+
+export type AmepElementstMappingOrderByRelevanceFieldEnum = (typeof AmepElementstMappingOrderByRelevanceFieldEnum)[keyof typeof AmepElementstMappingOrderByRelevanceFieldEnum]
 

@@ -23,6 +23,11 @@ export * from './enums';
  */
 export type Facility = Prisma.FacilityModel
 /**
+ * Model FacilityReportType
+ * 
+ */
+export type FacilityReportType = Prisma.FacilityReportTypeModel
+/**
  * Model Indicator
  * 
  */
@@ -42,3 +47,8 @@ export type IndicatorType = Prisma.IndicatorTypeModel
  * 
  */
 export type ReportDownload = Prisma.ReportDownloadModel
+/**
+ * Model AmepElementstMapping
+ * 
+ */
+export type AmepElementstMapping = Prisma.AmepElementstMappingModel

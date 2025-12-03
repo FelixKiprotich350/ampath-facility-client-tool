@@ -9,8 +9,10 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/Facility'
+export type * from './models/FacilityReportType'
 export type * from './models/Indicator'
 export type * from './models/LineList'
 export type * from './models/IndicatorType'
 export type * from './models/ReportDownload'
+export type * from './models/AmepElementstMapping'
 export type * from './commonInputTypes'

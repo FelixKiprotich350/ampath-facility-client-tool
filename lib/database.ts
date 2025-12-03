@@ -36,3 +36,7 @@ export async function fetchFromKenyaEMRDatabase(
     await connection.end();
   }
 }
+
+export enum KENYAEMR_REPORTS {
+  DATIM_REPORT = "d6e5dd4c-e3f5-11e8-9f32-f2801f1b9fd1",
+}

@@ -25,6 +25,18 @@ model Facility {
   @@map("facilities")
 }
 
+model FacilityReportType {
+  id                 String                     @id @default(uuid())
+  name               String
+  kenyaEmrReportUuid String                     @unique
+  reportType         FacilityReportTypeCategory
+  isReporting        Boolean                    @default(true)
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+
+  @@map("facility_report_types")
+}
+
 model Indicator {
   id          Int       @id @default(autoincrement())
   facilityId  String
@@ -79,4 +91,24 @@ model ReportDownload {
   syncedAt     DateTime? @map("synced_at")
 
   @@map("report_downloads")
+}
+
+model AmepElementstMapping {
+  id                    Int      @id @default(autoincrement())
+  kenyaEmrReportUuid    String
+  reportVariableName    String
+  dataElementId         String
+  categoryOptionComboId String
+  attributeOptionComboId  String?
+  description           String?
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@unique([kenyaEmrReportUuid, reportVariableName, dataElementId, categoryOptionComboId])
+  @@map("data_element_mappings")
+}
+
+enum FacilityReportTypeCategory {
+  indicator
+  linelist
 }

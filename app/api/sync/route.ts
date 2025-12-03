@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { manualSync } from "@/lib/sync-scheduler";
-import { syncLocalData } from "@/lib/data-service";
+import { syncToAmep } from "@/lib/data-service";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    const SYNC_URL = process.env.SERVER_URL;
-    const facilityId = process.env.FACILITY_ID;
-    const result = await syncLocalData(
-      `${SYNC_URL}/facility-report/${facilityId}`
-    );
+    const body = await request.json().catch(() => ({}));
+    const { username, password } = body;
+
+    const result = await syncToAmep("202509", username, password);
     if (result.error) {
       return NextResponse.json({ result }, { status: 500 });
     }

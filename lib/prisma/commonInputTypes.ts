@@ -226,6 +226,23 @@ export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
 }
 
+export type EnumFacilityReportTypeCategoryFilter<$PrismaModel = never> = {
+  equals?: $Enums.FacilityReportTypeCategory | Prisma.EnumFacilityReportTypeCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.FacilityReportTypeCategory[]
+  notIn?: $Enums.FacilityReportTypeCategory[]
+  not?: Prisma.NestedEnumFacilityReportTypeCategoryFilter<$PrismaModel> | $Enums.FacilityReportTypeCategory
+}
+
+export type EnumFacilityReportTypeCategoryWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FacilityReportTypeCategory | Prisma.EnumFacilityReportTypeCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.FacilityReportTypeCategory[]
+  notIn?: $Enums.FacilityReportTypeCategory[]
+  not?: Prisma.NestedEnumFacilityReportTypeCategoryWithAggregatesFilter<$PrismaModel> | $Enums.FacilityReportTypeCategory
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFacilityReportTypeCategoryFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFacilityReportTypeCategoryFilter<$PrismaModel>
+}
+
 export type JsonFilter<$PrismaModel = never> =
 | Prisma.PatchUndefined<
     Prisma.Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -504,6 +521,23 @@ export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumFacilityReportTypeCategoryFilter<$PrismaModel = never> = {
+  equals?: $Enums.FacilityReportTypeCategory | Prisma.EnumFacilityReportTypeCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.FacilityReportTypeCategory[]
+  notIn?: $Enums.FacilityReportTypeCategory[]
+  not?: Prisma.NestedEnumFacilityReportTypeCategoryFilter<$PrismaModel> | $Enums.FacilityReportTypeCategory
+}
+
+export type NestedEnumFacilityReportTypeCategoryWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FacilityReportTypeCategory | Prisma.EnumFacilityReportTypeCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.FacilityReportTypeCategory[]
+  notIn?: $Enums.FacilityReportTypeCategory[]
+  not?: Prisma.NestedEnumFacilityReportTypeCategoryWithAggregatesFilter<$PrismaModel> | $Enums.FacilityReportTypeCategory
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFacilityReportTypeCategoryFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFacilityReportTypeCategoryFilter<$PrismaModel>
 }
 
 export type NestedJsonFilter<$PrismaModel = never> =

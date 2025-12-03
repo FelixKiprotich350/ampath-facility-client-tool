@@ -51,6 +51,8 @@ export default function Home() {
     data: any[] | null;
     reportName: string;
   }>({ open: false, data: null, reportName: "" });
+  const [credentialsDialog, setCredentialsDialog] = useState(false);
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
   useEffect(() => {
     const loadData = async () => {
       console.log("Loading master report list...");
@@ -95,14 +97,23 @@ export default function Home() {
     }
   };
 
+  const handleSyncClick = () => {
+    setCredentialsDialog(true);
+  };
+
   const handleSync = async () => {
     setLoading(true);
     setStatus("🔄 Syncing data to server...");
+    setCredentialsDialog(false);
     try {
-      const response = await fetch("/api/sync", { method: "POST" });
+      const response = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+      });
       const result = await response.json();
-      if (result.success) {
-        setStatus(`✅ Sync completed: ${result.count} records synced`);
+      if (result.successfullSync?.length > 0) {
+        setStatus(`✅ Sync completed: ${result.successfullSync.length} records synced`);
         if (activeTab === "pending") loadPendingData();
         if (activeTab === "history") loadSyncHistory();
       } else {
@@ -112,6 +123,7 @@ export default function Home() {
       setStatus("❌ Sync failed");
     } finally {
       setLoading(false);
+      setCredentials({ username: "", password: "" });
     }
   };
 
@@ -433,7 +445,7 @@ export default function Home() {
                     {pendingLoading ? "🔄 Loading..." : "🔄 Refresh"}
                   </Button>
                   <Button
-                    onClick={handleSync}
+                    onClick={handleSyncClick}
                     disabled={loading}
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
@@ -675,6 +687,55 @@ export default function Home() {
                 No data available
               </p>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={credentialsDialog} onOpenChange={setCredentialsDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter Credentials</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Username
+              </label>
+              <input
+                type="text"
+                value={credentials.username}
+                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter username"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={credentials.password}
+                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter password"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                onClick={() => setCredentialsDialog(false)}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSync}
+                disabled={!credentials.username || !credentials.password}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Sync
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

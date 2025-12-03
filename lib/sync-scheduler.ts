@@ -2,7 +2,7 @@ import cron from 'node-cron'
 import { syncLocalData } from './data-service'
 // import { collectAllData } from './data-collector'
 
-const SYNC_URL = process.env.SERVER_URL
+const SYNC_URL = process.env.AMPATH_SERVER_URL
 const SYNC_INTERVAL = process.env.SYNC_INTERVAL_MINUTES || '1'
 
 let tasks: any[] = []

@@ -9,7 +9,9 @@
 * 🟢 You can import this file directly.
 */
 
+export const FacilityReportTypeCategory = {
+  indicator: 'indicator',
+  linelist: 'linelist'
+} as const
 
-
-// This file is empty because there are no enums in the schema.
-export {}
+export type FacilityReportTypeCategory = (typeof FacilityReportTypeCategory)[keyof typeof FacilityReportTypeCategory]
