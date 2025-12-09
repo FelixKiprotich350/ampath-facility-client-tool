@@ -38,39 +38,45 @@ export type ReportDownloadSumAggregateOutputType = {
 
 export type ReportDownloadMinAggregateOutputType = {
   id: number | null
-  reportUuid: string | null
+  kenyaEmrReportUuid: string | null
   requestUrl: string | null
   response: string | null
   reportPeriod: string | null
   requestedAt: Date | null
   recordCount: number | null
-  synced: boolean | null
-  syncedAt: Date | null
+  syncedToAmep: boolean | null
+  syncedToAmpath: boolean | null
+  syncedToAmepAt: Date | null
+  syncedToAmpathAt: Date | null
 }
 
 export type ReportDownloadMaxAggregateOutputType = {
   id: number | null
-  reportUuid: string | null
+  kenyaEmrReportUuid: string | null
   requestUrl: string | null
   response: string | null
   reportPeriod: string | null
   requestedAt: Date | null
   recordCount: number | null
-  synced: boolean | null
-  syncedAt: Date | null
+  syncedToAmep: boolean | null
+  syncedToAmpath: boolean | null
+  syncedToAmepAt: Date | null
+  syncedToAmpathAt: Date | null
 }
 
 export type ReportDownloadCountAggregateOutputType = {
   id: number
-  reportUuid: number
+  kenyaEmrReportUuid: number
   csvContent: number
   requestUrl: number
   response: number
   reportPeriod: number
   requestedAt: number
   recordCount: number
-  synced: number
-  syncedAt: number
+  syncedToAmep: number
+  syncedToAmpath: number
+  syncedToAmepAt: number
+  syncedToAmpathAt: number
   _all: number
 }
 
@@ -87,39 +93,45 @@ export type ReportDownloadSumAggregateInputType = {
 
 export type ReportDownloadMinAggregateInputType = {
   id?: true
-  reportUuid?: true
+  kenyaEmrReportUuid?: true
   requestUrl?: true
   response?: true
   reportPeriod?: true
   requestedAt?: true
   recordCount?: true
-  synced?: true
-  syncedAt?: true
+  syncedToAmep?: true
+  syncedToAmpath?: true
+  syncedToAmepAt?: true
+  syncedToAmpathAt?: true
 }
 
 export type ReportDownloadMaxAggregateInputType = {
   id?: true
-  reportUuid?: true
+  kenyaEmrReportUuid?: true
   requestUrl?: true
   response?: true
   reportPeriod?: true
   requestedAt?: true
   recordCount?: true
-  synced?: true
-  syncedAt?: true
+  syncedToAmep?: true
+  syncedToAmpath?: true
+  syncedToAmepAt?: true
+  syncedToAmpathAt?: true
 }
 
 export type ReportDownloadCountAggregateInputType = {
   id?: true
-  reportUuid?: true
+  kenyaEmrReportUuid?: true
   csvContent?: true
   requestUrl?: true
   response?: true
   reportPeriod?: true
   requestedAt?: true
   recordCount?: true
-  synced?: true
-  syncedAt?: true
+  syncedToAmep?: true
+  syncedToAmpath?: true
+  syncedToAmepAt?: true
+  syncedToAmpathAt?: true
   _all?: true
 }
 
@@ -211,15 +223,17 @@ export type ReportDownloadGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 
 export type ReportDownloadGroupByOutputType = {
   id: number
-  reportUuid: string
+  kenyaEmrReportUuid: string
   csvContent: runtime.JsonValue
   requestUrl: string
   response: string
   reportPeriod: string
   requestedAt: Date
   recordCount: number | null
-  synced: boolean
-  syncedAt: Date | null
+  syncedToAmep: boolean
+  syncedToAmpath: boolean
+  syncedToAmepAt: Date | null
+  syncedToAmpathAt: Date | null
   _count: ReportDownloadCountAggregateOutputType | null
   _avg: ReportDownloadAvgAggregateOutputType | null
   _sum: ReportDownloadSumAggregateOutputType | null
@@ -247,28 +261,32 @@ export type ReportDownloadWhereInput = {
   OR?: Prisma.ReportDownloadWhereInput[]
   NOT?: Prisma.ReportDownloadWhereInput | Prisma.ReportDownloadWhereInput[]
   id?: Prisma.IntFilter<"ReportDownload"> | number
-  reportUuid?: Prisma.StringFilter<"ReportDownload"> | string
+  kenyaEmrReportUuid?: Prisma.StringFilter<"ReportDownload"> | string
   csvContent?: Prisma.JsonFilter<"ReportDownload">
   requestUrl?: Prisma.StringFilter<"ReportDownload"> | string
   response?: Prisma.StringFilter<"ReportDownload"> | string
   reportPeriod?: Prisma.StringFilter<"ReportDownload"> | string
   requestedAt?: Prisma.DateTimeFilter<"ReportDownload"> | Date | string
   recordCount?: Prisma.IntNullableFilter<"ReportDownload"> | number | null
-  synced?: Prisma.BoolFilter<"ReportDownload"> | boolean
-  syncedAt?: Prisma.DateTimeNullableFilter<"ReportDownload"> | Date | string | null
+  syncedToAmep?: Prisma.BoolFilter<"ReportDownload"> | boolean
+  syncedToAmpath?: Prisma.BoolFilter<"ReportDownload"> | boolean
+  syncedToAmepAt?: Prisma.DateTimeNullableFilter<"ReportDownload"> | Date | string | null
+  syncedToAmpathAt?: Prisma.DateTimeNullableFilter<"ReportDownload"> | Date | string | null
 }
 
 export type ReportDownloadOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  reportUuid?: Prisma.SortOrder
+  kenyaEmrReportUuid?: Prisma.SortOrder
   csvContent?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   recordCount?: Prisma.SortOrderInput | Prisma.SortOrder
-  synced?: Prisma.SortOrder
-  syncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncedToAmep?: Prisma.SortOrder
+  syncedToAmpath?: Prisma.SortOrder
+  syncedToAmepAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncedToAmpathAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _relevance?: Prisma.ReportDownloadOrderByRelevanceInput
 }
 
@@ -277,28 +295,32 @@ export type ReportDownloadWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.ReportDownloadWhereInput | Prisma.ReportDownloadWhereInput[]
   OR?: Prisma.ReportDownloadWhereInput[]
   NOT?: Prisma.ReportDownloadWhereInput | Prisma.ReportDownloadWhereInput[]
-  reportUuid?: Prisma.StringFilter<"ReportDownload"> | string
+  kenyaEmrReportUuid?: Prisma.StringFilter<"ReportDownload"> | string
   csvContent?: Prisma.JsonFilter<"ReportDownload">
   requestUrl?: Prisma.StringFilter<"ReportDownload"> | string
   response?: Prisma.StringFilter<"ReportDownload"> | string
   reportPeriod?: Prisma.StringFilter<"ReportDownload"> | string
   requestedAt?: Prisma.DateTimeFilter<"ReportDownload"> | Date | string
   recordCount?: Prisma.IntNullableFilter<"ReportDownload"> | number | null
-  synced?: Prisma.BoolFilter<"ReportDownload"> | boolean
-  syncedAt?: Prisma.DateTimeNullableFilter<"ReportDownload"> | Date | string | null
+  syncedToAmep?: Prisma.BoolFilter<"ReportDownload"> | boolean
+  syncedToAmpath?: Prisma.BoolFilter<"ReportDownload"> | boolean
+  syncedToAmepAt?: Prisma.DateTimeNullableFilter<"ReportDownload"> | Date | string | null
+  syncedToAmpathAt?: Prisma.DateTimeNullableFilter<"ReportDownload"> | Date | string | null
 }, "id">
 
 export type ReportDownloadOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  reportUuid?: Prisma.SortOrder
+  kenyaEmrReportUuid?: Prisma.SortOrder
   csvContent?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   recordCount?: Prisma.SortOrderInput | Prisma.SortOrder
-  synced?: Prisma.SortOrder
-  syncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncedToAmep?: Prisma.SortOrder
+  syncedToAmpath?: Prisma.SortOrder
+  syncedToAmepAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncedToAmpathAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ReportDownloadCountOrderByAggregateInput
   _avg?: Prisma.ReportDownloadAvgOrderByAggregateInput
   _max?: Prisma.ReportDownloadMaxOrderByAggregateInput
@@ -311,103 +333,119 @@ export type ReportDownloadScalarWhereWithAggregatesInput = {
   OR?: Prisma.ReportDownloadScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ReportDownloadScalarWhereWithAggregatesInput | Prisma.ReportDownloadScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"ReportDownload"> | number
-  reportUuid?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
+  kenyaEmrReportUuid?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
   csvContent?: Prisma.JsonWithAggregatesFilter<"ReportDownload">
   requestUrl?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
   response?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
   reportPeriod?: Prisma.StringWithAggregatesFilter<"ReportDownload"> | string
   requestedAt?: Prisma.DateTimeWithAggregatesFilter<"ReportDownload"> | Date | string
   recordCount?: Prisma.IntNullableWithAggregatesFilter<"ReportDownload"> | number | null
-  synced?: Prisma.BoolWithAggregatesFilter<"ReportDownload"> | boolean
-  syncedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReportDownload"> | Date | string | null
+  syncedToAmep?: Prisma.BoolWithAggregatesFilter<"ReportDownload"> | boolean
+  syncedToAmpath?: Prisma.BoolWithAggregatesFilter<"ReportDownload"> | boolean
+  syncedToAmepAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReportDownload"> | Date | string | null
+  syncedToAmpathAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReportDownload"> | Date | string | null
 }
 
 export type ReportDownloadCreateInput = {
-  reportUuid: string
+  kenyaEmrReportUuid: string
   csvContent: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl: string
   response: string
   reportPeriod: string
   requestedAt?: Date | string
   recordCount?: number | null
-  synced?: boolean
-  syncedAt?: Date | string | null
+  syncedToAmep?: boolean
+  syncedToAmpath?: boolean
+  syncedToAmepAt?: Date | string | null
+  syncedToAmpathAt?: Date | string | null
 }
 
 export type ReportDownloadUncheckedCreateInput = {
   id?: number
-  reportUuid: string
+  kenyaEmrReportUuid: string
   csvContent: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl: string
   response: string
   reportPeriod: string
   requestedAt?: Date | string
   recordCount?: number | null
-  synced?: boolean
-  syncedAt?: Date | string | null
+  syncedToAmep?: boolean
+  syncedToAmpath?: boolean
+  syncedToAmepAt?: Date | string | null
+  syncedToAmpathAt?: Date | string | null
 }
 
 export type ReportDownloadUpdateInput = {
-  reportUuid?: Prisma.StringFieldUpdateOperationsInput | string
+  kenyaEmrReportUuid?: Prisma.StringFieldUpdateOperationsInput | string
   csvContent?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
   response?: Prisma.StringFieldUpdateOperationsInput | string
   reportPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recordCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  synced?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  syncedToAmep?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedToAmpath?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedToAmepAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  syncedToAmpathAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReportDownloadUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  reportUuid?: Prisma.StringFieldUpdateOperationsInput | string
+  kenyaEmrReportUuid?: Prisma.StringFieldUpdateOperationsInput | string
   csvContent?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
   response?: Prisma.StringFieldUpdateOperationsInput | string
   reportPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recordCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  synced?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  syncedToAmep?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedToAmpath?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedToAmepAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  syncedToAmpathAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReportDownloadCreateManyInput = {
   id?: number
-  reportUuid: string
+  kenyaEmrReportUuid: string
   csvContent: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl: string
   response: string
   reportPeriod: string
   requestedAt?: Date | string
   recordCount?: number | null
-  synced?: boolean
-  syncedAt?: Date | string | null
+  syncedToAmep?: boolean
+  syncedToAmpath?: boolean
+  syncedToAmepAt?: Date | string | null
+  syncedToAmpathAt?: Date | string | null
 }
 
 export type ReportDownloadUpdateManyMutationInput = {
-  reportUuid?: Prisma.StringFieldUpdateOperationsInput | string
+  kenyaEmrReportUuid?: Prisma.StringFieldUpdateOperationsInput | string
   csvContent?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
   response?: Prisma.StringFieldUpdateOperationsInput | string
   reportPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recordCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  synced?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  syncedToAmep?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedToAmpath?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedToAmepAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  syncedToAmpathAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReportDownloadUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  reportUuid?: Prisma.StringFieldUpdateOperationsInput | string
+  kenyaEmrReportUuid?: Prisma.StringFieldUpdateOperationsInput | string
   csvContent?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
   response?: Prisma.StringFieldUpdateOperationsInput | string
   reportPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recordCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  synced?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  syncedToAmep?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedToAmpath?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedToAmepAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  syncedToAmpathAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReportDownloadOrderByRelevanceInput = {
@@ -418,15 +456,17 @@ export type ReportDownloadOrderByRelevanceInput = {
 
 export type ReportDownloadCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  reportUuid?: Prisma.SortOrder
+  kenyaEmrReportUuid?: Prisma.SortOrder
   csvContent?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   recordCount?: Prisma.SortOrder
-  synced?: Prisma.SortOrder
-  syncedAt?: Prisma.SortOrder
+  syncedToAmep?: Prisma.SortOrder
+  syncedToAmpath?: Prisma.SortOrder
+  syncedToAmepAt?: Prisma.SortOrder
+  syncedToAmpathAt?: Prisma.SortOrder
 }
 
 export type ReportDownloadAvgOrderByAggregateInput = {
@@ -436,26 +476,30 @@ export type ReportDownloadAvgOrderByAggregateInput = {
 
 export type ReportDownloadMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  reportUuid?: Prisma.SortOrder
+  kenyaEmrReportUuid?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   recordCount?: Prisma.SortOrder
-  synced?: Prisma.SortOrder
-  syncedAt?: Prisma.SortOrder
+  syncedToAmep?: Prisma.SortOrder
+  syncedToAmpath?: Prisma.SortOrder
+  syncedToAmepAt?: Prisma.SortOrder
+  syncedToAmpathAt?: Prisma.SortOrder
 }
 
 export type ReportDownloadMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  reportUuid?: Prisma.SortOrder
+  kenyaEmrReportUuid?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
   response?: Prisma.SortOrder
   reportPeriod?: Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   recordCount?: Prisma.SortOrder
-  synced?: Prisma.SortOrder
-  syncedAt?: Prisma.SortOrder
+  syncedToAmep?: Prisma.SortOrder
+  syncedToAmpath?: Prisma.SortOrder
+  syncedToAmepAt?: Prisma.SortOrder
+  syncedToAmpathAt?: Prisma.SortOrder
 }
 
 export type ReportDownloadSumOrderByAggregateInput = {
@@ -475,48 +519,54 @@ export type NullableIntFieldUpdateOperationsInput = {
 
 export type ReportDownloadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  reportUuid?: boolean
+  kenyaEmrReportUuid?: boolean
   csvContent?: boolean
   requestUrl?: boolean
   response?: boolean
   reportPeriod?: boolean
   requestedAt?: boolean
   recordCount?: boolean
-  synced?: boolean
-  syncedAt?: boolean
+  syncedToAmep?: boolean
+  syncedToAmpath?: boolean
+  syncedToAmepAt?: boolean
+  syncedToAmpathAt?: boolean
 }, ExtArgs["result"]["reportDownload"]>
 
 
 
 export type ReportDownloadSelectScalar = {
   id?: boolean
-  reportUuid?: boolean
+  kenyaEmrReportUuid?: boolean
   csvContent?: boolean
   requestUrl?: boolean
   response?: boolean
   reportPeriod?: boolean
   requestedAt?: boolean
   recordCount?: boolean
-  synced?: boolean
-  syncedAt?: boolean
+  syncedToAmep?: boolean
+  syncedToAmpath?: boolean
+  syncedToAmepAt?: boolean
+  syncedToAmpathAt?: boolean
 }
 
-export type ReportDownloadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reportUuid" | "csvContent" | "requestUrl" | "response" | "reportPeriod" | "requestedAt" | "recordCount" | "synced" | "syncedAt", ExtArgs["result"]["reportDownload"]>
+export type ReportDownloadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kenyaEmrReportUuid" | "csvContent" | "requestUrl" | "response" | "reportPeriod" | "requestedAt" | "recordCount" | "syncedToAmep" | "syncedToAmpath" | "syncedToAmepAt" | "syncedToAmpathAt", ExtArgs["result"]["reportDownload"]>
 
 export type $ReportDownloadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ReportDownload"
   objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    reportUuid: string
+    kenyaEmrReportUuid: string
     csvContent: runtime.JsonValue
     requestUrl: string
     response: string
     reportPeriod: string
     requestedAt: Date
     recordCount: number | null
-    synced: boolean
-    syncedAt: Date | null
+    syncedToAmep: boolean
+    syncedToAmpath: boolean
+    syncedToAmepAt: Date | null
+    syncedToAmpathAt: Date | null
   }, ExtArgs["result"]["reportDownload"]>
   composites: {}
 }
@@ -887,15 +937,17 @@ export interface Prisma__ReportDownloadClient<T, Null = never, ExtArgs extends r
  */
 export interface ReportDownloadFieldRefs {
   readonly id: Prisma.FieldRef<"ReportDownload", 'Int'>
-  readonly reportUuid: Prisma.FieldRef<"ReportDownload", 'String'>
+  readonly kenyaEmrReportUuid: Prisma.FieldRef<"ReportDownload", 'String'>
   readonly csvContent: Prisma.FieldRef<"ReportDownload", 'Json'>
   readonly requestUrl: Prisma.FieldRef<"ReportDownload", 'String'>
   readonly response: Prisma.FieldRef<"ReportDownload", 'String'>
   readonly reportPeriod: Prisma.FieldRef<"ReportDownload", 'String'>
   readonly requestedAt: Prisma.FieldRef<"ReportDownload", 'DateTime'>
   readonly recordCount: Prisma.FieldRef<"ReportDownload", 'Int'>
-  readonly synced: Prisma.FieldRef<"ReportDownload", 'Boolean'>
-  readonly syncedAt: Prisma.FieldRef<"ReportDownload", 'DateTime'>
+  readonly syncedToAmep: Prisma.FieldRef<"ReportDownload", 'Boolean'>
+  readonly syncedToAmpath: Prisma.FieldRef<"ReportDownload", 'Boolean'>
+  readonly syncedToAmepAt: Prisma.FieldRef<"ReportDownload", 'DateTime'>
+  readonly syncedToAmpathAt: Prisma.FieldRef<"ReportDownload", 'DateTime'>
 }
     
 

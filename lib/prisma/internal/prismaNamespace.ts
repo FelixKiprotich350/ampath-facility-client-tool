@@ -983,15 +983,17 @@ export type IndicatorTypeScalarFieldEnum = (typeof IndicatorTypeScalarFieldEnum)
 
 export const ReportDownloadScalarFieldEnum = {
   id: 'id',
-  reportUuid: 'reportUuid',
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
   csvContent: 'csvContent',
   requestUrl: 'requestUrl',
   response: 'response',
   reportPeriod: 'reportPeriod',
   requestedAt: 'requestedAt',
   recordCount: 'recordCount',
-  synced: 'synced',
-  syncedAt: 'syncedAt'
+  syncedToAmep: 'syncedToAmep',
+  syncedToAmpath: 'syncedToAmpath',
+  syncedToAmepAt: 'syncedToAmepAt',
+  syncedToAmpathAt: 'syncedToAmpathAt'
 } as const
 
 export type ReportDownloadScalarFieldEnum = (typeof ReportDownloadScalarFieldEnum)[keyof typeof ReportDownloadScalarFieldEnum]
@@ -1108,7 +1110,7 @@ export type IndicatorTypeOrderByRelevanceFieldEnum = (typeof IndicatorTypeOrderB
 
 
 export const ReportDownloadOrderByRelevanceFieldEnum = {
-  reportUuid: 'reportUuid',
+  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
   requestUrl: 'requestUrl',
   response: 'response',
   reportPeriod: 'reportPeriod'

@@ -79,34 +79,22 @@ model IndicatorType {
 }
 
 model ReportDownload {
-  id           Int       @id @default(autoincrement())
-  reportUuid   String
-  csvContent   Json
-  requestUrl   String
-  response     String
-  reportPeriod String
-  requestedAt  DateTime  @default(now()) @map("requested_at")
-  recordCount  Int?
-  synced       Boolean   @default(false)
-  syncedAt     DateTime? @map("synced_at")
+  id                 Int       @id @default(autoincrement())
+  kenyaEmrReportUuid String
+  csvContent         Json
+  requestUrl         String
+  response           String
+  reportPeriod       String
+  requestedAt        DateTime  @default(now()) @map("requested_at")
+  recordCount        Int?
+  syncedToAmep       Boolean   @default(false)
+  syncedToAmpath     Boolean   @default(false)
+  syncedToAmepAt           DateTime? @map("synced_amep_at")
+  syncedToAmpathAt           DateTime? @map("synced_ampath_at")
 
   @@map("report_downloads")
 }
-
-model AmepElementstMapping {
-  id                    Int      @id @default(autoincrement())
-  kenyaEmrReportUuid    String
-  reportVariableName    String
-  dataElementId         String
-  categoryOptionComboId String
-  attributeOptionComboId  String?
-  description           String?
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-
-  @@unique([kenyaEmrReportUuid, reportVariableName, dataElementId, categoryOptionComboId])
-  @@map("data_element_mappings")
-}
+ 
 
 enum FacilityReportTypeCategory {
   indicator

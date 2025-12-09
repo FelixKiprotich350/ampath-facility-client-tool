@@ -27,7 +27,7 @@ export async function addLineList(
 
 export async function getUnsyncedReports() {
   return prisma.reportDownload.findMany({
-    where: { synced: false },
+    where: { syncedToAmep: false },
   });
 }
 
@@ -48,7 +48,7 @@ export async function addReportDownload(
 ) {
   return prisma.reportDownload.create({
     data: {
-      reportUuid,
+      kenyaEmrReportUuid:reportUuid,
       csvContent,
       requestUrl,
       response,
@@ -60,8 +60,8 @@ export async function addReportDownload(
 
 export async function getDataSummary() {
   const [pendingReports, syncedReports] = await Promise.all([
-    prisma.reportDownload.count({ where: { synced: false } }),
-    prisma.reportDownload.count({ where: { synced: true } }),
+    prisma.reportDownload.count({ where: { syncedToAmep: false } }),
+    prisma.reportDownload.count({ where: { syncedToAmep: true } }),
   ]);
 
   return {

@@ -8,6 +8,32 @@ import https from "https"; // Add this import
 const SYNC_URL = process.env.AMEP_SERVER_URL;
 const targetUrl = `${SYNC_URL}/dataValueSets`;
 
+/**
+ * Find value in CSV data by variable name
+ */
+function findValueInCsvData(
+  csvData: any[],
+  variableName: string
+): string | null {
+  if (!Array.isArray(csvData) || !csvData.length) return null;
+
+  for (const reportElement of csvData) {
+    // Search through all values in this row
+    for (const key of Object.keys(reportElement)) {
+      const cellValue = String(reportElement[key] ?? "")
+        .trim()
+        .toLowerCase();
+
+      if (cellValue == variableName.trim().toLowerCase()) {
+        // Found the matching row — return the result column
+        return reportElement.column2 ?? null; // <-- change column2 if needed
+      }
+    }
+  }
+
+  return null;
+}
+
 // Get mapping for a report key
 export async function getDataElementMapping() {
   return await prisma.amepElementstMapping.findMany({});
@@ -22,13 +48,14 @@ export async function syncToAmep(
   let failedSync = [];
 
   try {
-    const lineList = await getUnsyncedReports();
-    const report = lineList[0];
+    const pendingReports = await getUnsyncedReports();
 
-    if (!report) {
+    if (!pendingReports.length) {
       console.log("No unsynced reports found");
       return { successfullSync, failedSync, error: null };
     }
+
+    console.log(`Processing ${pendingReports.length} pending reports`);
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -43,79 +70,114 @@ export async function syncToAmep(
       headers.Authorization = `Basic ${credentials}`;
     }
 
-    // Example of using mapping - replace with actual report data processing
-    const mappings = await getDataElementMapping();
-    const dataValues = mappings.map((m) => ({
-      dataElement: m?.dataElementId,
-      attributeOptionCombo: m?.attributeOptionComboId,
-      categoryOptionCombo: m?.categoryOptionComboId,
-      value: "10",
-    }));
-    const body = {
-      dataSet: "Lf1skJGdrzj",
-      completeDate: "2025-11-01",
-      period: reportingMonth,
-      orgUnit: "fCj9Bn7iW2m",
-      dataValues,
-    };
+    // Process each pending report
+    for (const report of pendingReports) {
+      try {
+        // Parse CSV content
+        const csvData =
+          typeof report.csvContent === "string"
+            ? JSON.parse(report.csvContent)
+            : report.csvContent;
+        // Get mappings for this report
+        const mappings = await prisma.amepElementstMapping.findMany({
+          where: { kenyaEmrReportUuid: report.kenyaEmrReportUuid },
+        });
 
-    const response = await fetch(targetUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-      // agent: httpsAgent, // Add this line - CRITICAL for Node.js
-      // Optional: Add signal for timeout control
-      signal: AbortSignal.timeout(35000),
-    });
+        if (!mappings.length) {
+          console.log(
+            `No mappings found for report ${report.kenyaEmrReportUuid}`
+          );
+          continue;
+        }
 
-    const responseText = await response.json();
-    console.log("Response status:", response.status);
+        // Map CSV variables to data elements
+        const dataValues = [];
+        for (const mapping of mappings) {
+          // Find value in CSV data by variable name
+          const csvValue = findValueInCsvData(
+            csvData,
+            mapping.reportVariableName
+          );
+          if (csvValue !== null) {
+            dataValues.push({
+              dataElement: mapping.dataElementId,
+              attributeOptionCombo: mapping.attributeOptionComboId,
+              categoryOptionCombo: mapping.categoryOptionComboId,
+              value: csvValue.toString(),
+            });
+          }
+        }
 
-    console.log("Response body:", responseText);
+        if (!dataValues.length) {
+          console.log(
+            `No data values mapped for report ${report.kenyaEmrReportUuid}`
+          );
+          continue;
+        }
+        const body = {
+          dataSet: "Lf1skJGdrzj",
+          completeDate: new Date().toISOString().split("T")[0],
+          period: reportingMonth,
+          orgUnit: "fCj9Bn7iW2m",
+          dataValues,
+        }; 
+        const response = await fetch(targetUrl, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(35000),
+        });
 
-    let responseData;
-    try {
-      responseData = JSON.parse(responseText);
-    } catch (e) {
-      responseData = { raw: responseText };
-    }
+        const responseData = await response.json();
+        console.log("Response status:", response.status);
+        console.log("Response body:", responseData);
 
-    if (response.ok) {
-      // Uncomment when ready to update database
-      /*
-      await prisma.reportDownload.update({
-        where: { id: report.id },
-        data: { 
-          synced: true, 
-          syncedAt: new Date(),
-          syncResponse: responseData
-        },
-      });
-      */
+        if (response.ok) {
+          await prisma.reportDownload.update({
+            where: { id: report.id },
+            data: {
+              syncedToAmep: true,
+              syncedToAmepAt: new Date(),
+            },
+          });
 
-      successfullSync.push({
-        id: report.id,
-        response: responseData,
-      });
-      console.log(`Successfully synced report ${report.id}`);
-    } else {
-      failedSync.push({
-        id: report.id,
-        status: response.status,
-        error: `HTTP ${response.status}`,
-        message:
-          responseData.message || responseData.description || responseText,
-        conflicts: responseData.conflicts,
-        response: responseData,
-      });
-      console.error(`Failed to sync report ${report.id}:`, responseData);
+          successfullSync.push({
+            id: report.id,
+            response: responseData,
+          });
+          console.log(`Successfully synced report ${report.id}`);
+        } else {
+          failedSync.push({
+            id: report.id,
+            status: response.status,
+            error: `HTTP ${response.status}`,
+            message:
+              responseData.message ||
+              responseData.description ||
+              "Unknown error",
+            conflicts: responseData.conflicts,
+            response: responseData,
+          });
+          console.error(`Failed to sync report ${report.id}:`, responseData);
+        }
+      } catch (reportError: any) {
+        console.error(
+          `Error processing report ${report.id}:`,
+          reportError.message
+        );
+        failedSync.push({
+          id: report.id,
+          error: reportError.message,
+        });
+      }
     }
 
     return {
       successfullSync,
       failedSync,
       error: null,
-      response: responseData,
+      message: `Processed ${pendingReports.length} reports`,
+      count: successfullSync.length,
     };
   } catch (error: any) {
     console.error("Sync failed with error:", error);

@@ -1,33 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getUnsyncedReports } from "@/lib/local-db";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const pending = await prisma.reportDownload.findMany({
-      where: { synced: false },
-      orderBy: { requestedAt: "desc" },
-    });
-    return NextResponse.json(pending);
+    const reports = await getUnsyncedReports();
+    return NextResponse.json(reports);
   } catch (error) {
+    console.error("Failed to fetch pending reports:", error);
     return NextResponse.json(
-      { error: "Failed to fetch Pending Data" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const { name, description, query, source, apiUrl } = await request.json();
-
-    const indicatorType = await prisma.indicatorType.create({
-      data: { name, description, query, source, apiUrl },
-    });
-
-    return NextResponse.json(indicatorType);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to create indicator type" },
+      { success: false, error: "Failed to fetch pending reports" },
       { status: 500 }
     );
   }

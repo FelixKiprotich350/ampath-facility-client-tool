@@ -5,9 +5,16 @@ import { syncToAmep } from "@/lib/data-service";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { username, password } = body;
+    const { username, password, yearMonth } = body;
 
-    const result = await syncToAmep("202509", username, password);
+    if (!username || !password) {
+      return NextResponse.json(
+        { error: "Username and password required" },
+        { status: 400 }
+      );
+    }
+
+    const result = await syncToAmep(yearMonth, username, password);
     if (result.error) {
       return NextResponse.json({ result }, { status: 500 });
     }

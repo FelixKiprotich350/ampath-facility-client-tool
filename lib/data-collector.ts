@@ -5,6 +5,29 @@ import * as fs from "fs";
 import * as path from "path";
 import { parse } from "csv-parse/sync";
 
+/**
+ * Convert month format to YYYYMM
+ */
+function convertToYYYYMM(monthValue: string): string {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  
+  // If already in YYYYMM format, return as is
+  if (/^\d{6}$/.test(monthValue)) {
+    return monthValue;
+  }
+  
+  // Extract month number from various formats
+  const monthMatch = monthValue.match(/\d{1,2}/);
+  if (monthMatch) {
+    const month = parseInt(monthMatch[0], 10);
+    return `${currentYear}${String(month).padStart(2, '0')}`;
+  }
+  
+  // Fallback to current year-month
+  return `${currentYear}${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
 type ReportType = {
   kenyaEmrReportUuid: string;
   name?: string;
@@ -399,6 +422,10 @@ export async function getSingleReport(
       .isVisible()
       .catch(() => false);
 
+    // Get current year-month in YYYYMM format
+    const now = new Date();
+    const currentYearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
     const startdate = "01-Jan-25";
     const enddate = "31-Jan-25";
     let reportMonth: string | null = null;
@@ -498,16 +525,17 @@ export async function getSingleReport(
 
     const recordCount = Math.max(0, csvContent.length - 1);
 
-    const duration = isDateRange
-      ? `${startdate} to ${enddate}`
-      : reportMonth || "N/A";
+    // Convert period to YYYYMM format
+    const periodYYYYMM = isDateRange
+      ? currentYearMonth // Use current year-month for date ranges
+      : reportMonth ? convertToYYYYMM(reportMonth) : currentYearMonth;
 
     await addReportDownload(
       report.kenyaEmrReportUuid,
       csvContent,
       downloadUrl,
       status,
-      duration,
+      periodYYYYMM,
       recordCount
     );
 
@@ -615,6 +643,28 @@ export async function getReportsList(): Promise<ReportType[]> {
       return [];
     }
     const response = await fetch(`${serverUrl}/report-types`, {
+      headers: { Accept: "application/json" },
+    });
+    const reports = await response.json();
+    return Array.isArray(reports) ? reports : [];
+  } catch (error) {
+    console.error("Failed to fetch reports types:", (error as Error).message);
+    return [];
+  }
+}
+
+
+/**
+ * getMappings - fetch mappings from API
+ */
+export async function getDataElementsMapping(): Promise<ReportType[]> {
+  try {
+    const serverUrl = process.env.AMPATH_SERVER_URL;
+    if (!serverUrl) {
+      console.warn("SERVER_URL not set - returning empty mapping list");
+      return [];
+    }
+    const response = await fetch(`${serverUrl}/mappings`, {
       headers: { Accept: "application/json" },
     });
     const reports = await response.json();

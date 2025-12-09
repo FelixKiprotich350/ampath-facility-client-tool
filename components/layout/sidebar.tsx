@@ -1,17 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-interface SidebarProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-}
-
-export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export function Sidebar() {
+  const pathname = usePathname();
+  
   const menuItems = [
-    { id: "home", label: "Dashboard", icon: "🏠" },
-    { id: "pending", label: "Pending Data", icon: "⏳" },
-    { id: "history", label: "History", icon: "📜" },
+    { href: "/dashboard", label: "Dashboard", icon: "🏠" },
+    { href: "/pending", label: "Pending Data", icon: "⏳" },
+    { href: "/history", label: "History", icon: "📜" },
   ];
 
   return (
@@ -30,18 +28,18 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
       <nav className="p-4 space-y-2">
         {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onTabChange(item.id)}
+          <Link
+            key={item.href}
+            href={item.href}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === item.id
+              pathname === item.href
                 ? "bg-blue-50 text-blue-700 border border-blue-200 shadow-sm"
                 : "hover:bg-gray-50 text-gray-600 hover:text-gray-800"
             }`}
           >
             <span className="text-xl">{item.icon}</span>
             <span className="font-medium">{item.label}</span>
-          </button>
+          </Link>
         ))}
       </nav>
     </div>

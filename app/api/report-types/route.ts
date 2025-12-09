@@ -4,7 +4,7 @@ import { getReportsList } from "@/lib/data-collector";
 
 export async function GET(request: NextRequest) {
   try {
-    const reportTypes = await prisma.facilityReportType.findMany({});
+    const reportTypes = await getReportsList();
     return NextResponse.json(reportTypes);
   } catch (error) {
     console.error("Error fetching reportTypes:", error);
