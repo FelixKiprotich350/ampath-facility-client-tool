@@ -48,7 +48,7 @@ export type IndicatorType = Prisma.IndicatorTypeModel
  */
 export type ReportDownload = Prisma.ReportDownloadModel
 /**
- * Model AmepElementstMapping
+ * Model ReportQueue
  * 
  */
-export type AmepElementstMapping = Prisma.AmepElementstMappingModel
+export type ReportQueue = Prisma.ReportQueueModel

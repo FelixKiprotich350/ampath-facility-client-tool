@@ -4,6 +4,7 @@ import { chromium, Browser, BrowserContext, Page } from "playwright";
 import * as fs from "fs";
 import * as path from "path";
 import { parse } from "csv-parse/sync";
+import { addReportToQueue } from "./report-queue";
 
 /**
  * Convert month format to YYYYMM
@@ -11,21 +12,21 @@ import { parse } from "csv-parse/sync";
 function convertToYYYYMM(monthValue: string): string {
   const now = new Date();
   const currentYear = now.getFullYear();
-  
+
   // If already in YYYYMM format, return as is
   if (/^\d{6}$/.test(monthValue)) {
     return monthValue;
   }
-  
+
   // Extract month number from various formats
   const monthMatch = monthValue.match(/\d{1,2}/);
   if (monthMatch) {
     const month = parseInt(monthMatch[0], 10);
-    return `${currentYear}${String(month).padStart(2, '0')}`;
+    return `${currentYear}${String(month).padStart(2, "0")}`;
   }
-  
+
   // Fallback to current year-month
-  return `${currentYear}${String(now.getMonth() + 1).padStart(2, '0')}`;
+  return `${currentYear}${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
 type ReportType = {
@@ -41,8 +42,7 @@ let isLoggedIn = false;
 
 /**
  * ---------- CONFIG ----------
- */
-const DOWNLOAD_DIR = path.join(process.cwd(), "downloads");
+ */ 
 const REPORT_POLL_INTERVAL_MS = 5000;
 const REPORT_POLL_MAX_ITER = 60; // ~5 minutes by default (60 * 5s)
 const DOWNLOAD_RETRY = 5;
@@ -375,16 +375,15 @@ async function downloadReportCsv(downloadUrl: string, cookieString: string) {
  *  - poll until report ready
  *  - download csv using session cookies
  */
-export async function getSingleReport(
-  page: Page,
-  report: ReportType,
-  reportPageBase: string
-) {
+export async function downloadSingleReport(report: ReportType) {
   const startTime = Date.now();
   const server = process.env.KENYAEMR_SERVER;
   if (!server) throw new Error("KENYAEMR_SERVER env var not set");
 
   try {
+    const reportPageBase = `${process.env.KENYAEMR_SERVER}/kenyaemr/report.page`;
+    const page = await ensureLoggedIn();
+    console.log("Logged in. Navigating reports...");
     const reportHomePath = `${server}/kenyaemr/reports/reportsHome.page`;
     const reportPageUrl = `${reportPageBase}?appId=kenyaemr.reports&reportUuid=${
       report.kenyaEmrReportUuid
@@ -424,8 +423,10 @@ export async function getSingleReport(
 
     // Get current year-month in YYYYMM format
     const now = new Date();
-    const currentYearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-    
+    const currentYearMonth = `${now.getFullYear()}${String(
+      now.getMonth() + 1
+    ).padStart(2, "0")}`;
+
     const startdate = "01-Jan-25";
     const enddate = "31-Jan-25";
     let reportMonth: string | null = null;
@@ -528,7 +529,9 @@ export async function getSingleReport(
     // Convert period to YYYYMM format
     const periodYYYYMM = isDateRange
       ? currentYearMonth // Use current year-month for date ranges
-      : reportMonth ? convertToYYYYMM(reportMonth) : currentYearMonth;
+      : reportMonth
+      ? convertToYYYYMM(reportMonth)
+      : currentYearMonth;
 
     await addReportDownload(
       report.kenyaEmrReportUuid,
@@ -550,106 +553,6 @@ export async function getSingleReport(
   } finally {
     // small delay to avoid hammering the server
     await new Promise((r) => setTimeout(r, 500));
-  }
-}
-
-/**
- * collectFromBrowser - iterate reports and call getSingleReport
- */
-export async function collectFromBroswer() {
-  try {
-    const page = await ensureLoggedIn();
-    console.log("Logged in. Navigating reports...");
-
-    const reportPageUrl = `${process.env.KENYAEMR_SERVER}/kenyaemr/report.page`;
-    const all_reports = await getReportsList();
-    const reports = all_reports.filter((r) => r.isReporting == true);
-    console.log(
-      `Found ${all_reports.length} report types. Processing ${reports.length} reports.`
-    );
-    const results: any[] = [];
-    const errors: any[] = [];
-
-    for (const report of reports) {
-      try {
-        const result = await getSingleReport(page, report, reportPageUrl);
-        results.push({ uuid: report.kenyaEmrReportUuid, result });
-      } catch (error) {
-        console.error(
-          `Failed to process report ${report.kenyaEmrReportUuid}:`,
-          (error as Error).message
-        );
-        errors.push({
-          uuid: report.kenyaEmrReportUuid,
-          error: (error as Error).message,
-        });
-      }
-    }
-
-    return { completed: results.length, results, errors };
-  } catch (error) {
-    console.error("Playwright collection failed:", (error as Error).message);
-    throw error;
-  }
-}
-
-/**
- * collectLineList - improved but mostly the same as your original
- */
-export async function collectLineList() {
-  try {
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const lineList = (await fetchFromKenyaEMRDatabase(
-      `SELECT 
-        f.uuid as facility_id,
-        p.patient_id,
-        p.gender,
-        p.birthdate,
-        p.date_created,
-        e.encounter_datetime,
-        e.encounter_type
-      FROM patient p
-      JOIN encounter e ON p.patient_id = e.patient_id
-      JOIN location f ON e.location_id = f.location_id
-      WHERE e.encounter_datetime > ?`,
-      [yesterday]
-    )) as any[];
-
-    for (const record of lineList) {
-      await addLineList(record.facility_id, record.patient_id, {
-        gender: record.gender,
-        birthdate: record.birthdate,
-        dateCreated: record.date_created,
-        encounterDatetime: record.encounter_datetime,
-        encounterType: record.encounter_type,
-      });
-    }
-
-    return { collected: lineList.length, type: "lineList" };
-  } catch (error) {
-    console.error("Line list collection failed:", (error as Error).message);
-    throw error;
-  }
-}
-
-/**
- * getReportsList - fetch report types from API
- */
-export async function getReportsList(): Promise<ReportType[]> {
-  try {
-    const serverUrl = process.env.AMPATH_SERVER_URL;
-    if (!serverUrl) {
-      console.warn("SERVER_URL not set - returning empty reports list");
-      return [];
-    }
-    const response = await fetch(`${serverUrl}/report-types`, {
-      headers: { Accept: "application/json" },
-    });
-    const reports = await response.json();
-    return Array.isArray(reports) ? reports : [];
-  } catch (error) {
-    console.error("Failed to fetch reports types:", (error as Error).message);
-    return [];
   }
 }
 

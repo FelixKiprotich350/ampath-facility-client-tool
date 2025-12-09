@@ -1,31 +1,30 @@
 import cron from 'node-cron'
 import { syncLocalData } from './data-service'
-// import { collectAllData } from './data-collector'
 
 const SYNC_URL = process.env.AMPATH_SERVER_URL
-const SYNC_INTERVAL = process.env.SYNC_INTERVAL_MINUTES || '1'
+const SYNC_INTERVAL = process.env.SYNC_INTERVAL_MINUTES || '5'
 
-let tasks: any[] = []
+let syncTask: any = null
 
 export function startSyncScheduler() {
-  // Collect data every N minutes
-  const collectTask = cron.schedule(`*/${SYNC_INTERVAL} * * * *`, async () => {
-    console.log('Starting scheduled data collection...')
+  syncTask = cron.schedule(`*/${SYNC_INTERVAL} * * * *`, async () => {
+    console.log('Starting scheduled report sync...')
     try {
-      // const result = await collectAllData()
-      // console.log('Data collection completed:', result)
+      const result = await syncLocalData(SYNC_URL)
+      console.log('Report sync completed:', result)
     } catch (error) {
-      console.error('Data collection failed:', error)
+      console.error('Report sync failed:', error)
     }
   })
   
-  tasks = [collectTask]
-  console.log(`Data collection scheduler started - collecting every ${SYNC_INTERVAL} minutes`)
+  console.log(`Report sync scheduler started - syncing every ${SYNC_INTERVAL} minutes`)
 }
 
 export function stopSyncScheduler() {
-  tasks.forEach(task => task.destroy())
-  tasks = []
+  if (syncTask) {
+    syncTask.destroy()
+    syncTask = null
+  }
 }
 
 export async function manualSync() {

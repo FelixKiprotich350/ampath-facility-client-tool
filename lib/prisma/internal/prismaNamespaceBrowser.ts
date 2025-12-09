@@ -57,7 +57,7 @@ export const ModelName = {
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
   ReportDownload: 'ReportDownload',
-  AmepElementstMapping: 'AmepElementstMapping'
+  ReportQueue: 'ReportQueue'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -164,19 +164,17 @@ export const ReportDownloadScalarFieldEnum = {
 export type ReportDownloadScalarFieldEnum = (typeof ReportDownloadScalarFieldEnum)[keyof typeof ReportDownloadScalarFieldEnum]
 
 
-export const AmepElementstMappingScalarFieldEnum = {
+export const ReportQueueScalarFieldEnum = {
   id: 'id',
   kenyaEmrReportUuid: 'kenyaEmrReportUuid',
-  reportVariableName: 'reportVariableName',
-  dataElementId: 'dataElementId',
-  categoryOptionComboId: 'categoryOptionComboId',
-  attributeOptionComboId: 'attributeOptionComboId',
-  description: 'description',
+  reportPeriod: 'reportPeriod',
+  status: 'status',
+  error: 'error',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  processedAt: 'processedAt'
 } as const
 
-export type AmepElementstMappingScalarFieldEnum = (typeof AmepElementstMappingScalarFieldEnum)[keyof typeof AmepElementstMappingScalarFieldEnum]
+export type ReportQueueScalarFieldEnum = (typeof ReportQueueScalarFieldEnum)[keyof typeof ReportQueueScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -284,14 +282,12 @@ export const ReportDownloadOrderByRelevanceFieldEnum = {
 export type ReportDownloadOrderByRelevanceFieldEnum = (typeof ReportDownloadOrderByRelevanceFieldEnum)[keyof typeof ReportDownloadOrderByRelevanceFieldEnum]
 
 
-export const AmepElementstMappingOrderByRelevanceFieldEnum = {
+export const ReportQueueOrderByRelevanceFieldEnum = {
   kenyaEmrReportUuid: 'kenyaEmrReportUuid',
-  reportVariableName: 'reportVariableName',
-  dataElementId: 'dataElementId',
-  categoryOptionComboId: 'categoryOptionComboId',
-  attributeOptionComboId: 'attributeOptionComboId',
-  description: 'description'
+  reportPeriod: 'reportPeriod',
+  status: 'status',
+  error: 'error'
 } as const
 
-export type AmepElementstMappingOrderByRelevanceFieldEnum = (typeof AmepElementstMappingOrderByRelevanceFieldEnum)[keyof typeof AmepElementstMappingOrderByRelevanceFieldEnum]
+export type ReportQueueOrderByRelevanceFieldEnum = (typeof ReportQueueOrderByRelevanceFieldEnum)[keyof typeof ReportQueueOrderByRelevanceFieldEnum]
 

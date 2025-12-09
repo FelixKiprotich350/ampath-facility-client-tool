@@ -390,7 +390,7 @@ export const ModelName = {
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
   ReportDownload: 'ReportDownload',
-  AmepElementstMapping: 'AmepElementstMapping'
+  ReportQueue: 'ReportQueue'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -406,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "facility" | "facilityReportType" | "indicator" | "lineList" | "indicatorType" | "reportDownload" | "amepElementstMapping"
+    modelProps: "facility" | "facilityReportType" | "indicator" | "lineList" | "indicatorType" | "reportDownload" | "reportQueue"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -806,69 +806,69 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    AmepElementstMapping: {
-      payload: Prisma.$AmepElementstMappingPayload<ExtArgs>
-      fields: Prisma.AmepElementstMappingFieldRefs
+    ReportQueue: {
+      payload: Prisma.$ReportQueuePayload<ExtArgs>
+      fields: Prisma.ReportQueueFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.AmepElementstMappingFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload> | null
+          args: Prisma.ReportQueueFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportQueuePayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.AmepElementstMappingFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+          args: Prisma.ReportQueueFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportQueuePayload>
         }
         findFirst: {
-          args: Prisma.AmepElementstMappingFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload> | null
+          args: Prisma.ReportQueueFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportQueuePayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.AmepElementstMappingFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+          args: Prisma.ReportQueueFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportQueuePayload>
         }
         findMany: {
-          args: Prisma.AmepElementstMappingFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>[]
+          args: Prisma.ReportQueueFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportQueuePayload>[]
         }
         create: {
-          args: Prisma.AmepElementstMappingCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+          args: Prisma.ReportQueueCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportQueuePayload>
         }
         createMany: {
-          args: Prisma.AmepElementstMappingCreateManyArgs<ExtArgs>
+          args: Prisma.ReportQueueCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         delete: {
-          args: Prisma.AmepElementstMappingDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+          args: Prisma.ReportQueueDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportQueuePayload>
         }
         update: {
-          args: Prisma.AmepElementstMappingUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+          args: Prisma.ReportQueueUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportQueuePayload>
         }
         deleteMany: {
-          args: Prisma.AmepElementstMappingDeleteManyArgs<ExtArgs>
+          args: Prisma.ReportQueueDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.AmepElementstMappingUpdateManyArgs<ExtArgs>
+          args: Prisma.ReportQueueUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         upsert: {
-          args: Prisma.AmepElementstMappingUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AmepElementstMappingPayload>
+          args: Prisma.ReportQueueUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportQueuePayload>
         }
         aggregate: {
-          args: Prisma.AmepElementstMappingAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAmepElementstMapping>
+          args: Prisma.ReportQueueAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReportQueue>
         }
         groupBy: {
-          args: Prisma.AmepElementstMappingGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AmepElementstMappingGroupByOutputType>[]
+          args: Prisma.ReportQueueGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReportQueueGroupByOutputType>[]
         }
         count: {
-          args: Prisma.AmepElementstMappingCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AmepElementstMappingCountAggregateOutputType> | number
+          args: Prisma.ReportQueueCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReportQueueCountAggregateOutputType> | number
         }
       }
     }
@@ -999,19 +999,17 @@ export const ReportDownloadScalarFieldEnum = {
 export type ReportDownloadScalarFieldEnum = (typeof ReportDownloadScalarFieldEnum)[keyof typeof ReportDownloadScalarFieldEnum]
 
 
-export const AmepElementstMappingScalarFieldEnum = {
+export const ReportQueueScalarFieldEnum = {
   id: 'id',
   kenyaEmrReportUuid: 'kenyaEmrReportUuid',
-  reportVariableName: 'reportVariableName',
-  dataElementId: 'dataElementId',
-  categoryOptionComboId: 'categoryOptionComboId',
-  attributeOptionComboId: 'attributeOptionComboId',
-  description: 'description',
+  reportPeriod: 'reportPeriod',
+  status: 'status',
+  error: 'error',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  processedAt: 'processedAt'
 } as const
 
-export type AmepElementstMappingScalarFieldEnum = (typeof AmepElementstMappingScalarFieldEnum)[keyof typeof AmepElementstMappingScalarFieldEnum]
+export type ReportQueueScalarFieldEnum = (typeof ReportQueueScalarFieldEnum)[keyof typeof ReportQueueScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1119,16 +1117,14 @@ export const ReportDownloadOrderByRelevanceFieldEnum = {
 export type ReportDownloadOrderByRelevanceFieldEnum = (typeof ReportDownloadOrderByRelevanceFieldEnum)[keyof typeof ReportDownloadOrderByRelevanceFieldEnum]
 
 
-export const AmepElementstMappingOrderByRelevanceFieldEnum = {
+export const ReportQueueOrderByRelevanceFieldEnum = {
   kenyaEmrReportUuid: 'kenyaEmrReportUuid',
-  reportVariableName: 'reportVariableName',
-  dataElementId: 'dataElementId',
-  categoryOptionComboId: 'categoryOptionComboId',
-  attributeOptionComboId: 'attributeOptionComboId',
-  description: 'description'
+  reportPeriod: 'reportPeriod',
+  status: 'status',
+  error: 'error'
 } as const
 
-export type AmepElementstMappingOrderByRelevanceFieldEnum = (typeof AmepElementstMappingOrderByRelevanceFieldEnum)[keyof typeof AmepElementstMappingOrderByRelevanceFieldEnum]
+export type ReportQueueOrderByRelevanceFieldEnum = (typeof ReportQueueOrderByRelevanceFieldEnum)[keyof typeof ReportQueueOrderByRelevanceFieldEnum]
 
 
 
@@ -1277,7 +1273,7 @@ export type GlobalOmitConfig = {
   lineList?: Prisma.LineListOmit
   indicatorType?: Prisma.IndicatorTypeOmit
   reportDownload?: Prisma.ReportDownloadOmit
-  amepElementstMapping?: Prisma.AmepElementstMappingOmit
+  reportQueue?: Prisma.ReportQueueOmit
 }
 
 /* Types for Logging */

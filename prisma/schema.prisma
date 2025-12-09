@@ -94,6 +94,18 @@ model ReportDownload {
 
   @@map("report_downloads")
 }
+
+model ReportQueue {
+  id                 Int       @id @default(autoincrement())
+  kenyaEmrReportUuid String
+  reportPeriod       String
+  status             String    @default("PENDING")
+  error              String?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  processedAt        DateTime? @map("processed_at")
+
+  @@map("report_queue")
+}
  
 
 enum FacilityReportTypeCategory {

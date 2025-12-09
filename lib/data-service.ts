@@ -34,11 +34,6 @@ function findValueInCsvData(
   return null;
 }
 
-// Get mapping for a report key
-export async function getDataElementMapping() {
-  return await prisma.amepElementstMapping.findMany({});
-}
-
 export async function syncToAmep(
   reportingMonth: string,
   username?: string,

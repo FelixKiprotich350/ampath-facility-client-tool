@@ -1,9 +1,17 @@
+import { schedulePlaywrightReports } from "@/lib/download-scheduler";
 import { NextRequest, NextResponse } from "next/server";
-import { collectFromBroswer } from "@/lib/data-collector";
 
 export async function POST(request: NextRequest) {
   try {
-    let result = await collectFromBroswer();
+    const { reportPeriod } = await request.json();
+
+    if (!reportPeriod) {
+      return NextResponse.json(
+        { error: "reportPeriod is required" },
+        { status: 400 }
+      );
+    }
+    let result = await schedulePlaywrightReports(reportPeriod);
 
     return NextResponse.json(result);
   } catch (error) {
