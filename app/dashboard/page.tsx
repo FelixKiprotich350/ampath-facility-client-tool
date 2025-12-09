@@ -6,16 +6,12 @@ import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/layout/app-layout";
 
 export default function DashboardPage() {
-  const [status, setStatus] = useState("");
-  const [loading, setLoading] = useState(false);
   const [facilityDetails, setFacilityDetails] = useState<{
     facilityName: string;
     lastSync: string;
     pendingData: number;
     syncedData: number;
   }>({ facilityName: "", lastSync: "", pendingData: 0, syncedData: 0 });
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState("");
 
   useEffect(() => {
     fetchDashboard();
@@ -29,63 +25,7 @@ export default function DashboardPage() {
     } catch {}
   };
 
-  const getLast12Months = () => {
-    const months = [];
-    const now = new Date();
-    for (let i = 0; i < 12; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthYear = `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-      ).padStart(2, "0")}`;
-      const displayName = date.toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      });
-      months.push({ value: monthYear, label: displayName });
-    }
-    return months;
-  };
 
-  const handleCollectClick = () => {
-    setShowMonthPicker(true);
-  };
-
-  const handleCollect = async (source: string, month?: string) => {
-    setLoading(true);
-    setStatus(`🔍 Collecting from ${source}${month ? ` for ${month}` : ""}...`);
-    try {
-      if (month == "") {
-        alert("Please select a month and year to proceed.");
-        setLoading(false);
-        return;
-      }
-      const response = await fetch("/api/collect", {
-        method: "POST",
-        body: JSON.stringify({
-          source,
-          apiUrl: "",
-          dataType: "indicators",
-          reportPeriod: month,
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
-      const result = await response.json();
-      if (result.indicators !== undefined) {
-        setStatus(
-          `✅ Collected ${result.indicators} indicators, ${result.lineList} line list records`
-        );
-      } else {
-        setStatus(`✅ Collected ${result.collected} ${result.type} records`);
-      }
-      setShowMonthPicker(false);
-      setSelectedMonth("");
-    } catch (error) {
-      console.log(error);
-      setStatus("❌ Collection failed");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <AppLayout
@@ -182,82 +122,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span className="text-xl">⚙️</span> Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Button
-                onClick={handleCollectClick}
-                disabled={loading}
-                className="h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-              >
-                <span className="mr-2">🔍</span> Collect Data
-              </Button>
-            </div>
 
-            {showMonthPicker && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
-                <h4 className="font-medium text-gray-900 mb-3">
-                  Select Month and Year
-                </h4>
-                <div className="flex gap-3 items-end">
-                  <div className="flex-1">
-                    <select
-                      value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select month...</option>
-                      {getLast12Months().map((month) => (
-                        <option key={month.value} value={month.value}>
-                          {month.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <Button
-                    onClick={() => handleCollect("api", selectedMonth)}
-                    disabled={!selectedMonth || loading}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Collect
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setShowMonthPicker(false);
-                      setSelectedMonth("");
-                    }}
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {status && (
-          <Card className="border-l-4 border-blue-500">
-            <CardContent className="pt-6">
-              <div className="flex items-start space-x-3">
-                <div className="text-2xl flex-shrink-0">
-                  {loading ? "⏳" : "💬"}
-                </div>
-                <div className="flex-1">
-                  <div className="text-gray-800 font-medium">{status}</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {new Date().toLocaleTimeString()}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </AppLayout>
   );

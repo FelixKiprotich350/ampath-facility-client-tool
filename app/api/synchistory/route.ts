@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const pending = await prisma.reportDownload.findMany({
-      where: { synced: true },
-      orderBy: { syncedAt: "desc" },
+      where: { syncedToAmep: true },
+      orderBy: { syncedToAmep: "desc" },
     });
     return NextResponse.json(pending);
   } catch (error) {

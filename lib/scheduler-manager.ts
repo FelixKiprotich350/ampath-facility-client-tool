@@ -1,5 +1,4 @@
-import { startDownloadScheduler, stopDownloadScheduler } from './download-scheduler'
-import { startSyncScheduler, stopSyncScheduler } from './sync-scheduler'
+import { startDownloadScheduler, stopDownloadScheduler, getDownloadSchedulerStatus } from './download-scheduler' 
 
 export function startAllSchedulers() {
   console.log('Starting all schedulers...')
@@ -9,6 +8,9 @@ export function startAllSchedulers() {
 
 export function stopAllSchedulers() {
   console.log('Stopping all schedulers...')
-  stopDownloadScheduler()
-  stopSyncScheduler()
+  stopDownloadScheduler() 
+}
+
+export function getSchedulerStatus() {
+  return getDownloadSchedulerStatus()
 }

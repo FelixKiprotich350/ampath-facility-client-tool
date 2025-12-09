@@ -4,6 +4,7 @@ import { prisma } from "./prisma";
 import { error } from "console";
 import { KENYAEMR_REPORTS } from "./database";
 import https from "https"; // Add this import
+import { getDataElementsMapping } from "./data-collector";
 
 const SYNC_URL = process.env.AMEP_SERVER_URL;
 const targetUrl = `${SYNC_URL}/dataValueSets`;
@@ -74,9 +75,10 @@ export async function syncToAmep(
             ? JSON.parse(report.csvContent)
             : report.csvContent;
         // Get mappings for this report
-        const mappings = await prisma.amepElementstMapping.findMany({
-          where: { kenyaEmrReportUuid: report.kenyaEmrReportUuid },
-        });
+        const raw_mappings = await getDataElementsMapping();
+        const mappings = raw_mappings.filter(
+          (m) => m.reportKenyaEmrUuid === report.kenyaEmrReportUuid
+        );
 
         if (!mappings.length) {
           console.log(
@@ -115,7 +117,7 @@ export async function syncToAmep(
           period: reportingMonth,
           orgUnit: "fCj9Bn7iW2m",
           dataValues,
-        }; 
+        };
         const response = await fetch(targetUrl, {
           method: "POST",
           headers,

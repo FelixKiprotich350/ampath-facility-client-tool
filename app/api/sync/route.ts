@@ -1,5 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
-import { manualSync } from "@/lib/sync-scheduler";
+import { NextRequest, NextResponse } from "next/server"; 
 import { syncToAmep } from "@/lib/data-service";
 
 export async function POST(request: NextRequest) {

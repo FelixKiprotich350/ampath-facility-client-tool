@@ -66,6 +66,10 @@ export function stopDownloadScheduler() {
   isRunning = false;
 }
 
+export function getDownloadSchedulerStatus() {
+  return isRunning;
+}
+
 /**
  * collectFromBrowser - iterate reports and schedule them
  */

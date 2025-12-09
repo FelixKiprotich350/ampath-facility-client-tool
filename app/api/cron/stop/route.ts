@@ -1,11 +1,11 @@
-import { startAllSchedulers } from "@/lib/scheduler-manager";
+import { startAllSchedulers, stopAllSchedulers } from "@/lib/scheduler-manager";
 import { NextResponse } from "next/server";
 
 let schedulerStarted = false;
 
 export async function POST() {
   if (!schedulerStarted) {
-    startAllSchedulers();
+    stopAllSchedulers();
     schedulerStarted = true;
     return NextResponse.json({ message: "Cron scheduler started" });
   }

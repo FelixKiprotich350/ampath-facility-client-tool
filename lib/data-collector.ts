@@ -381,6 +381,8 @@ export async function downloadSingleReport(report: ReportType) {
   if (!server) throw new Error("KENYAEMR_SERVER env var not set");
 
   try {
+        console.log("Starting Download...");
+
     const reportPageBase = `${process.env.KENYAEMR_SERVER}/kenyaemr/report.page`;
     const page = await ensureLoggedIn();
     console.log("Logged in. Navigating reports...");
