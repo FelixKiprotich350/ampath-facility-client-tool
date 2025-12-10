@@ -1,14 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/layout/app-layout";
+
+type Report = {
+  kenyaEmrReportUuid: string;
+  name: string;
+};
 
 export default function NewReportPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [reports, setReports] = useState<Report[]>([]);
+  const [selectedReports, setSelectedReports] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  const fetchReports = async () => {
+    try {
+      const response = await fetch("/api/report-types");
+      const data = await response.json();
+      setReports(data);
+    } catch {}
+  };
 
   const getLast12Months = () => {
     const months = [];
@@ -32,8 +51,12 @@ export default function NewReportPage() {
       alert("Please select a month and year to proceed.");
       return;
     }
+    if (selectedReports.length === 0) {
+      alert("Please select at least one report.");
+      return;
+    }
     setLoading(true);
-    setStatus(`🔍 Collecting data for ${selectedMonth}...`);
+    setStatus(`🔍 Scheduling ${selectedReports.length} reports for ${selectedMonth}...`);
     try {
       const response = await fetch("/api/collect", {
         method: "POST",
@@ -42,6 +65,7 @@ export default function NewReportPage() {
           apiUrl: "",
           dataType: "indicators",
           reportPeriod: selectedMonth,
+          reports: selectedReports,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -51,13 +75,28 @@ export default function NewReportPage() {
           `✅ Collected ${result.indicators} indicators, ${result.lineList} line list records`
         );
       } else {
-        setStatus(`✅ Collected ${result.collected} ${result.type} records`);
+        setStatus(`✅ Scheduled ${result.scheduled || selectedReports.length} reports`);
       }
       setSelectedMonth("");
+      setSelectedReports([]);
     } catch (error) {
       setStatus("❌ Collection failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleReport = (uuid: string) => {
+    setSelectedReports((prev) =>
+      prev.includes(uuid) ? prev.filter((id) => id !== uuid) : [...prev, uuid]
+    );
+  };
+
+  const toggleAll = () => {
+    if (selectedReports.length === reports.length) {
+      setSelectedReports([]);
+    } else {
+      setSelectedReports(reports.map((r) => r.kenyaEmrReportUuid));
     }
   };
 
@@ -86,15 +125,49 @@ export default function NewReportPage() {
                 ))}
               </select>
             </div>
-            <Button
-              onClick={handleCollect}
-              disabled={!selectedMonth || loading}
-              className="w-full"
-            >
-              {loading ? "Collecting..." : "Collect Data"}
-            </Button>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Select Reports</span>
+              <Button size="sm" variant="outline" onClick={toggleAll}>
+                {selectedReports.length === reports.length ? "Deselect All" : "Select All"}
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {reports.length === 0 ? (
+              <div className="text-gray-500">Loading reports...</div>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {reports.map((report) => (
+                  <label
+                    key={report.kenyaEmrReportUuid}
+                    className="flex items-center gap-3 p-3 border rounded hover:bg-gray-50 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedReports.includes(report.kenyaEmrReportUuid)}
+                      onChange={() => toggleReport(report.kenyaEmrReportUuid)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm">{report.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Button
+          onClick={handleCollect}
+          disabled={!selectedMonth || selectedReports.length === 0 || loading}
+          className="w-full"
+        >
+          {loading ? "Scheduling..." : `Schedule ${selectedReports.length} Report(s)`}
+        </Button>
 
         {status && (
           <Card>

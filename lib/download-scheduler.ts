@@ -73,30 +73,26 @@ export function getDownloadSchedulerStatus() {
 /**
  * collectFromBrowser - iterate reports and schedule them
  */
-export async function schedulePlaywrightReports(reportPeriod: string) {
+export async function schedulePlaywrightReports(
+  reportPeriod: string,
+  reports: any[]
+) {
   try {
-    const all_reports = await getReportsList();
-    const reports = all_reports.filter((r) => r.isReporting == true);
-    console.log(
-      `Found ${all_reports.length} report types. Processing ${reports.length} reports.`
-    );
+    console.log(`Scheduling ${reports.length} reports.`);
     const results: any[] = [];
     const errors: any[] = [];
 
     for (const report of reports) {
       try {
-        const queueItem = await addReportToQueue(
-          report.kenyaEmrReportUuid,
-          reportPeriod
-        );
+        const queueItem = await addReportToQueue(report, reportPeriod);
         results.push(queueItem);
       } catch (error) {
         console.error(
-          `Failed to schedule report ${report.kenyaEmrReportUuid}:`,
+          `Failed to schedule report ${report}:`,
           (error as Error).message
         );
         errors.push({
-          uuid: report.kenyaEmrReportUuid,
+          uuid: report,
           error: (error as Error).message,
         });
       }
