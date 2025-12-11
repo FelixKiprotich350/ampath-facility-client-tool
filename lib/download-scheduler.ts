@@ -14,17 +14,23 @@ type ReportType = {
   [k: string]: any;
 };
 
-let isRunning = false;
+// Use global state to ensure scheduler status is shared across all contexts
+declare global {
+  var __schedulerRunning: boolean | undefined;
+}
+
+let isRunning = global.__schedulerRunning ?? false;
 
 export async function startDownloadScheduler() {
   if (isRunning) return;
 
   isRunning = true;
+  global.__schedulerRunning = true;
   console.log(
     "Report download scheduler started - processing reports continuously"
   );
 
-  while (isRunning) {
+  while (isRunning && global.__schedulerRunning) {
     try {
       const report = await getNextPendingReport();
 
@@ -64,9 +70,12 @@ export async function startDownloadScheduler() {
 
 export function stopDownloadScheduler() {
   isRunning = false;
+  global.__schedulerRunning = false;
 }
 
 export function getDownloadSchedulerStatus() {
+  // Always check global state first
+  isRunning = global.__schedulerRunning ?? false;
   return isRunning;
 }
 
