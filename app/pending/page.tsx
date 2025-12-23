@@ -27,6 +27,7 @@ export default function PendingPage() {
   const [pendingLoading, setPendingLoading] = useState(false);
   const [masterReportList, setMasterReportList] = useState<ReportType[]>();
   const [loading, setLoading] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [previewDialog, setPreviewDialog] = useState<{
     open: boolean;
     data: any[] | null;
@@ -62,20 +63,44 @@ export default function PendingPage() {
   };
 
   const handleSyncClick = () => {
+    if (selectedItems.size === 0) {
+      alert('Please select items to sync');
+      return;
+    }
     setCredentialsDialog(true);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === pendingData.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(pendingData.map(item => item.id)));
+    }
+  };
+
+  const toggleSelectItem = (id: number) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
   };
 
   const handleSync = async () => {
     setLoading(true);
     setCredentialsDialog(false);
     try {
+      const selectedData = pendingData.filter(item => selectedItems.has(item.id));
       const response = await fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({ ...credentials, selectedItems: Array.from(selectedItems) }),
       });
       const result = await response.json();
       if (result.successfullSync?.length > 0) {
+        setSelectedItems(new Set());
         loadPendingData();
       }
     } catch {
@@ -126,10 +151,10 @@ export default function PendingPage() {
           </Button>
           <Button
             onClick={handleSyncClick}
-            disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            disabled={loading || selectedItems.size === 0}
+            className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
           >
-            {loading ? "🔄 Syncing..." : "🚀 Sync Now"}
+            {loading ? "🔄 Syncing..." : `🚀 Sync Selected (${selectedItems.size})`}
           </Button>
         </div>
       </div>
@@ -145,6 +170,14 @@ export default function PendingPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.size === pendingData.length && pendingData.length > 0}
+                      onChange={toggleSelectAll}
+                      className="rounded"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Report Name
                   </th>
@@ -165,6 +198,14 @@ export default function PendingPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {pendingData.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.has(item.id)}
+                        onChange={() => toggleSelectItem(item.id)}
+                        className="rounded"
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {masterReportList?.find(
                         (k) => k.kenyaEmrReportUuid === item.kenyaEmrReportUuid

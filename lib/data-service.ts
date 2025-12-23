@@ -18,6 +18,8 @@ function findValueInCsvData(
 ): string | null {
   if (!Array.isArray(csvData) || !csvData.length) return null;
 
+  if (!variableName || !variableName.trim()) return null;
+  if (variableName.trim().toLowerCase() === "calculated") return null;
   for (const reportElement of csvData) {
     // Search through all values in this row
     for (const key of Object.keys(reportElement)) {
@@ -37,8 +39,9 @@ function findValueInCsvData(
 
 export async function syncToAmep(
   reportingMonth: string,
-  username?: string,
-  password?: string
+  username: string,
+  password: string,
+  selectedItems: number[]
 ) {
   let successfullSync = [];
   let failedSync = [];
@@ -51,7 +54,16 @@ export async function syncToAmep(
       return { successfullSync, failedSync, error: null };
     }
 
-    console.log(`Processing ${pendingReports.length} pending reports`);
+    const selectedReports = pendingReports.filter((report) =>
+      selectedItems.includes(report.id)
+    );
+
+    if (!selectedReports.length) {
+      console.log("No reports match the selected items");
+      return { successfullSync, failedSync, error: null };
+    }
+
+    console.log(`Processing ${selectedReports.length} pending reports`);
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -67,7 +79,7 @@ export async function syncToAmep(
     }
 
     // Process each pending report
-    for (const report of pendingReports) {
+    for (const report of selectedReports) {
       try {
         // Parse CSV content
         const csvData =
@@ -77,10 +89,10 @@ export async function syncToAmep(
         // Get mappings for this report
         const raw_mappings = await getDataElementsMapping();
         const mappings = raw_mappings.filter(
-          (m) => m.reportKenyaEmrUuid === report.kenyaEmrReportUuid
+          (m) => m.kenyaEmrReportUuid === report.kenyaEmrReportUuid
         );
 
-        if (!mappings.length) {
+        if (mappings.length <= 0) {
           console.log(
             `No mappings found for report ${report.kenyaEmrReportUuid}`
           );
@@ -104,7 +116,6 @@ export async function syncToAmep(
             });
           }
         }
-
         if (!dataValues.length) {
           console.log(
             `No data values mapped for report ${report.kenyaEmrReportUuid}`
