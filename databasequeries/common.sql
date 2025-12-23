@@ -1,7 +1,8 @@
 -- COMMON VARIABLES AND TABLES FOR HIV INDICATOR QUERIES
 
 -- Set variables for hardcoded values
-SET @report_date = LAST_DAY(DATE_SUB(CURDATE(), INTERVAL 1 MONTH));
+SET @report_start_date = '2025-01-01';
+SET @report_end_date = '2025-01-31';
 SET @cd4_threshold_low = 200;
 SET @cd4_threshold_high = 200;
 SET @viral_load_threshold = 200;
@@ -30,21 +31,24 @@ SET @program_tb = 'TB Program';
 SET @drug_dtg_pattern = '%DTG%';
 
 -- Common tables
+DROP TEMPORARY TABLE IF EXISTS rpt;
 CREATE TEMPORARY TABLE rpt AS (
-SELECT @report_date AS report_date
+SELECT @report_start_date AS report_start_date, @report_end_date AS report_end_date
 );
 
+DROP TEMPORARY TABLE IF EXISTS age_calc;
 CREATE TEMPORARY TABLE age_calc AS (
 SELECT
 p.patient_id,
 pr.gender AS sex,
-TIMESTAMPDIFF(YEAR, pr.birthdate, r.report_date) AS age
+TIMESTAMPDIFF(YEAR, pr.birthdate, r.report_end_date) AS age
 FROM patient p
 JOIN person pr ON pr.person_id = p.patient_id
 CROSS JOIN rpt r
 WHERE p.voided = @voided_status AND pr.voided = @voided_status
 );
 
+DROP TEMPORARY TABLE IF EXISTS age_band;
 CREATE TEMPORARY TABLE age_band AS (
 SELECT *,
 CASE

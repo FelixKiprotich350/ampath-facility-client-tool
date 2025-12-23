@@ -10,5 +10,5 @@ JOIN obs pg ON pg.person_id = o.patient_id
 AND pg.concept_id = (SELECT concept_id FROM concept_name WHERE name = @concept_pregnant LIMIT 1)
 AND pg.value_coded = (SELECT concept_id FROM concept_name WHERE name = @concept_yes LIMIT 1)
 AND pg.voided = @voided_status
-WHERE o.date_activated BETWEEN DATE_FORMAT(r.report_date, '%Y-%m-01') AND r.report_date
+WHERE o.date_activated BETWEEN r.report_start_date AND r.report_end_date
 GROUP BY ab.age_band, ab.sex;

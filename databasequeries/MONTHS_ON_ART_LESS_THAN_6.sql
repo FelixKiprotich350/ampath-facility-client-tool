@@ -6,5 +6,5 @@ FROM orders o
 JOIN drug_order d ON d.order_id = o.order_id
 JOIN age_band ab ON ab.patient_id = o.patient_id
 JOIN rpt r
-WHERE TIMESTAMPDIFF(MONTH, o.date_activated, r.report_date) < @months_on_art_threshold
+WHERE TIMESTAMPDIFF(MONTH, o.date_activated, r.report_end_date) < @months_on_art_threshold
 GROUP BY ab.age_band, ab.sex;

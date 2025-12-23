@@ -8,6 +8,6 @@ JOIN rpt r
 JOIN obs next_appt ON next_appt.encounter_id = e.encounter_id
 AND next_appt.concept_id = (SELECT concept_id FROM concept_name WHERE name = @concept_next_appointment LIMIT 1)
 AND next_appt.voided = @voided_status
-WHERE e.encounter_datetime <= r.report_date
-AND TIMESTAMPDIFF(DAY, next_appt.value_datetime, r.report_date) BETWEEN @defaulter_days_min AND @defaulter_days_max
+WHERE e.encounter_datetime <= r.report_end_date
+AND TIMESTAMPDIFF(DAY, next_appt.value_datetime, r.report_end_date) BETWEEN @defaulter_days_min AND @defaulter_days_max
 GROUP BY ab.age_band, ab.sex;

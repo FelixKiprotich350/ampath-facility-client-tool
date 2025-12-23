@@ -10,5 +10,5 @@ AND who.concept_id = (SELECT concept_id FROM concept_name WHERE name = @concept_
 AND who.value_coded IN ((SELECT concept_id FROM concept_name WHERE name = @concept_stage_3 LIMIT 1),
 (SELECT concept_id FROM concept_name WHERE name = @concept_stage_4 LIMIT 1))
 AND who.voided = @voided_status
-WHERE e.encounter_datetime <= r.report_date
+WHERE e.encounter_datetime <= r.report_end_date
 GROUP BY ab.age_band, ab.sex;

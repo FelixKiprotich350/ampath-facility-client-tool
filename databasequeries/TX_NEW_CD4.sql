@@ -15,5 +15,5 @@ JOIN rpt r
 LEFT JOIN obs cd4 ON cd4.person_id = o.patient_id
 AND cd4.concept_id = (SELECT concept_id FROM concept_name WHERE name = @concept_cd4_count LIMIT 1)
 AND cd4.voided = @voided_status
-WHERE o.date_activated BETWEEN DATE_FORMAT(r.report_date, '%Y-%m-01') AND r.report_date
+WHERE o.date_activated BETWEEN r.report_start_date AND r.report_end_date
 GROUP BY ab.age_band, ab.sex, cd4_category;

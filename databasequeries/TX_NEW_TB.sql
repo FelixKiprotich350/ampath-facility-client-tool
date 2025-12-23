@@ -9,5 +9,5 @@ JOIN program prg ON prg.program_id = pp.program_id
 JOIN age_band ab ON ab.patient_id = o.patient_id
 JOIN rpt r
 WHERE prg.name = @program_tb AND pp.voided = @voided_status
-AND o.date_activated BETWEEN DATE_FORMAT(r.report_date, '%Y-%m-01') AND r.report_date
+AND o.date_activated BETWEEN r.report_start_date AND r.report_end_date
 GROUP BY ab.age_band, ab.sex;

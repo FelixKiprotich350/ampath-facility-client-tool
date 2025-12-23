@@ -8,5 +8,5 @@ JOIN rpt r
 JOIN obs vl ON vl.person_id = e.patient_id
 AND vl.concept_id = (SELECT concept_id FROM concept_name WHERE name = @concept_hiv_viral_load LIMIT 1)
 AND vl.value_numeric >= @viral_load_threshold AND vl.voided = @voided_status
-WHERE e.encounter_datetime <= r.report_date
+WHERE e.encounter_datetime <= r.report_end_date
 GROUP BY ab.age_band, ab.sex;
