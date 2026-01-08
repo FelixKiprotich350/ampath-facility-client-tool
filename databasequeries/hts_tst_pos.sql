@@ -2,8 +2,8 @@
 -- HTS_TST_POS - HIV Testing Services Positive
 -- =========================================================
 
-SET @start_date = '2025-01-01';
-SET @end_date   = '2025-01-31';
+SET @start_date = DATE_FORMAT('2025-11-01', '%Y-%m-01');
+SET @end_date   = LAST_DAY('2025-11-01');
 
 SELECT d.gender,
 CASE
@@ -26,5 +26,5 @@ COUNT(*) AS hts_tst_pos
 FROM kenyaemr_etl.etl_hts_test h
 JOIN kenyaemr_etl.etl_patient_demographics d ON h.patient_id=d.patient_id
 WHERE h.visit_date BETWEEN @start_date AND @end_date
-AND h.test_result='Positive'
+AND h.final_test_result='Positive'
 GROUP BY d.gender, age_band;
