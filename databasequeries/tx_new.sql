@@ -2,8 +2,8 @@
 -- TX_NEW - New on Treatment
 -- =========================================================
 
-SET @start_date = '2025-05-01';
-SET @end_date   = '2025-05-31';
+SET @start_date = DATE_FORMAT('2025-11-01', '%Y-%m-01');
+SET @end_date   = LAST_DAY('2025-11-01');
 
 SELECT d.gender,
 CASE
@@ -25,6 +25,6 @@ CASE
 COUNT(DISTINCT e.patient_id) AS tx_new
 FROM kenyaemr_etl.etl_hiv_enrollment e
 JOIN kenyaemr_etl.etl_patient_demographics d ON e.patient_id=d.patient_id
-WHERE e.date_started_art_at_transferring_facility BETWEEN @start_date AND @end_date
-AND e.transfer_in_date IS  NULL
+WHERE  e.date_started_art_at_transferring_facility BETWEEN @start_date AND @end_date
+-- AND e.transfer_in_date IS  NULL
 GROUP BY d.gender, age_band;
