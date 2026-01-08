@@ -2,8 +2,9 @@
 -- PMTCT_STAT - Prevention of Mother-to-Child Transmission Status
 -- =========================================================
 
-SET @start_date = '2025-01-01';
-SET @end_date   = '2025-01-31';
+SET @start_date = DATE_FORMAT('2025-11-01', '%Y-%m-01');
+SET @end_date   = LAST_DAY('2025-11-01');
+SET @hiv_positive_code   = '703';
 
 SELECT d.gender,
 CASE
@@ -26,5 +27,5 @@ COUNT(DISTINCT m.patient_id) AS pmtct_stat
 FROM kenyaemr_etl.etl_mch_enrollment m
 JOIN kenyaemr_etl.etl_patient_demographics d ON m.patient_id=d.patient_id
 WHERE m.visit_date BETWEEN @start_date AND @end_date
-AND m.hiv_status='Positive'
+AND m.hiv_status=@hiv_positive_code
 GROUP BY d.gender, age_band;

@@ -2,8 +2,9 @@
 -- PMTCT_ART - Prevention of Mother-to-Child Transmission ART
 -- =========================================================
 
-SET @start_date = '2025-01-01';
-SET @end_date   = '2025-01-31';
+SET @start_date = DATE_FORMAT('2025-11-01', '%Y-%m-01');
+SET @end_date   = LAST_DAY('2025-11-01');
+SET @hiv_positive_code   = '703';
 
 SELECT d.gender,
 CASE
@@ -26,6 +27,6 @@ COUNT(DISTINCT m.patient_id) AS pmtct_art
 FROM kenyaemr_etl.etl_mch_enrollment m
 JOIN kenyaemr_etl.etl_hiv_enrollment h ON m.patient_id=h.patient_id
 JOIN kenyaemr_etl.etl_patient_demographics d ON m.patient_id=d.patient_id
-WHERE m.hiv_status='Positive'
+WHERE m.hiv_status=@hiv_positive_code
 AND h.date_started_art_at_transferring_facility<=@end_date
 GROUP BY d.gender, age_band;
