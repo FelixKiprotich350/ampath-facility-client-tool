@@ -2,8 +2,8 @@
 -- TX_CURR - Currently on Treatment
 -- =========================================================
 
-SET @start_date = '2025-01-01';
-SET @end_date   = '2025-01-31';
+SET @start_date = '2025-11-01';
+SET @end_date   = '2025-11-31';
 
 SELECT d.gender,
 CASE

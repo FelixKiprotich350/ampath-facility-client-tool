@@ -2,8 +2,8 @@
 -- TX_NEW - New on Treatment
 -- =========================================================
 
-SET @start_date = '2025-01-01';
-SET @end_date   = '2025-01-31';
+SET @start_date = '2025-05-01';
+SET @end_date   = '2025-05-31';
 
 SELECT d.gender,
 CASE
@@ -18,10 +18,13 @@ CASE
  WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) BETWEEN 35 AND 39 THEN '35-39'
  WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) BETWEEN 40 AND 44 THEN '40-44'
  WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) BETWEEN 45 AND 49 THEN '45-49'
- ELSE '50+' END AS age_band,
+ WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) BETWEEN 50 AND 54 THEN '50-54'
+ WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) BETWEEN 55 AND 59 THEN '55-59'
+ WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) BETWEEN 60 AND 64 THEN '60-64'
+ ELSE '65+' END AS age_band,
 COUNT(DISTINCT e.patient_id) AS tx_new
 FROM kenyaemr_etl.etl_hiv_enrollment e
 JOIN kenyaemr_etl.etl_patient_demographics d ON e.patient_id=d.patient_id
 WHERE e.date_started_art_at_transferring_facility BETWEEN @start_date AND @end_date
-AND e.transfer_in_date IS NULL
+AND e.transfer_in_date IS  NULL
 GROUP BY d.gender, age_band;
