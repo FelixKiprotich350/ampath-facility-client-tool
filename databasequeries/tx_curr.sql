@@ -2,11 +2,11 @@
 -- TX_CURR - Currently on Treatment
 -- =========================================================
 
-SET @start_date = '2025-11-01';
-SET @end_date   = '2025-11-31';
+SET @start_date = DATE_FORMAT('2025-11-01', '%Y-%m-01');
+SET @end_date   = LAST_DAY('2025-11-01');
 
 SELECT d.gender,
-CASE
+CASE 
  WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) < 1 THEN '<1'
  WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) BETWEEN 1 AND 4 THEN '1-4'
  WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) BETWEEN 5 AND 9 THEN '5-9'
@@ -25,7 +25,7 @@ CASE
 COUNT(DISTINCT f.patient_id) AS tx_curr
 FROM kenyaemr_etl.etl_patient_hiv_followup f
 JOIN kenyaemr_etl.etl_patient_demographics d ON f.patient_id=d.patient_id
-WHERE f.visit_date<=@end_date
+WHERE f.visit_date<=@end_date 
 AND f.next_appointment_date>=@end_date
 AND f.patient_id NOT IN (
  SELECT patient_id FROM kenyaemr_etl.etl_patient_program_discontinuation
