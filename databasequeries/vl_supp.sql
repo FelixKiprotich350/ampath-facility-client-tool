@@ -2,8 +2,8 @@
 -- VL_SUPP - Viral Load Suppression
 -- =========================================================
 
-SET @start_date = '2025-01-01';
-SET @end_date   = '2025-01-31';
+SET @start_date = DATE_FORMAT('2025-11-01', '%Y-%m-01');
+SET @end_date   = LAST_DAY('2025-11-01');
 
 SELECT d.gender,
 CASE
@@ -23,8 +23,8 @@ CASE
  WHEN TIMESTAMPDIFF(YEAR, d.DOB, @end_date) BETWEEN 60 AND 64 THEN '60-64'
  ELSE '65+' END AS age_band,
 COUNT(DISTINCT v.patient_id) AS vl_suppressed
-FROM kenyaemr_etl.etl_viral_load v
+FROM kenyaemr_etl.etl_viral_load_tracker v
 JOIN kenyaemr_etl.etl_patient_demographics d ON v.patient_id=d.patient_id
-WHERE v.visit_date BETWEEN @start_date AND @end_date
-AND v.current_vl_result<1000
+WHERE v.vl_date BETWEEN @start_date AND @end_date
+AND CAST(v.vl_result AS UNSIGNED) < 1000
 GROUP BY d.gender, age_band;

@@ -2,8 +2,8 @@
 -- TB_STAT - Tuberculosis Status
 -- =========================================================
 
-SET @start_date = '2025-01-01';
-SET @end_date   = '2025-01-31';
+SET @start_date = DATE_FORMAT('2025-11-01', '%Y-%m-01');
+SET @end_date   = LAST_DAY('2025-11-01');
 
 SELECT d.gender,
 CASE

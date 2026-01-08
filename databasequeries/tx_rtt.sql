@@ -2,8 +2,8 @@
 -- TX_RTT - Return to Treatment
 -- =========================================================
 
-SET @start_date = '2025-01-01';
-SET @end_date   = '2025-01-31';
+SET @start_date = DATE_FORMAT('2025-11-01', '%Y-%m-01');
+SET @end_date   = LAST_DAY('2025-11-01');
 
 SELECT d.gender,
 CASE
@@ -26,5 +26,10 @@ COUNT(DISTINCT f.patient_id) AS tx_rtt
 FROM kenyaemr_etl.etl_patient_hiv_followup f
 JOIN kenyaemr_etl.etl_patient_demographics d ON f.patient_id=d.patient_id
 WHERE f.visit_date BETWEEN @start_date AND @end_date
-AND f.days_since_last_visit>28
+AND DATEDIFF(f.visit_date, (
+    SELECT MAX(f2.visit_date) 
+    FROM kenyaemr_etl.etl_patient_hiv_followup f2 
+    WHERE f2.patient_id = f.patient_id 
+    AND f2.visit_date < f.visit_date
+)) > 28
 GROUP BY d.gender, age_band;
