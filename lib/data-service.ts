@@ -1,35 +1,32 @@
 import { getUnsyncedReports } from "./local-db";
-import { readFileSync } from "fs";
 import { prisma } from "./prisma";
-import { error } from "console";
-import { KENYAEMR_REPORTS } from "./database";
-import https from "https"; // Add this import
 import { getDataElementsMapping } from "./data-collector";
 
 const SYNC_URL = process.env.AMEP_SERVER_URL;
 const targetUrl = `${SYNC_URL}/dataValueSets`;
 
 /**
- * Find value in CSV data by variable name
+ * Find value in data by variable name
  */
-function findValueInCsvData(
-  csvData: any[],
+function findValueInData(
+  data: any[],
   variableName: string
 ): string | null {
-  if (!Array.isArray(csvData) || !csvData.length) return null;
+  if (!Array.isArray(data) || !data.length) return null;
 
   if (!variableName || !variableName.trim()) return null;
   if (variableName.trim().toLowerCase() === "calculated") return null;
-  for (const reportElement of csvData) {
-    // Search through all values in this row
-    for (const key of Object.keys(reportElement)) {
-      const cellValue = String(reportElement[key] ?? "")
+  
+  for (const record of data) {
+    // Search through all values in this record
+    for (const key of Object.keys(record)) {
+      const cellValue = String(record[key] ?? "")
         .trim()
         .toLowerCase();
 
       if (cellValue == variableName.trim().toLowerCase()) {
-        // Found the matching row — return the result column
-        return reportElement.column2 ?? null; // <-- change column2 if needed
+        // Found the matching record — return the result column
+        return record.column2 ?? null; // <-- change column2 if needed
       }
     }
   }
@@ -71,7 +68,6 @@ export async function syncToAmep(
     };
 
     if (username && password) {
-      // Use Buffer instead of btoa for Node.js
       const credentials = Buffer.from(`${username}:${password}`).toString(
         "base64"
       );
@@ -81,11 +77,12 @@ export async function syncToAmep(
     // Process each pending report
     for (const report of selectedReports) {
       try {
-        // Parse CSV content
-        const csvData =
+        // Parse data content
+        const data =
           typeof report.csvContent === "string"
             ? JSON.parse(report.csvContent)
             : report.csvContent;
+        
         // Get mappings for this report
         const raw_mappings = await getDataElementsMapping();
         const mappings = raw_mappings.filter(
@@ -99,29 +96,31 @@ export async function syncToAmep(
           continue;
         }
 
-        // Map CSV variables to data elements
+        // Map data variables to data elements
         const dataValues = [];
         for (const mapping of mappings) {
-          // Find value in CSV data by variable name
-          const csvValue = findValueInCsvData(
-            csvData,
+          // Find value in data by variable name
+          const dataValue = findValueInData(
+            data,
             mapping.reportVariableName
           );
-          if (csvValue !== null) {
+          if (dataValue !== null) {
             dataValues.push({
               dataElement: mapping.dataElementId,
               attributeOptionCombo: mapping.attributeOptionComboId,
               categoryOptionCombo: mapping.categoryOptionComboId,
-              value: csvValue.toString(),
+              value: dataValue.toString(),
             });
           }
         }
+        
         if (!dataValues.length) {
           console.log(
             `No data values mapped for report ${report.kenyaEmrReportUuid}`
           );
           continue;
         }
+        
         const body = {
           dataSet: "Lf1skJGdrzj",
           completeDate: new Date().toISOString().split("T")[0],
@@ -129,6 +128,7 @@ export async function syncToAmep(
           orgUnit: "fCj9Bn7iW2m",
           dataValues,
         };
+        
         const response = await fetch(targetUrl, {
           method: "POST",
           headers,

@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getReportsList } from "@/lib/download-scheduler";
 
 export async function GET(request: NextRequest) {
   try {
-    const reportTypes = await getReportsList();
-    return NextResponse.json(reportTypes);
+    return NextResponse.json([{ name: "TX_CURR", code: "tx_curr" }]);
   } catch (error) {
     console.error("Error fetching reportTypes:", error);
     return NextResponse.json(

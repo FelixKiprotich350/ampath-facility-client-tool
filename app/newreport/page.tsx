@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/layout/app-layout";
 
 type Report = {
-  kenyaEmrReportUuid: string;
+  code: string;
   name: string;
 };
 
@@ -56,26 +56,41 @@ export default function NewReportPage() {
       return;
     }
     setLoading(true);
-    setStatus(`🔍 Scheduling ${selectedReports.length} reports for ${selectedMonth}...`);
+    setStatus(
+      `🔍 Scheduling ${selectedReports.length} reports for ${selectedMonth}...`
+    );
     try {
-      const response = await fetch("/api/collect", {
+      // const response = await fetch("/api/collect", {
+      //   method: "POST",
+      //   body: JSON.stringify({
+      //     source: "api",
+      //     apiUrl: "",
+      //     dataType: "indicators",
+      //     reportPeriod: selectedMonth,
+      //     reports: selectedReports,
+      //   }),
+      //   headers: { "Content-Type": "application/json" },
+      // });
+
+      const response = await fetch("/api/reports/query", {
         method: "POST",
         body: JSON.stringify({
-          source: "api",
-          apiUrl: "",
-          dataType: "indicators",
-          reportPeriod: selectedMonth,
-          reports: selectedReports,
+          reportType: "tx_curr",
+          startDate: "2025-01-01",
+          endDate: "2025-01-31",
         }),
         headers: { "Content-Type": "application/json" },
       });
+
       const result = await response.json();
       if (result.indicators !== undefined) {
         setStatus(
           `✅ Collected ${result.indicators} indicators, ${result.lineList} line list records`
         );
       } else {
-        setStatus(`✅ Scheduled ${result.scheduled || selectedReports.length} reports`);
+        setStatus(
+          `✅ Scheduled ${result.scheduled || selectedReports.length} reports`
+        );
       }
       setSelectedMonth("");
       setSelectedReports([]);
@@ -96,12 +111,15 @@ export default function NewReportPage() {
     if (selectedReports.length === reports.length) {
       setSelectedReports([]);
     } else {
-      setSelectedReports(reports.map((r) => r.kenyaEmrReportUuid));
+      setSelectedReports(reports.map((r) => r.code));
     }
   };
 
   return (
-    <AppLayout title="Generate Report" subtitle="Collect data for a specific period">
+    <AppLayout
+      title="Generate Report"
+      subtitle="Collect data for a specific period"
+    >
       <div className="space-y-6">
         <Card>
           <CardHeader>
@@ -133,7 +151,9 @@ export default function NewReportPage() {
             <CardTitle className="flex items-center justify-between">
               <span>Select Reports</span>
               <Button size="sm" variant="outline" onClick={toggleAll}>
-                {selectedReports.length === reports.length ? "Deselect All" : "Select All"}
+                {selectedReports.length === reports.length
+                  ? "Deselect All"
+                  : "Select All"}
               </Button>
             </CardTitle>
           </CardHeader>
@@ -144,13 +164,13 @@ export default function NewReportPage() {
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {reports.map((report) => (
                   <label
-                    key={report.kenyaEmrReportUuid}
+                    key={report.code}
                     className="flex items-center gap-3 p-3 border rounded hover:bg-gray-50 cursor-pointer"
                   >
                     <input
                       type="checkbox"
-                      checked={selectedReports.includes(report.kenyaEmrReportUuid)}
-                      onChange={() => toggleReport(report.kenyaEmrReportUuid)}
+                      checked={selectedReports.includes(report.code)}
+                      onChange={() => toggleReport(report.code)}
                       className="w-4 h-4"
                     />
                     <span className="text-sm">{report.name}</span>
@@ -166,7 +186,9 @@ export default function NewReportPage() {
           disabled={!selectedMonth || selectedReports.length === 0 || loading}
           className="w-full"
         >
-          {loading ? "Scheduling..." : `Schedule ${selectedReports.length} Report(s)`}
+          {loading
+            ? "Scheduling..."
+            : `Schedule ${selectedReports.length} Report(s)`}
         </Button>
 
         {status && (
