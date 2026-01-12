@@ -65,7 +65,7 @@ export default function NewReportPage() {
         body: JSON.stringify({ 
           reportType: "indicators",
           reportPeriod: selectedMonth,
-          reports: selectedReports,
+          indicators: selectedReports,
         }),
         headers: { "Content-Type": "application/json" },
       });

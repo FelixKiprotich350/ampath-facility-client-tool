@@ -23,7 +23,8 @@ function convertToYYYYMM(monthValue: string): string {
 
   // Fallback to current year-month
   return `${currentYear}${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
+} 
+
 
 type ReportType = {
   kenyaEmrReportUuid: string;
@@ -51,7 +52,6 @@ export async function executeSingleIndicator(
 
     // Convert data to CSV-like format for compatibility
     const csvContent = JSON.stringify(data);
-
     await addStagedResults(reportcode, csvContent, startDate, endDate);
 
     console.log(`Report ${reportcode} completed: (${recordCount} records)`);

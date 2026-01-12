@@ -18,9 +18,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
+    const [year, month] = reportPeriod.split("-").map(Number);
+    const lastdate = new Date(year, month, 0).getDate();
+    const endDate = `${reportPeriod}-${String(lastdate).padStart(2, "0")}`;
+    const startDate = `${reportPeriod}-01`;
     indicators.forEach(async (indicator) => {
-      await executeSingleIndicator(indicator, reportPeriod, reportPeriod);
+      await executeSingleIndicator(indicator, startDate, endDate);
     });
 
     return NextResponse.json({

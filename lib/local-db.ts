@@ -48,8 +48,8 @@ export async function addStagedResults(
     data: {
       indicatorCode,
       rawResult,
-      startDate,
-      endDate,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
     },
   });
 }

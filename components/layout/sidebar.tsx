@@ -9,7 +9,7 @@ export function Sidebar() {
   const menuItems = [
     { href: "/dashboard", label: "Dashboard", icon: "🏠" },
     { href: "/newreport", label: "Generate Report", icon: "⏳" },
-    { href: "/queue", label: "Reports Queue", icon: "⏳" },
+    { href: "/staged", label: "Staged Indicators", icon: "⏳" },
     { href: "/pending", label: "Pending Data", icon: "⏳" },
     { href: "/history", label: "History", icon: "📜" },
     { href: "/system", label: "System Status", icon: "📜" },

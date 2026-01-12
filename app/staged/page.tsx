@@ -7,12 +7,10 @@ import { AppLayout } from "@/components/layout/app-layout";
 
 type Report = {
   id: number;
-  kenyaEmrReportUuid: string;
+  rawResult: string;
   reportPeriod: string;
-  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
   createdAt: string;
-  processedAt?: string;
-  error?: string;
+  indicatorCode: string;
 };
 
 export default function ReportsQueuePage() {
@@ -27,7 +25,7 @@ export default function ReportsQueuePage() {
 
   const fetchReports = async () => {
     try {
-      const response = await fetch("/api/reports/queue-list");
+      const response = await fetch("/api/reports/staged");
       const data = await response.json();
       setReports(data);
     } catch {}
@@ -53,15 +51,19 @@ export default function ReportsQueuePage() {
       FAILED: "bg-red-100 text-red-800",
     };
     return (
-      <span className={`px-2 py-1 rounded text-xs font-medium ${styles[status as keyof typeof styles]}`}>
+      <span
+        className={`px-2 py-1 rounded text-xs font-medium ${
+          styles[status as keyof typeof styles]
+        }`}
+      >
         {status}
       </span>
     );
   };
 
-  const pending = reports.filter((r) => r.status === "PENDING").length;
-  const processing = reports.filter((r) => r.status === "PROCESSING").length;
-  const failed = reports.filter((r) => r.status === "FAILED").length;
+  // const pending = reports.filter((r) => r.status === "PENDING").length;
+  // const processing = reports.filter((r) => r.status === "PROCESSING").length;
+  // const failed = reports.filter((r) => r.status === "FAILED").length;
 
   return (
     <AppLayout title="Reports Queue" subtitle="Scheduled reports status">
@@ -69,19 +71,19 @@ export default function ReportsQueuePage() {
         <div className="grid grid-cols-3 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{pending}</div>
+              {/* <div className="text-2xl font-bold">{pending}</div> */}
               <div className="text-sm text-gray-600">Pending</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{processing}</div>
+              {/* <div className="text-2xl font-bold">{processing}</div> */}
               <div className="text-sm text-gray-600">Processing</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{failed}</div>
+              {/* <div className="text-2xl font-bold">{failed}</div> */}
               <div className="text-sm text-gray-600">Failed</div>
             </CardContent>
           </Card>
@@ -107,25 +109,40 @@ export default function ReportsQueuePage() {
                       <th className="text-left p-2">Created</th>
                       <th className="text-left p-2">Processed</th>
                       <th className="text-left p-2">Error</th>
-                      <th className="text-left p-2">Action</th>
+                      {/* <th className="text-left p-2">Action</th> */}
                     </tr>
                   </thead>
                   <tbody>
                     {reports.map((report) => (
                       <tr key={report.id} className="border-b hover:bg-gray-50">
-                        <td className="p-2 text-sm font-mono">{report.kenyaEmrReportUuid.slice(0, 8)}...</td>
+                        <td className="p-2 text-sm font-mono">
+                          {report.indicatorCode}
+                        </td>
                         <td className="p-2">{report.reportPeriod}</td>
-                        <td className="p-2">{getStatusBadge(report.status)}</td>
-                        <td className="p-2 text-sm">{new Date(report.createdAt).toLocaleString()}</td>
-                        <td className="p-2 text-sm">{report.processedAt ? new Date(report.processedAt).toLocaleString() : "-"}</td>
-                        <td className="p-2 text-sm text-red-600">{report.error || "-"}</td>
-                        <td className="p-2">
-                          {(report.status === "FAILED" || report.status === "PROCESSING") && (
-                            <Button size="sm" variant="outline" onClick={() => handleRetry(report.id)}>
+                        <td className="p-2">{getStatusBadge(report.indicatorCode)}</td>
+                        <td className="p-2 text-sm">
+                          {new Date(report.createdAt).toLocaleString()}
+                        </td>
+                        <td className="p-2 text-sm">
+                          {report.createdAt
+                            ? new Date(report.createdAt).toLocaleString()
+                            : "-"}
+                        </td>
+                        <td className="p-2 text-sm text-red-600">
+                          {report.indicatorCode || "-"}
+                        </td>
+                        {/* <td className="p-2">
+                          {(report.status === "FAILED" ||
+                            report.status === "PROCESSING") && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRetry(report.id)}
+                            >
                               Retry
                             </Button>
                           )}
-                        </td>
+                        </td> */}
                       </tr>
                     ))}
                   </tbody>
