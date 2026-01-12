@@ -8,6 +8,13 @@ const kenyaemrDbConfig = {
   password: process.env.KENYAEMR_DB_PASSWORD,
   database: process.env.KENYAEMR_DB_NAME,
 };
+export type DbQueryResult = {
+  gender: number;
+  age_band: string;
+  count: string;
+  startDate?: Date;
+  endDate?: Date;
+};
 
 export async function fetchFromKenyaEMRDatabase(
   query: string,
@@ -50,7 +57,7 @@ export async function executeReportQuery(
         }
       }
     }
-    return result;
+    return result as DbQueryResult[];
   } finally {
     await connection.end();
   }

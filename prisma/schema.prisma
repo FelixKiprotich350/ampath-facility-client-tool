@@ -78,6 +78,19 @@ model IndicatorType {
   @@map("indicator_types")
 }
 
+model StagedIndicator {
+  id               Int       @id @default(autoincrement())
+  indicatorCode    String
+  rawResult        Json
+  startDate        DateTime
+  endDate          DateTime
+  createdAt        DateTime  @default(now()) @map("requested_at")
+  syncedToAmepAt   DateTime? @map("synced_amep_at")
+  syncedToAmpathAt DateTime? @map("synced_ampath_at")
+
+  @@map("staged_indicators")
+}
+
 model ReportDownload {
   id                 Int       @id @default(autoincrement())
   kenyaEmrReportUuid String
@@ -89,8 +102,8 @@ model ReportDownload {
   recordCount        Int?
   syncedToAmep       Boolean   @default(false)
   syncedToAmpath     Boolean   @default(false)
-  syncedToAmepAt           DateTime? @map("synced_amep_at")
-  syncedToAmpathAt           DateTime? @map("synced_ampath_at")
+  syncedToAmepAt     DateTime? @map("synced_amep_at")
+  syncedToAmpathAt   DateTime? @map("synced_ampath_at")
 
   @@map("report_downloads")
 }
@@ -106,7 +119,6 @@ model ReportQueue {
 
   @@map("report_queue")
 }
- 
 
 enum FacilityReportTypeCategory {
   indicator

@@ -43,6 +43,11 @@ export type LineList = Prisma.LineListModel
  */
 export type IndicatorType = Prisma.IndicatorTypeModel
 /**
+ * Model StagedIndicator
+ * 
+ */
+export type StagedIndicator = Prisma.StagedIndicatorModel
+/**
  * Model ReportDownload
  * 
  */

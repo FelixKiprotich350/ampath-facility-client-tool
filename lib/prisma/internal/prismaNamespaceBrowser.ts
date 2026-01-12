@@ -56,6 +56,7 @@ export const ModelName = {
   Indicator: 'Indicator',
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
+  StagedIndicator: 'StagedIndicator',
   ReportDownload: 'ReportDownload',
   ReportQueue: 'ReportQueue'
 } as const
@@ -144,6 +145,20 @@ export const IndicatorTypeScalarFieldEnum = {
 } as const
 
 export type IndicatorTypeScalarFieldEnum = (typeof IndicatorTypeScalarFieldEnum)[keyof typeof IndicatorTypeScalarFieldEnum]
+
+
+export const StagedIndicatorScalarFieldEnum = {
+  id: 'id',
+  indicatorCode: 'indicatorCode',
+  rawResult: 'rawResult',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  createdAt: 'createdAt',
+  syncedToAmepAt: 'syncedToAmepAt',
+  syncedToAmpathAt: 'syncedToAmpathAt'
+} as const
+
+export type StagedIndicatorScalarFieldEnum = (typeof StagedIndicatorScalarFieldEnum)[keyof typeof StagedIndicatorScalarFieldEnum]
 
 
 export const ReportDownloadScalarFieldEnum = {
@@ -270,6 +285,13 @@ export const IndicatorTypeOrderByRelevanceFieldEnum = {
 } as const
 
 export type IndicatorTypeOrderByRelevanceFieldEnum = (typeof IndicatorTypeOrderByRelevanceFieldEnum)[keyof typeof IndicatorTypeOrderByRelevanceFieldEnum]
+
+
+export const StagedIndicatorOrderByRelevanceFieldEnum = {
+  indicatorCode: 'indicatorCode'
+} as const
+
+export type StagedIndicatorOrderByRelevanceFieldEnum = (typeof StagedIndicatorOrderByRelevanceFieldEnum)[keyof typeof StagedIndicatorOrderByRelevanceFieldEnum]
 
 
 export const ReportDownloadOrderByRelevanceFieldEnum = {

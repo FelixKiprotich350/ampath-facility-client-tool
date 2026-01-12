@@ -60,27 +60,17 @@ export default function NewReportPage() {
       `🔍 Scheduling ${selectedReports.length} reports for ${selectedMonth}...`
     );
     try {
-      // const response = await fetch("/api/collect", {
-      //   method: "POST",
-      //   body: JSON.stringify({
-      //     source: "api",
-      //     apiUrl: "",
-      //     dataType: "indicators",
-      //     reportPeriod: selectedMonth,
-      //     reports: selectedReports,
-      //   }),
-      //   headers: { "Content-Type": "application/json" },
-      // });
-
-      const response = await fetch("/api/reports/query", {
+      const response = await fetch("/api/collect", {
         method: "POST",
-        body: JSON.stringify({
-          reportType: "tx_curr",
-          startDate: "2025-01-01",
-          endDate: "2025-01-31",
+        body: JSON.stringify({ 
+          reportType: "indicators",
+          reportPeriod: selectedMonth,
+          reports: selectedReports,
         }),
         headers: { "Content-Type": "application/json" },
       });
+
+     
 
       const result = await response.json();
       if (result.indicators !== undefined) {

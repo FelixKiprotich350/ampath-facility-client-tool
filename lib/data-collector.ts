@@ -1,4 +1,4 @@
-import { addIndicator, addLineList, addReportDownload } from "./local-db";
+import { addIndicator, addLineList, addStagedResults } from "./local-db";
 import { addReportToQueue } from "./report-queue";
 import { executeReportQuery } from "./queryreports";
 
@@ -33,42 +33,28 @@ type ReportType = {
 };
 
 /**
- * Execute a single report query directly from database
+ * Execute a single indicator query directly from database
  */
-export async function executeSingleReport(report: ReportType, startDate: string, endDate: string) {
-  const startTime = Date.now();
-
+export async function executeSingleIndicator(
+  reportcode: string,
+  startDate: string,
+  endDate: string
+) {
   try {
-    console.log(`Starting direct query for report: ${report.reportType}`);
-
-    if (!report.reportType) {
+    console.log(`Starting direct query for indicator: ${reportcode}`);
+    if (!reportcode) {
       throw new Error("Report type is required for direct database query");
     }
 
-    const data = await executeReportQuery(report.reportType, startDate, endDate);
+    const data = await executeReportQuery(reportcode, startDate, endDate);
     const recordCount = Array.isArray(data) ? data.length : 0;
-    
+
     // Convert data to CSV-like format for compatibility
     const csvContent = JSON.stringify(data);
-    
-    // Get current year-month in YYYYMM format
-    const now = new Date();
-    const currentYearMonth = `${now.getFullYear()}${String(
-      now.getMonth() + 1
-    ).padStart(2, "0")}`;
 
-    await addReportDownload(
-      report.kenyaEmrReportUuid,
-      csvContent,
-      `direct-query-${report.reportType}`,
-      "200 OK",
-      currentYearMonth,
-      recordCount
-    );
+    await addStagedResults(reportcode, csvContent, startDate, endDate);
 
-    console.log(
-      `Report ${report.kenyaEmrReportUuid} completed: (${recordCount} records)`
-    );
+    console.log(`Report ${reportcode} completed: (${recordCount} records)`);
 
     return { records: recordCount, message: "success" };
   } catch (error) {

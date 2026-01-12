@@ -38,22 +38,18 @@ export async function markIndicatorsAsSynced(ids: number[]) {
   });
 }
 
-export async function addReportDownload(
-  reportUuid: string,
-  csvContent: any,
-  requestUrl: string,
-  response: string,
-  period: string,
-  recordCount?: number
+export async function addStagedResults(
+  indicatorCode: string,
+  rawResult: any,
+  startDate: string,
+  endDate: string
 ) {
-  return prisma.reportDownload.create({
+  return prisma.stagedIndicator.create({
     data: {
-      kenyaEmrReportUuid:reportUuid,
-      csvContent,
-      requestUrl,
-      response,
-      reportPeriod: period,
-      recordCount,
+      indicatorCode,
+      rawResult,
+      startDate,
+      endDate,
     },
   });
 }

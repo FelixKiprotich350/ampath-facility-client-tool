@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.0.0
- * Query Engine version: 0c19ccc313cf9911a90d99d2ac2eb0280c76c513
+ * Prisma Client JS version: 7.2.0
+ * Query Engine version: 0c8ef2ce45c83248ab3df073180d5eda9e8be7a3
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.0.0",
-  engine: "0c19ccc313cf9911a90d99d2ac2eb0280c76c513"
+  client: "7.2.0",
+  engine: "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3"
 }
 
 /**
@@ -389,6 +389,7 @@ export const ModelName = {
   Indicator: 'Indicator',
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
+  StagedIndicator: 'StagedIndicator',
   ReportDownload: 'ReportDownload',
   ReportQueue: 'ReportQueue'
 } as const
@@ -406,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "facility" | "facilityReportType" | "indicator" | "lineList" | "indicatorType" | "reportDownload" | "reportQueue"
+    modelProps: "facility" | "facilityReportType" | "indicator" | "lineList" | "indicatorType" | "stagedIndicator" | "reportDownload" | "reportQueue"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -740,6 +741,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    StagedIndicator: {
+      payload: Prisma.$StagedIndicatorPayload<ExtArgs>
+      fields: Prisma.StagedIndicatorFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StagedIndicatorFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedIndicatorPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StagedIndicatorFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedIndicatorPayload>
+        }
+        findFirst: {
+          args: Prisma.StagedIndicatorFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedIndicatorPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StagedIndicatorFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedIndicatorPayload>
+        }
+        findMany: {
+          args: Prisma.StagedIndicatorFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedIndicatorPayload>[]
+        }
+        create: {
+          args: Prisma.StagedIndicatorCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedIndicatorPayload>
+        }
+        createMany: {
+          args: Prisma.StagedIndicatorCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.StagedIndicatorDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedIndicatorPayload>
+        }
+        update: {
+          args: Prisma.StagedIndicatorUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedIndicatorPayload>
+        }
+        deleteMany: {
+          args: Prisma.StagedIndicatorDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StagedIndicatorUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.StagedIndicatorUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedIndicatorPayload>
+        }
+        aggregate: {
+          args: Prisma.StagedIndicatorAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStagedIndicator>
+        }
+        groupBy: {
+          args: Prisma.StagedIndicatorGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StagedIndicatorGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StagedIndicatorCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StagedIndicatorCountAggregateOutputType> | number
+        }
+      }
+    }
     ReportDownload: {
       payload: Prisma.$ReportDownloadPayload<ExtArgs>
       fields: Prisma.ReportDownloadFieldRefs
@@ -981,6 +1048,20 @@ export const IndicatorTypeScalarFieldEnum = {
 export type IndicatorTypeScalarFieldEnum = (typeof IndicatorTypeScalarFieldEnum)[keyof typeof IndicatorTypeScalarFieldEnum]
 
 
+export const StagedIndicatorScalarFieldEnum = {
+  id: 'id',
+  indicatorCode: 'indicatorCode',
+  rawResult: 'rawResult',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  createdAt: 'createdAt',
+  syncedToAmepAt: 'syncedToAmepAt',
+  syncedToAmpathAt: 'syncedToAmpathAt'
+} as const
+
+export type StagedIndicatorScalarFieldEnum = (typeof StagedIndicatorScalarFieldEnum)[keyof typeof StagedIndicatorScalarFieldEnum]
+
+
 export const ReportDownloadScalarFieldEnum = {
   id: 'id',
   kenyaEmrReportUuid: 'kenyaEmrReportUuid',
@@ -1105,6 +1186,13 @@ export const IndicatorTypeOrderByRelevanceFieldEnum = {
 } as const
 
 export type IndicatorTypeOrderByRelevanceFieldEnum = (typeof IndicatorTypeOrderByRelevanceFieldEnum)[keyof typeof IndicatorTypeOrderByRelevanceFieldEnum]
+
+
+export const StagedIndicatorOrderByRelevanceFieldEnum = {
+  indicatorCode: 'indicatorCode'
+} as const
+
+export type StagedIndicatorOrderByRelevanceFieldEnum = (typeof StagedIndicatorOrderByRelevanceFieldEnum)[keyof typeof StagedIndicatorOrderByRelevanceFieldEnum]
 
 
 export const ReportDownloadOrderByRelevanceFieldEnum = {
@@ -1237,7 +1325,7 @@ export type PrismaClientOptions = ({
    *  { emit: 'stdout', level: 'error' }
    * 
    * ```
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/logging#the-log-option).
+   * Read more in our [docs](https://pris.ly/d/logging).
    */
   log?: (LogLevel | LogDefinition)[]
   /**
@@ -1265,6 +1353,22 @@ export type PrismaClientOptions = ({
    * ```
    */
   omit?: GlobalOmitConfig
+  /**
+   * SQL commenter plugins that add metadata to SQL queries as comments.
+   * Comments follow the sqlcommenter format: https://google.github.io/sqlcommenter/
+   * 
+   * @example
+   * ```
+   * const prisma = new PrismaClient({
+   *   adapter,
+   *   comments: [
+   *     traceContext(),
+   *     queryInsights(),
+   *   ],
+   * })
+   * ```
+   */
+  comments?: runtime.SqlCommenterPlugin[]
 }
 export type GlobalOmitConfig = {
   facility?: Prisma.FacilityOmit
@@ -1272,6 +1376,7 @@ export type GlobalOmitConfig = {
   indicator?: Prisma.IndicatorOmit
   lineList?: Prisma.LineListOmit
   indicatorType?: Prisma.IndicatorTypeOmit
+  stagedIndicator?: Prisma.StagedIndicatorOmit
   reportDownload?: Prisma.ReportDownloadOmit
   reportQueue?: Prisma.ReportQueueOmit
 }
