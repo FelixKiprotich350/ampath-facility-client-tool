@@ -33,5 +33,25 @@ export async function executeReportQuery(
   // Replace date placeholders
   query = query.replace(/'2025-11-01'/g, `'${startDate}'`);
 
-  return await fetchFromKenyaEMRDatabase(query);
+  const connection = await mysql.createConnection({
+    ...kenyaemrDbConfig,
+    multipleStatements: true
+  });
+  
+  try {
+    const statements = query.split(';').filter(s => s.trim());
+    let result;
+    
+    for (const statement of statements) {
+      if (statement.trim()) {
+        const [rows] = await connection.execute(statement.trim());
+        if (statement.trim().toUpperCase().startsWith('SELECT')) {
+          result = rows;
+        }
+      }
+    }
+    return result;
+  } finally {
+    await connection.end();
+  }
 }
