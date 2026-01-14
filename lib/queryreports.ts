@@ -1,5 +1,4 @@
-import mysql from "mysql2/promise";
-import { readFileSync } from "fs";
+import mysql from "mysql2/promise"; 
 import { join } from "path";
 
 const kenyaemrDbConfig = {
@@ -30,15 +29,14 @@ export async function fetchFromKenyaEMRDatabase(
 }
 
 export async function executeReportQuery(
-  reportType: string,
+  indicatorObj: any,
   startDate: string,
   endDate: string
 ) {
-  const queryPath = join(process.cwd(), "databasequeries", `${reportType}.sql`);
-  let query = readFileSync(queryPath, "utf8");
+  let rawquery = indicatorObj.query as string;
 
   // Replace date placeholders
-  query = query.replace(/'2025-11-01'/g, `'${startDate}'`);
+  rawquery = rawquery.replace(/'2025-11-01'/g, `'${startDate}'`);
 
   const connection = await mysql.createConnection({
     ...kenyaemrDbConfig,
@@ -46,7 +44,7 @@ export async function executeReportQuery(
   });
   
   try {
-    const statements = query.split(';').filter(s => s.trim());
+    const statements = rawquery.split(';').filter(s => s.trim());
     let result;
     
     for (const statement of statements) {

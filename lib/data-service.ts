@@ -8,15 +8,12 @@ const targetUrl = `${SYNC_URL}/dataValueSets`;
 /**
  * Find value in data by variable name
  */
-function findValueInData(
-  data: any[],
-  variableName: string
-): string | null {
+function findValueInData(data: any[], variableName: string): string | null {
   if (!Array.isArray(data) || !data.length) return null;
 
   if (!variableName || !variableName.trim()) return null;
   if (variableName.trim().toLowerCase() === "calculated") return null;
-  
+
   for (const record of data) {
     // Search through all values in this record
     for (const key of Object.keys(record)) {
@@ -34,6 +31,25 @@ function findValueInData(
   return null;
 }
 
+
+
+export async function getIndicators() {
+  try {
+    const serverUrl = process.env.AMPATH_SERVER_URL;
+    if (!serverUrl) {
+      console.warn("SERVER_URL not set - returning empty mapping list");
+      return [];
+    }
+    const response = await fetch(`${serverUrl}/indicators`, {
+      headers: { Accept: "application/json" },
+    });
+    const indicators = await response.json();
+    return Array.isArray(indicators) ? indicators : [];
+  } catch (error) {
+    console.error("Error fetching reportTypes:", error);
+    return [];
+  }
+}
 export async function syncToAmep(
   reportingMonth: string,
   username: string,
@@ -82,7 +98,7 @@ export async function syncToAmep(
           typeof report.csvContent === "string"
             ? JSON.parse(report.csvContent)
             : report.csvContent;
-        
+
         // Get mappings for this report
         const raw_mappings = await getDataElementsMapping();
         const mappings = raw_mappings.filter(
@@ -100,10 +116,7 @@ export async function syncToAmep(
         const dataValues = [];
         for (const mapping of mappings) {
           // Find value in data by variable name
-          const dataValue = findValueInData(
-            data,
-            mapping.reportVariableName
-          );
+          const dataValue = findValueInData(data, mapping.reportVariableName);
           if (dataValue !== null) {
             dataValues.push({
               dataElement: mapping.dataElementId,
@@ -113,14 +126,14 @@ export async function syncToAmep(
             });
           }
         }
-        
+
         if (!dataValues.length) {
           console.log(
             `No data values mapped for report ${report.kenyaEmrReportUuid}`
           );
           continue;
         }
-        
+
         const body = {
           dataSet: "Lf1skJGdrzj",
           completeDate: new Date().toISOString().split("T")[0],
@@ -128,7 +141,7 @@ export async function syncToAmep(
           orgUnit: "fCj9Bn7iW2m",
           dataValues,
         };
-        
+
         const response = await fetch(targetUrl, {
           method: "POST",
           headers,

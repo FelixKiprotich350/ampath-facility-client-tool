@@ -1,18 +1,23 @@
 import { executeSingleIndicator } from "@/lib/data-collector";
+import { getIndicators } from "@/lib/data-service";
 import { executeReportQuery } from "@/lib/queryreports";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { reportType, indicators, reportPeriod } = await request.json();
+    const { reportType, selectedIndicators, reportPeriod } =
+      await request.json();
 
-    if (!reportType || !indicators || !reportPeriod) {
+    if (!reportType || !selectedIndicators || !reportPeriod) {
       return NextResponse.json(
-        { error: "reportType, indicators, and reportPeriod are required" },
+        {
+          error:
+            "reportType, selectedIndicators, and reportPeriod are required",
+        },
         { status: 400 }
       );
     }
-    if (indicators.length <= 0 && !Array.isArray(indicators)) {
+    if (selectedIndicators.length <= 0 && !Array.isArray(selectedIndicators)) {
       return NextResponse.json(
         { error: "At least one indicator must be specified" },
         { status: 400 }
@@ -22,8 +27,15 @@ export async function POST(request: NextRequest) {
     const lastdate = new Date(year, month, 0).getDate();
     const endDate = `${reportPeriod}-${String(lastdate).padStart(2, "0")}`;
     const startDate = `${reportPeriod}-01`;
-    indicators.forEach(async (indicator) => {
-      await executeSingleIndicator(indicator, startDate, endDate);
+
+    const allindicators = await getIndicators();
+
+    selectedIndicators.forEach(async (selected) => {
+      const indicatorObj = allindicators.find((ind) => ind.code === selected);
+      if (!indicatorObj) {
+        throw new Error(`Indicator with id ${selected} not found`);
+      }
+      await executeSingleIndicator(indicatorObj, startDate, endDate);
     });
 
     return NextResponse.json({

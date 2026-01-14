@@ -39,14 +39,14 @@ export async function markIndicatorsAsSynced(ids: number[]) {
 }
 
 export async function addStagedResults(
-  indicatorCode: string,
+  indicatorObj: any,
   rawResult: any,
   startDate: string,
   endDate: string
 ) {
   return prisma.stagedIndicator.create({
     data: {
-      indicatorCode,
+      indicatorCode: indicatorObj.code,
       rawResult,
       startDate: new Date(startDate),
       endDate: new Date(endDate),

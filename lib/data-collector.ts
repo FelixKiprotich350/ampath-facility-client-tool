@@ -37,24 +37,24 @@ type ReportType = {
  * Execute a single indicator query directly from database
  */
 export async function executeSingleIndicator(
-  reportcode: string,
+  indicatorObj: any,
   startDate: string,
   endDate: string
 ) {
   try {
-    console.log(`Starting direct query for indicator: ${reportcode}`);
-    if (!reportcode) {
-      throw new Error("Report type is required for direct database query");
+    console.log(`Starting direct query for indicator: ${indicatorObj}`);
+    if (!indicatorObj) {
+      throw new Error("Indicator object is required for direct database query");
     }
 
-    const data = await executeReportQuery(reportcode, startDate, endDate);
+    const data = await executeReportQuery(indicatorObj, startDate, endDate);
     const recordCount = Array.isArray(data) ? data.length : 0;
 
     // Convert data to CSV-like format for compatibility
     const csvContent = JSON.stringify(data);
-    await addStagedResults(reportcode, csvContent, startDate, endDate);
+    await addStagedResults(indicatorObj, csvContent, startDate, endDate);
 
-    console.log(`Report ${reportcode} completed: (${recordCount} records)`);
+    console.log(`Indicator ${indicatorObj} completed: (${recordCount} records)`);
 
     return { records: recordCount, message: "success" };
   } catch (error) {
