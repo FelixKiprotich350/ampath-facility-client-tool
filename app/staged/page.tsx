@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { AppLayout } from "@/components/layout/app-layout";
 
 type Report = {
@@ -20,11 +26,16 @@ export default function ReportsQueuePage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [previewDialog, setPreviewDialog] = useState<{
+    open: boolean;
+    data: any[] | null;
+    reportName: string;
+  }>({ open: false, data: null, reportName: "" });
 
   useEffect(() => {
     fetchReports();
-    const interval = setInterval(fetchReports, 5000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchReports, 10000);
+    // return () => clearInterval(interval);
   }, []);
 
   const fetchReports = async () => {
@@ -62,6 +73,20 @@ export default function ReportsQueuePage() {
     }
     // TODO: Implement sync logic
     console.log('Syncing items:', Array.from(selectedItems));
+  };
+
+  const handlePreview = (report: Report) => {
+    try {
+      let data: any[] = [];
+      if (Array.isArray(report.rawResult)) {
+        data = report.rawResult;
+      } else if (typeof report.rawResult === "string") {
+        data = JSON.parse(report.rawResult);
+      }
+      setPreviewDialog({ open: true, data, reportName: report.indicatorCode });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const getStatusBadge = (report: Report) => {
@@ -174,6 +199,9 @@ export default function ReportsQueuePage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Synced
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -200,6 +228,16 @@ export default function ReportsQueuePage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {report.syncedToAmpathAt ? new Date(report.syncedToAmpathAt).toLocaleString() : "-"}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Button
+                          onClick={() => handlePreview(report)}
+                          size="sm"
+                          variant="outline"
+                          className="text-xs"
+                        >
+                          👁️ Preview
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -207,6 +245,65 @@ export default function ReportsQueuePage() {
             </div>
           </div>
         )}
+
+        <Dialog
+          open={previewDialog.open}
+          onOpenChange={(open) => setPreviewDialog({ ...previewDialog, open })}
+        >
+          <DialogContent className="max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Preview: {previewDialog.reportName}</DialogTitle>
+              <Button
+                onClick={() =>
+                  setPreviewDialog({ open: false, data: null, reportName: "" })
+                }
+                variant="outline"
+                size="sm"
+              >
+                ✕ Close
+              </Button>
+            </DialogHeader>
+            <div className="mt-4">
+              {previewDialog.data && previewDialog.data.length > 0 ? (
+                <div>
+                  <table className="w-full divide-y divide-gray-200 text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {Object.keys(previewDialog.data[0]).map((key) => (
+                          <th
+                            key={key}
+                            className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase truncate"
+                          >
+                            {key}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {previewDialog.data.map((row, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          {Object.values(row).map((value, i) => (
+                            <td
+                              key={i}
+                              className="px-2 py-2 text-xs text-gray-900 truncate max-w-0"
+                              title={value?.toString() || ""}
+                            >
+                              {value?.toString() || ""}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">
+                  No data available
+                </p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
