@@ -390,7 +390,6 @@ export const ModelName = {
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
   StagedIndicator: 'StagedIndicator',
-  ReportDownload: 'ReportDownload',
   ReportQueue: 'ReportQueue'
 } as const
 
@@ -407,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "facility" | "facilityReportType" | "indicator" | "lineList" | "indicatorType" | "stagedIndicator" | "reportDownload" | "reportQueue"
+    modelProps: "facility" | "facilityReportType" | "indicator" | "lineList" | "indicatorType" | "stagedIndicator" | "reportQueue"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -807,72 +806,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    ReportDownload: {
-      payload: Prisma.$ReportDownloadPayload<ExtArgs>
-      fields: Prisma.ReportDownloadFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.ReportDownloadFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.ReportDownloadFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
-        }
-        findFirst: {
-          args: Prisma.ReportDownloadFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.ReportDownloadFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
-        }
-        findMany: {
-          args: Prisma.ReportDownloadFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>[]
-        }
-        create: {
-          args: Prisma.ReportDownloadCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
-        }
-        createMany: {
-          args: Prisma.ReportDownloadCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        delete: {
-          args: Prisma.ReportDownloadDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
-        }
-        update: {
-          args: Prisma.ReportDownloadUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
-        }
-        deleteMany: {
-          args: Prisma.ReportDownloadDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.ReportDownloadUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        upsert: {
-          args: Prisma.ReportDownloadUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportDownloadPayload>
-        }
-        aggregate: {
-          args: Prisma.ReportDownloadAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateReportDownload>
-        }
-        groupBy: {
-          args: Prisma.ReportDownloadGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ReportDownloadGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.ReportDownloadCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ReportDownloadCountAggregateOutputType> | number
-        }
-      }
-    }
     ReportQueue: {
       payload: Prisma.$ReportQueuePayload<ExtArgs>
       fields: Prisma.ReportQueueFieldRefs
@@ -1055,29 +988,10 @@ export const StagedIndicatorScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   createdAt: 'createdAt',
-  syncedToAmepAt: 'syncedToAmepAt',
   syncedToAmpathAt: 'syncedToAmpathAt'
 } as const
 
 export type StagedIndicatorScalarFieldEnum = (typeof StagedIndicatorScalarFieldEnum)[keyof typeof StagedIndicatorScalarFieldEnum]
-
-
-export const ReportDownloadScalarFieldEnum = {
-  id: 'id',
-  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
-  csvContent: 'csvContent',
-  requestUrl: 'requestUrl',
-  response: 'response',
-  reportPeriod: 'reportPeriod',
-  requestedAt: 'requestedAt',
-  recordCount: 'recordCount',
-  syncedToAmep: 'syncedToAmep',
-  syncedToAmpath: 'syncedToAmpath',
-  syncedToAmepAt: 'syncedToAmepAt',
-  syncedToAmpathAt: 'syncedToAmpathAt'
-} as const
-
-export type ReportDownloadScalarFieldEnum = (typeof ReportDownloadScalarFieldEnum)[keyof typeof ReportDownloadScalarFieldEnum]
 
 
 export const ReportQueueScalarFieldEnum = {
@@ -1193,16 +1107,6 @@ export const StagedIndicatorOrderByRelevanceFieldEnum = {
 } as const
 
 export type StagedIndicatorOrderByRelevanceFieldEnum = (typeof StagedIndicatorOrderByRelevanceFieldEnum)[keyof typeof StagedIndicatorOrderByRelevanceFieldEnum]
-
-
-export const ReportDownloadOrderByRelevanceFieldEnum = {
-  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
-  requestUrl: 'requestUrl',
-  response: 'response',
-  reportPeriod: 'reportPeriod'
-} as const
-
-export type ReportDownloadOrderByRelevanceFieldEnum = (typeof ReportDownloadOrderByRelevanceFieldEnum)[keyof typeof ReportDownloadOrderByRelevanceFieldEnum]
 
 
 export const ReportQueueOrderByRelevanceFieldEnum = {
@@ -1377,7 +1281,6 @@ export type GlobalOmitConfig = {
   lineList?: Prisma.LineListOmit
   indicatorType?: Prisma.IndicatorTypeOmit
   stagedIndicator?: Prisma.StagedIndicatorOmit
-  reportDownload?: Prisma.ReportDownloadOmit
   reportQueue?: Prisma.ReportQueueOmit
 }
 

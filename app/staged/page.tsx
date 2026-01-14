@@ -17,15 +17,22 @@ type Report = {
   rawResult: string;
   startDate: string;
   endDate: string;
-  createdAt: string;
-  syncedToAmepAt: string | null;
+  createdAt: string; 
   syncedToAmpathAt: string | null;
 };
 
 export default function ReportsQueuePage() {
   const [reports, setReports] = useState<Report[]>([]);
+  const [pendingData, setPendingData] = useState<Report[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [credentialsDialog, setCredentialsDialog] = useState(false);
+  const [credentials, setCredentials] = useState({
+    username: "",
+    password: "",
+    yearMonth: "",
+  });
   const [previewDialog, setPreviewDialog] = useState<{
     open: boolean;
     data: any[] | null;
@@ -48,11 +55,24 @@ export default function ReportsQueuePage() {
     setLoading(false);
   };
 
+  const loadPendingData = async () => {
+    setPendingLoading(true);
+    try {
+      const response = await fetch("/api/pendingdata");
+      const data = await response.json();
+      setPendingData(data);
+    } catch {
+      console.error("Failed to load pending data");
+    } finally {
+      setPendingLoading(false);
+    }
+  };
+
   const toggleSelectAll = () => {
     if (selectedItems.size === reports.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(reports.map(item => item.id)));
+      setSelectedItems(new Set(reports.map((item) => item.id)));
     }
   };
 
@@ -67,14 +87,39 @@ export default function ReportsQueuePage() {
   };
 
   const handleSync = async () => {
+    setLoading(true);
+    setCredentialsDialog(false);
+    try {
+      const selectedData = pendingData.filter((item) =>
+        selectedItems.has(item.id)
+      );
+      const response = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...credentials,
+          selectedItems: Array.from(selectedItems),
+        }),
+      });
+      const result = await response.json();
+      if (result.successfullSync?.length > 0) {
+        setSelectedItems(new Set());
+        loadPendingData();
+      }
+    } catch {
+      console.error("Sync failed");
+    } finally {
+      setLoading(false);
+      setCredentials({ username: "", password: "", yearMonth: "" });
+    }
+  };
+  const handleSyncClick = () => {
     if (selectedItems.size === 0) {
-      alert('Please select items to sync');
+      alert("Please select items to sync");
       return;
     }
-    // TODO: Implement sync logic
-    console.log('Syncing items:', Array.from(selectedItems));
+    setCredentialsDialog(true);
   };
-
   const handlePreview = (report: Report) => {
     try {
       let data: any[] = [];
@@ -90,7 +135,7 @@ export default function ReportsQueuePage() {
   };
 
   const getStatusBadge = (report: Report) => {
-    const synced = report.syncedToAmepAt || report.syncedToAmpathAt;
+    const synced =  report.syncedToAmpathAt;
     const status = synced ? "SYNCED" : "PENDING";
     const style = synced
       ? "bg-green-100 text-green-800"
@@ -107,7 +152,10 @@ export default function ReportsQueuePage() {
   // const failed = reports.filter((r) => r.status === "FAILED").length;
 
   return (
-    <AppLayout title="Staged Reports" subtitle="Reports ready for synchronization">
+    <AppLayout
+      title="Staged Reports"
+      subtitle="Reports ready for synchronization"
+    >
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -115,15 +163,11 @@ export default function ReportsQueuePage() {
             <p className="text-gray-600">Reports waiting to be synchronized</p>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={fetchReports}
-              disabled={loading}
-              variant="outline"
-            >
+            <Button onClick={fetchReports} disabled={loading} variant="outline">
               {loading ? "🔄 Loading..." : "🔄 Refresh"}
             </Button>
             <Button
-              onClick={handleSync}
+              onClick={handleSyncClick}
               disabled={selectedItems.size === 0}
               className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
             >
@@ -179,7 +223,10 @@ export default function ReportsQueuePage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <input
                         type="checkbox"
-                        checked={selectedItems.size === reports.length && reports.length > 0}
+                        checked={
+                          selectedItems.size === reports.length &&
+                          reports.length > 0
+                        }
                         onChange={toggleSelectAll}
                         className="rounded"
                       />
@@ -219,14 +266,19 @@ export default function ReportsQueuePage() {
                         {report.indicatorCode}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(report.startDate).toLocaleDateString()} - {new Date(report.endDate).toLocaleDateString()}
+                        {new Date(report.startDate).toLocaleDateString()} -{" "}
+                        {new Date(report.endDate).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(report)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(report)}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(report.createdAt).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {report.syncedToAmpathAt ? new Date(report.syncedToAmpathAt).toLocaleString() : "-"}
+                        {report.syncedToAmpathAt
+                          ? new Date(report.syncedToAmpathAt).toLocaleString()
+                          : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Button
@@ -301,6 +353,77 @@ export default function ReportsQueuePage() {
                   No data available
                 </p>
               )}
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={credentialsDialog} onOpenChange={setCredentialsDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Enter Credentials</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={credentials.username}
+                  onChange={(e) =>
+                    setCredentials({ ...credentials, username: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter username"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={credentials.password}
+                  onChange={(e) =>
+                    setCredentials({ ...credentials, password: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter password"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Year Month (YYYYMM)
+                </label>
+                <input
+                  type="text"
+                  value={credentials.yearMonth || ""}
+                  onChange={(e) =>
+                    setCredentials({
+                      ...credentials,
+                      yearMonth: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="202501"
+                  pattern="\\d{6}"
+                  maxLength={6}
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={() => setCredentialsDialog(false)}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSync}
+                  disabled={!credentials.username || !credentials.password}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Sync
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

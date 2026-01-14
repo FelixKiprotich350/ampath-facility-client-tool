@@ -85,28 +85,11 @@ model StagedIndicator {
   startDate        DateTime
   endDate          DateTime
   createdAt        DateTime  @default(now()) @map("requested_at")
-  syncedToAmepAt   DateTime? @map("synced_amep_at")
   syncedToAmpathAt DateTime? @map("synced_ampath_at")
 
   @@map("staged_indicators")
 }
 
-model ReportDownload {
-  id                 Int       @id @default(autoincrement())
-  kenyaEmrReportUuid String
-  csvContent         Json
-  requestUrl         String
-  response           String
-  reportPeriod       String
-  requestedAt        DateTime  @default(now()) @map("requested_at")
-  recordCount        Int?
-  syncedToAmep       Boolean   @default(false)
-  syncedToAmpath     Boolean   @default(false)
-  syncedToAmepAt     DateTime? @map("synced_amep_at")
-  syncedToAmpathAt   DateTime? @map("synced_ampath_at")
-
-  @@map("report_downloads")
-}
 
 model ReportQueue {
   id                 Int       @id @default(autoincrement())

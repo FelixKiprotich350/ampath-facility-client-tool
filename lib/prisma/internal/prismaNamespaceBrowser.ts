@@ -57,7 +57,6 @@ export const ModelName = {
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
   StagedIndicator: 'StagedIndicator',
-  ReportDownload: 'ReportDownload',
   ReportQueue: 'ReportQueue'
 } as const
 
@@ -154,29 +153,10 @@ export const StagedIndicatorScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   createdAt: 'createdAt',
-  syncedToAmepAt: 'syncedToAmepAt',
   syncedToAmpathAt: 'syncedToAmpathAt'
 } as const
 
 export type StagedIndicatorScalarFieldEnum = (typeof StagedIndicatorScalarFieldEnum)[keyof typeof StagedIndicatorScalarFieldEnum]
-
-
-export const ReportDownloadScalarFieldEnum = {
-  id: 'id',
-  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
-  csvContent: 'csvContent',
-  requestUrl: 'requestUrl',
-  response: 'response',
-  reportPeriod: 'reportPeriod',
-  requestedAt: 'requestedAt',
-  recordCount: 'recordCount',
-  syncedToAmep: 'syncedToAmep',
-  syncedToAmpath: 'syncedToAmpath',
-  syncedToAmepAt: 'syncedToAmepAt',
-  syncedToAmpathAt: 'syncedToAmpathAt'
-} as const
-
-export type ReportDownloadScalarFieldEnum = (typeof ReportDownloadScalarFieldEnum)[keyof typeof ReportDownloadScalarFieldEnum]
 
 
 export const ReportQueueScalarFieldEnum = {
@@ -292,16 +272,6 @@ export const StagedIndicatorOrderByRelevanceFieldEnum = {
 } as const
 
 export type StagedIndicatorOrderByRelevanceFieldEnum = (typeof StagedIndicatorOrderByRelevanceFieldEnum)[keyof typeof StagedIndicatorOrderByRelevanceFieldEnum]
-
-
-export const ReportDownloadOrderByRelevanceFieldEnum = {
-  kenyaEmrReportUuid: 'kenyaEmrReportUuid',
-  requestUrl: 'requestUrl',
-  response: 'response',
-  reportPeriod: 'reportPeriod'
-} as const
-
-export type ReportDownloadOrderByRelevanceFieldEnum = (typeof ReportDownloadOrderByRelevanceFieldEnum)[keyof typeof ReportDownloadOrderByRelevanceFieldEnum]
 
 
 export const ReportQueueOrderByRelevanceFieldEnum = {

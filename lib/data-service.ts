@@ -1,4 +1,4 @@
-import { getUnsyncedReports } from "./local-db";
+import { getUnsyncedIndicators } from "./local-db";
 import { prisma } from "./prisma";
 import { getDataElementsMapping } from "./data-collector";
 
@@ -60,10 +60,10 @@ export async function syncToAmep(
   let failedSync = [];
 
   try {
-    const pendingReports = await getUnsyncedReports();
+    const pendingReports = await getUnsyncedIndicators();
 
     if (!pendingReports.length) {
-      console.log("No unsynced reports found");
+      console.log("No unsynced indicators found");
       return { successfullSync, failedSync, error: null };
     }
 
@@ -72,11 +72,11 @@ export async function syncToAmep(
     );
 
     if (!selectedReports.length) {
-      console.log("No reports match the selected items");
+      console.log("No Indicators matches the selected items");
       return { successfullSync, failedSync, error: null };
     }
 
-    console.log(`Processing ${selectedReports.length} pending reports`);
+    console.log(`Processing ${selectedReports.length} pending indicators`);
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -95,19 +95,19 @@ export async function syncToAmep(
       try {
         // Parse data content
         const data =
-          typeof report.csvContent === "string"
-            ? JSON.parse(report.csvContent)
-            : report.csvContent;
+          typeof report.rawResult === "string"
+            ? JSON.parse(report.rawResult)
+            : report.rawResult;
 
         // Get mappings for this report
         const raw_mappings = await getDataElementsMapping();
         const mappings = raw_mappings.filter(
-          (m) => m.kenyaEmrReportUuid === report.kenyaEmrReportUuid
+          (m) => m.kenyaEmrReportUuid === report.indicatorCode
         );
 
         if (mappings.length <= 0) {
           console.log(
-            `No mappings found for report ${report.kenyaEmrReportUuid}`
+            `No mappings found for report ${report.indicatorCode}`
           );
           continue;
         }
@@ -129,7 +129,7 @@ export async function syncToAmep(
 
         if (!dataValues.length) {
           console.log(
-            `No data values mapped for report ${report.kenyaEmrReportUuid}`
+            `No data values mapped for report ${report.indicatorCode}`
           );
           continue;
         }
@@ -154,11 +154,10 @@ export async function syncToAmep(
         console.log("Response body:", responseData);
 
         if (response.ok) {
-          await prisma.reportDownload.update({
+          await prisma.stagedIndicator.update({
             where: { id: report.id },
-            data: {
-              syncedToAmep: true,
-              syncedToAmepAt: new Date(),
+            data: { 
+              syncedToAmpathAt: new Date(),
             },
           });
 

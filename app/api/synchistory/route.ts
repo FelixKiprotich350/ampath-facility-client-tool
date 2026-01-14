@@ -3,9 +3,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const pending = await prisma.reportDownload.findMany({
-      where: { syncedToAmep: true },
-      orderBy: { syncedToAmep: "desc" },
+    const pending = await prisma.stagedIndicator.findMany({
+      where: { syncedToAmpathAt: { not: null } },
+      orderBy: { syncedToAmpathAt: "desc" },
     });
     return NextResponse.json(pending);
   } catch (error) {

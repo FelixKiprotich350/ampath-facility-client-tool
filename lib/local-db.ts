@@ -25,9 +25,9 @@ export async function addLineList(
   });
 }
 
-export async function getUnsyncedReports() {
-  return prisma.reportDownload.findMany({
-    where: { syncedToAmep: false },
+export async function getUnsyncedIndicators() {
+  return prisma.stagedIndicator.findMany({
+    where: { syncedToAmpathAt: null },
   });
 }
 
@@ -56,8 +56,8 @@ export async function addStagedResults(
 
 export async function getDataSummary() {
   const [pendingReports, syncedReports] = await Promise.all([
-    prisma.reportDownload.count({ where: { syncedToAmep: false } }),
-    prisma.reportDownload.count({ where: { syncedToAmep: true } }),
+    prisma.stagedIndicator.count({ where: { syncedToAmpathAt: null } }),
+    prisma.stagedIndicator.count({ where: { syncedToAmpathAt: { not: null } } }),
   ]);
 
   return {

@@ -40,7 +40,6 @@ export type StagedIndicatorMinAggregateOutputType = {
   startDate: Date | null
   endDate: Date | null
   createdAt: Date | null
-  syncedToAmepAt: Date | null
   syncedToAmpathAt: Date | null
 }
 
@@ -50,7 +49,6 @@ export type StagedIndicatorMaxAggregateOutputType = {
   startDate: Date | null
   endDate: Date | null
   createdAt: Date | null
-  syncedToAmepAt: Date | null
   syncedToAmpathAt: Date | null
 }
 
@@ -61,7 +59,6 @@ export type StagedIndicatorCountAggregateOutputType = {
   startDate: number
   endDate: number
   createdAt: number
-  syncedToAmepAt: number
   syncedToAmpathAt: number
   _all: number
 }
@@ -81,7 +78,6 @@ export type StagedIndicatorMinAggregateInputType = {
   startDate?: true
   endDate?: true
   createdAt?: true
-  syncedToAmepAt?: true
   syncedToAmpathAt?: true
 }
 
@@ -91,7 +87,6 @@ export type StagedIndicatorMaxAggregateInputType = {
   startDate?: true
   endDate?: true
   createdAt?: true
-  syncedToAmepAt?: true
   syncedToAmpathAt?: true
 }
 
@@ -102,7 +97,6 @@ export type StagedIndicatorCountAggregateInputType = {
   startDate?: true
   endDate?: true
   createdAt?: true
-  syncedToAmepAt?: true
   syncedToAmpathAt?: true
   _all?: true
 }
@@ -200,7 +194,6 @@ export type StagedIndicatorGroupByOutputType = {
   startDate: Date
   endDate: Date
   createdAt: Date
-  syncedToAmepAt: Date | null
   syncedToAmpathAt: Date | null
   _count: StagedIndicatorCountAggregateOutputType | null
   _avg: StagedIndicatorAvgAggregateOutputType | null
@@ -234,7 +227,6 @@ export type StagedIndicatorWhereInput = {
   startDate?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
   endDate?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
-  syncedToAmepAt?: Prisma.DateTimeNullableFilter<"StagedIndicator"> | Date | string | null
   syncedToAmpathAt?: Prisma.DateTimeNullableFilter<"StagedIndicator"> | Date | string | null
 }
 
@@ -245,7 +237,6 @@ export type StagedIndicatorOrderByWithRelationInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  syncedToAmepAt?: Prisma.SortOrderInput | Prisma.SortOrder
   syncedToAmpathAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _relevance?: Prisma.StagedIndicatorOrderByRelevanceInput
 }
@@ -260,7 +251,6 @@ export type StagedIndicatorWhereUniqueInput = Prisma.AtLeast<{
   startDate?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
   endDate?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
-  syncedToAmepAt?: Prisma.DateTimeNullableFilter<"StagedIndicator"> | Date | string | null
   syncedToAmpathAt?: Prisma.DateTimeNullableFilter<"StagedIndicator"> | Date | string | null
 }, "id">
 
@@ -271,7 +261,6 @@ export type StagedIndicatorOrderByWithAggregationInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  syncedToAmepAt?: Prisma.SortOrderInput | Prisma.SortOrder
   syncedToAmpathAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.StagedIndicatorCountOrderByAggregateInput
   _avg?: Prisma.StagedIndicatorAvgOrderByAggregateInput
@@ -290,7 +279,6 @@ export type StagedIndicatorScalarWhereWithAggregatesInput = {
   startDate?: Prisma.DateTimeWithAggregatesFilter<"StagedIndicator"> | Date | string
   endDate?: Prisma.DateTimeWithAggregatesFilter<"StagedIndicator"> | Date | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"StagedIndicator"> | Date | string
-  syncedToAmepAt?: Prisma.DateTimeNullableWithAggregatesFilter<"StagedIndicator"> | Date | string | null
   syncedToAmpathAt?: Prisma.DateTimeNullableWithAggregatesFilter<"StagedIndicator"> | Date | string | null
 }
 
@@ -300,7 +288,6 @@ export type StagedIndicatorCreateInput = {
   startDate: Date | string
   endDate: Date | string
   createdAt?: Date | string
-  syncedToAmepAt?: Date | string | null
   syncedToAmpathAt?: Date | string | null
 }
 
@@ -311,7 +298,6 @@ export type StagedIndicatorUncheckedCreateInput = {
   startDate: Date | string
   endDate: Date | string
   createdAt?: Date | string
-  syncedToAmepAt?: Date | string | null
   syncedToAmpathAt?: Date | string | null
 }
 
@@ -321,7 +307,6 @@ export type StagedIndicatorUpdateInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  syncedToAmepAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   syncedToAmpathAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -332,7 +317,6 @@ export type StagedIndicatorUncheckedUpdateInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  syncedToAmepAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   syncedToAmpathAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -343,7 +327,6 @@ export type StagedIndicatorCreateManyInput = {
   startDate: Date | string
   endDate: Date | string
   createdAt?: Date | string
-  syncedToAmepAt?: Date | string | null
   syncedToAmpathAt?: Date | string | null
 }
 
@@ -353,7 +336,6 @@ export type StagedIndicatorUpdateManyMutationInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  syncedToAmepAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   syncedToAmpathAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -364,7 +346,6 @@ export type StagedIndicatorUncheckedUpdateManyInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  syncedToAmepAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   syncedToAmpathAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -381,7 +362,6 @@ export type StagedIndicatorCountOrderByAggregateInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  syncedToAmepAt?: Prisma.SortOrder
   syncedToAmpathAt?: Prisma.SortOrder
 }
 
@@ -395,7 +375,6 @@ export type StagedIndicatorMaxOrderByAggregateInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  syncedToAmepAt?: Prisma.SortOrder
   syncedToAmpathAt?: Prisma.SortOrder
 }
 
@@ -405,7 +384,6 @@ export type StagedIndicatorMinOrderByAggregateInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  syncedToAmepAt?: Prisma.SortOrder
   syncedToAmpathAt?: Prisma.SortOrder
 }
 
@@ -422,7 +400,6 @@ export type StagedIndicatorSelect<ExtArgs extends runtime.Types.Extensions.Inter
   startDate?: boolean
   endDate?: boolean
   createdAt?: boolean
-  syncedToAmepAt?: boolean
   syncedToAmpathAt?: boolean
 }, ExtArgs["result"]["stagedIndicator"]>
 
@@ -435,11 +412,10 @@ export type StagedIndicatorSelectScalar = {
   startDate?: boolean
   endDate?: boolean
   createdAt?: boolean
-  syncedToAmepAt?: boolean
   syncedToAmpathAt?: boolean
 }
 
-export type StagedIndicatorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "indicatorCode" | "rawResult" | "startDate" | "endDate" | "createdAt" | "syncedToAmepAt" | "syncedToAmpathAt", ExtArgs["result"]["stagedIndicator"]>
+export type StagedIndicatorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "indicatorCode" | "rawResult" | "startDate" | "endDate" | "createdAt" | "syncedToAmpathAt", ExtArgs["result"]["stagedIndicator"]>
 
 export type $StagedIndicatorPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "StagedIndicator"
@@ -451,7 +427,6 @@ export type $StagedIndicatorPayload<ExtArgs extends runtime.Types.Extensions.Int
     startDate: Date
     endDate: Date
     createdAt: Date
-    syncedToAmepAt: Date | null
     syncedToAmpathAt: Date | null
   }, ExtArgs["result"]["stagedIndicator"]>
   composites: {}
@@ -828,7 +803,6 @@ export interface StagedIndicatorFieldRefs {
   readonly startDate: Prisma.FieldRef<"StagedIndicator", 'DateTime'>
   readonly endDate: Prisma.FieldRef<"StagedIndicator", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"StagedIndicator", 'DateTime'>
-  readonly syncedToAmepAt: Prisma.FieldRef<"StagedIndicator", 'DateTime'>
   readonly syncedToAmpathAt: Prisma.FieldRef<"StagedIndicator", 'DateTime'>
 }
     

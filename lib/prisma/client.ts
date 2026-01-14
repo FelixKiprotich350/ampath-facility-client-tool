@@ -70,11 +70,6 @@ export type IndicatorType = Prisma.IndicatorTypeModel
  */
 export type StagedIndicator = Prisma.StagedIndicatorModel
 /**
- * Model ReportDownload
- * 
- */
-export type ReportDownload = Prisma.ReportDownloadModel
-/**
  * Model ReportQueue
  * 
  */
