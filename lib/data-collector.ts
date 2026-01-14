@@ -23,14 +23,24 @@ function convertToYYYYMM(monthValue: string): string {
 
   // Fallback to current year-month
   return `${currentYear}${String(now.getMonth() + 1).padStart(2, "0")}`;
-} 
-
+}
 
 type ReportType = {
   kenyaEmrReportUuid: string;
   name?: string;
   reportType?: string;
   [k: string]: any;
+};
+
+type ComboDefinition = {
+  id: string;
+  comboId: string;
+  gender: string;
+  ageband: string;
+  description?: string;
+  isAbove65: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 /**
@@ -54,7 +64,9 @@ export async function executeSingleIndicator(
     const csvContent = JSON.stringify(data);
     await addStagedResults(indicatorObj, csvContent, startDate, endDate);
 
-    console.log(`Indicator ${indicatorObj} completed: (${recordCount} records)`);
+    console.log(
+      `Indicator ${indicatorObj} completed: (${recordCount} records)`
+    );
 
     return { records: recordCount, message: "success" };
   } catch (error) {
@@ -74,6 +86,27 @@ export async function getDataElementsMapping(): Promise<ReportType[]> {
       return [];
     }
     const response = await fetch(`${serverUrl}/mappings`, {
+      headers: { Accept: "application/json" },
+    });
+    const reports = await response.json();
+    return Array.isArray(reports) ? reports : [];
+  } catch (error) {
+    console.error("Failed to fetch reports types:", (error as Error).message);
+    return [];
+  }
+}
+
+/**
+ * getComboElementsMapping - fetch combo elements mappings from API
+ */
+export async function getComboElementsMapping(): Promise<ComboDefinition[]> {
+  try {
+    const serverUrl = process.env.AMPATH_SERVER_URL;
+    if (!serverUrl) {
+      console.warn("SERVER_URL not set - returning empty mapping list");
+      return [];
+    }
+    const response = await fetch(`${serverUrl}/combomappings`, {
       headers: { Accept: "application/json" },
     });
     const reports = await response.json();

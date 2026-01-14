@@ -1,38 +1,41 @@
 import { getUnsyncedIndicators } from "./local-db";
 import { prisma } from "./prisma";
-import { getDataElementsMapping } from "./data-collector";
+import {
+  getComboElementsMapping,
+  getDataElementsMapping,
+} from "./data-collector";
+import { convertSegmentPathToStaticExportFilename } from "next/dist/shared/lib/segment-cache/segment-value-encoding";
 
 const SYNC_URL = process.env.AMEP_SERVER_URL;
 const targetUrl = `${SYNC_URL}/dataValueSets`;
 
 /**
- * Find value in data by variable name
+ * Find comboid in data by gender and ageband
  */
-function findValueInData(data: any[], variableName: string): string | null {
-  if (!Array.isArray(data) || !data.length) return null;
+// function findComboId(
+//   data: any[],
+//   gender: string,
+//   ageband: string
+// ): string | null {
+//   if (!Array.isArray(data) || !data.length) return null;
 
-  if (!variableName || !variableName.trim()) return null;
-  if (variableName.trim().toLowerCase() === "calculated") return null;
+//   if (!gender || !gender.trim()) return null;
+//   if (!ageband || !ageband.trim()) return null;
 
-  for (const record of data) {
-    // Search through all values in this record
-    for (const key of Object.keys(record)) {
-      const cellValue = String(record[key] ?? "")
-        .trim()
-        .toLowerCase();
+//   for (const record of data) {
+//     // Search through all values in this record
+//     for (const key of Object.keys(record)) {
+//       const cellValue = String(record[key] ?? "")
+//         .trim()
+//         .toLowerCase();
 
-      if (cellValue == variableName.trim().toLowerCase()) {
-        // Found the matching record — return the result column
-        return record.column2 ?? null; // <-- change column2 if needed
-      }
-    }
-  }
-
-  return null;
-}
-
-
-
+//       if (cellValue == gender.trim().toLowerCase()) {
+//         // Found the matching record — return the result column
+//         return record.column2 ?? null; // <-- change column2 if needed
+//       }
+//     }
+//   }
+// }
 export async function getIndicators() {
   try {
     const serverUrl = process.env.AMPATH_SERVER_URL;
@@ -89,43 +92,39 @@ export async function syncToAmep(
       );
       headers.Authorization = `Basic ${credentials}`;
     }
-
     // Process each pending report
     for (const report of selectedReports) {
       try {
         // Parse data content
-        const data =
-          typeof report.rawResult === "string"
-            ? JSON.parse(report.rawResult)
-            : report.rawResult;
+        const data = JSON.parse(report.rawResult.toString()) as any[];
 
         // Get mappings for this report
-        const raw_mappings = await getDataElementsMapping();
-        const mappings = raw_mappings.filter(
-          (m) => m.kenyaEmrReportUuid === report.indicatorCode
-        );
-
+        const raw_mappings = await getComboElementsMapping();
+        const mappings = raw_mappings;
         if (mappings.length <= 0) {
-          console.log(
-            `No mappings found for report ${report.indicatorCode}`
-          );
+          console.log(`No mappings found for report ${report.indicatorCode}`);
           continue;
         }
 
+        console.log(data.length);
+
         // Map data variables to data elements
         const dataValues = [];
-        for (const mapping of mappings) {
-          // Find value in data by variable name
-          const dataValue = findValueInData(data, mapping.reportVariableName);
-          if (dataValue !== null) {
-            dataValues.push({
-              dataElement: mapping.dataElementId,
-              attributeOptionCombo: mapping.attributeOptionComboId,
-              categoryOptionCombo: mapping.categoryOptionComboId,
-              value: dataValue.toString(),
-            });
-          }
-        }
+
+        // for (const mapping of mappings) {
+
+        //   const comboId = findComboId(mappings,)
+        //   // Find value in data by variable name
+        //   const dataValue = findValueInData(data, mapping.reportVariableName);
+        //   if (dataValue !== null) {
+        //     dataValues.push({
+        //       dataElement: mapping.dataElementId,
+        //       attributeOptionCombo: mapping.attributeOptionComboId,
+        //       categoryOptionCombo: mapping.categoryOptionComboId,
+        //       value: dataValue.toString(),
+        //     });
+        //   }
+        // }
 
         if (!dataValues.length) {
           console.log(
@@ -156,7 +155,7 @@ export async function syncToAmep(
         if (response.ok) {
           await prisma.stagedIndicator.update({
             where: { id: report.id },
-            data: { 
+            data: {
               syncedToAmpathAt: new Date(),
             },
           });
