@@ -37,8 +37,7 @@ type ComboDefinition = {
   comboId: string;
   gender: string;
   ageband: string;
-  description?: string;
-  isAbove65: boolean;
+  description?: string; 
   createdAt: string;
   updatedAt: string;
 };
