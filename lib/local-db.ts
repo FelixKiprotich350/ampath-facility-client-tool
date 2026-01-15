@@ -47,6 +47,7 @@ export async function addStagedResults(
   return prisma.stagedIndicator.create({
     data: {
       indicatorCode: indicatorObj.code,
+      indicatorName: indicatorObj.name,
       rawResult,
       startDate: new Date(startDate),
       endDate: new Date(endDate),

@@ -81,6 +81,7 @@ model IndicatorType {
 model StagedIndicator {
   id               Int       @id @default(autoincrement())
   indicatorCode    String
+  indicatorName    String
   rawResult        Json
   startDate        DateTime
   endDate          DateTime

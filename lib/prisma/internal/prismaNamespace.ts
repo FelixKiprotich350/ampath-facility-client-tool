@@ -984,6 +984,7 @@ export type IndicatorTypeScalarFieldEnum = (typeof IndicatorTypeScalarFieldEnum)
 export const StagedIndicatorScalarFieldEnum = {
   id: 'id',
   indicatorCode: 'indicatorCode',
+  indicatorName: 'indicatorName',
   rawResult: 'rawResult',
   startDate: 'startDate',
   endDate: 'endDate',
@@ -1103,7 +1104,8 @@ export type IndicatorTypeOrderByRelevanceFieldEnum = (typeof IndicatorTypeOrderB
 
 
 export const StagedIndicatorOrderByRelevanceFieldEnum = {
-  indicatorCode: 'indicatorCode'
+  indicatorCode: 'indicatorCode',
+  indicatorName: 'indicatorName'
 } as const
 
 export type StagedIndicatorOrderByRelevanceFieldEnum = (typeof StagedIndicatorOrderByRelevanceFieldEnum)[keyof typeof StagedIndicatorOrderByRelevanceFieldEnum]

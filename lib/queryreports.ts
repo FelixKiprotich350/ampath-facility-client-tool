@@ -1,4 +1,4 @@
-import mysql from "mysql2/promise"; 
+import mysql from "mysql2/promise";
 import { join } from "path";
 
 const kenyaemrDbConfig = {
@@ -33,24 +33,28 @@ export async function executeReportQuery(
   startDate: string,
   endDate: string
 ) {
-  let rawquery = indicatorObj.query as string;
+  const oldquery = indicatorObj.query as string;
 
   // Replace date placeholders
-  rawquery = rawquery.replace(/'2025-11-01'/g, `'${startDate}'`);
+  const finalQuery = replacePlaceholders(
+    oldquery,
+    ["{{AMPATH_REPORT_START_DATE}}", "{{AMPATH_REPORT_END_DATE}}"],
+    [`'${startDate}'`, `'${endDate}'`]
+  );
 
   const connection = await mysql.createConnection({
     ...kenyaemrDbConfig,
-    multipleStatements: true
+    multipleStatements: true,
   });
-  
+
   try {
-    const statements = rawquery.split(';').filter(s => s.trim());
+    const statements = finalQuery.split(";").filter((s) => s.trim());
     let result;
-    
+
     for (const statement of statements) {
       if (statement.trim()) {
         const [rows] = await connection.execute(statement.trim());
-        if (statement.trim().toUpperCase().startsWith('SELECT')) {
+        if (statement.trim().toUpperCase().startsWith("SELECT")) {
           result = rows;
         }
       }
@@ -59,4 +63,35 @@ export async function executeReportQuery(
   } finally {
     await connection.end();
   }
+}
+
+function replacePlaceholders(originalString, placeholders = [], values = []) {
+  if (!originalString) return originalString;
+
+  if (!Array.isArray(placeholders) || !Array.isArray(values)) {
+    throw new Error("placeholders and values must be arrays");
+  }
+
+  if (placeholders.length !== values.length) {
+    throw new Error("placeholders and values must have the same length");
+  }
+
+  let result = originalString;
+
+  placeholders.forEach((placeholder, index) => {
+    if (!placeholder) return;
+
+    const value = values[index];
+
+    // Escape regex special characters in the placeholder
+    const escapedPlaceholder = placeholder.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+    const regex = new RegExp(escapedPlaceholder, "g");
+
+    result = result.replace(regex, value);
+  });
+
+  return result;
 }

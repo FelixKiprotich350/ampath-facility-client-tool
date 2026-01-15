@@ -139,7 +139,7 @@ export default function NewReportPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Select Reports</span>
+              <span>Select Indicators to Generate</span>
               <Button size="sm" variant="outline" onClick={toggleAll}>
                 {selectedReports.length === reports.length
                   ? "Deselect All"

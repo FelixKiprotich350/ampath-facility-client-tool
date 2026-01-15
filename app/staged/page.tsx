@@ -14,6 +14,7 @@ import { AppLayout } from "@/components/layout/app-layout";
 type Report = {
   id: number;
   indicatorCode: string;
+  indicatorName: string;
   rawResult: string;
   startDate: string;
   endDate: string;
@@ -128,7 +129,7 @@ export default function ReportsQueuePage() {
       } else if (typeof report.rawResult === "string") {
         data = JSON.parse(report.rawResult);
       }
-      setPreviewDialog({ open: true, data, reportName: report.indicatorCode });
+      setPreviewDialog({ open: true, data, reportName: report.indicatorName });
     } catch (err) {
       console.error(err);
     }
@@ -263,7 +264,7 @@ export default function ReportsQueuePage() {
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {report.indicatorCode}
+                        {report.indicatorName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(report.startDate).toLocaleDateString()} -{" "}
