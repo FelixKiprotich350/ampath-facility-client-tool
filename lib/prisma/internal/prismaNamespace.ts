@@ -989,7 +989,8 @@ export const StagedIndicatorScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   createdAt: 'createdAt',
-  syncedToAmpathAt: 'syncedToAmpathAt'
+  syncedToAmpathAt: 'syncedToAmpathAt',
+  syncedValues: 'syncedValues'
 } as const
 
 export type StagedIndicatorScalarFieldEnum = (typeof StagedIndicatorScalarFieldEnum)[keyof typeof StagedIndicatorScalarFieldEnum]

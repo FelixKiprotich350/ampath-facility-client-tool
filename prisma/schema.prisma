@@ -87,10 +87,10 @@ model StagedIndicator {
   endDate          DateTime
   createdAt        DateTime  @default(now()) @map("requested_at")
   syncedToAmpathAt DateTime? @map("synced_ampath_at")
+  syncedValues     Json?
 
   @@map("staged_indicators")
 }
-
 
 model ReportQueue {
   id                 Int       @id @default(autoincrement())

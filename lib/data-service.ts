@@ -61,16 +61,16 @@ export async function syncToAmep(
       return { successfullSync, failedSync, error: null };
     }
 
-    const selectedReports = pendingReports.filter((report) =>
+    const selectedIndicators = pendingReports.filter((report) =>
       selectedItems.includes(report.id)
     );
 
-    if (!selectedReports.length) {
+    if (!selectedIndicators.length) {
       console.log("No Indicators matches the selected items");
       return { successfullSync, failedSync, error: null };
     }
 
-    console.log(`Processing ${selectedReports.length} pending indicators`);
+    console.log(`Processing ${selectedIndicators.length} pending indicators`);
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -84,7 +84,7 @@ export async function syncToAmep(
       headers.Authorization = `Basic ${credentials}`;
     }
     // Process each pending report
-    for (const report of selectedReports) {
+    for (const report of selectedIndicators) {
       try {
         // Parse data content
         const data = JSON.parse(report.rawResult.toString()) as any[];
@@ -148,6 +148,7 @@ export async function syncToAmep(
             where: { id: report.id },
             data: {
               syncedToAmpathAt: new Date(),
+              syncedValues: JSON.stringify(responseData),
             },
           });
 

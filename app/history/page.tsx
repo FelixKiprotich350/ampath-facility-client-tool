@@ -6,28 +6,12 @@ import { Button } from "@/components/ui/button";
 import { StagedIndicator } from "@/lib/prisma/client";
 import { AppLayout } from "@/components/layout/app-layout";
 
-interface ReportType {
-  kenyaEmrReportUuid: string;
-  name: string;
-  reportType: string;
-  isReporting: boolean;
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export default function HistoryPage() {
   const [syncHistory, setSyncHistory] = useState<StagedIndicator[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [masterReportList, setMasterReportList] = useState<ReportType[]>();
 
   useEffect(() => {
-    const loadData = async () => {
-      const response = await fetch(`/api/report-types`);
-      setMasterReportList(response.ok ? await response.json() : []);
-    };
     loadSyncHistory();
-    loadData();
   }, []);
 
   const loadSyncHistory = async () => {
@@ -72,19 +56,19 @@ export default function HistoryPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Report Name
+                      Indicator Name
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
+                      Indicator Code
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Period
+                      Start Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      End Date
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Synced At
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Records
                     </th>
                   </tr>
                 </thead>
@@ -92,25 +76,21 @@ export default function HistoryPage() {
                   {syncHistory.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {masterReportList?.find(
-                          (k) => k.kenyaEmrReportUuid === item.indicatorCode
-                        )?.name || "Unknown Report"}
+                        {item.indicatorName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {masterReportList?.find(
-                          (k) => k.kenyaEmrReportUuid === item.indicatorCode
-                        )?.reportType || "Unknown"}
+                        {item.indicatorCode}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.endDate.toDateString()}
+                        {item.startDate ? new Date(item.startDate).toDateString() : "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.endDate ? new Date(item.endDate).toDateString() : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {item.syncedToAmpathAt
                           ? new Date(item.syncedToAmpathAt).toLocaleString()
                           : "N/A"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.indicatorCode || 0}
                       </td>
                     </tr>
                   ))}
