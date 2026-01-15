@@ -1,41 +1,32 @@
 import { getUnsyncedIndicators } from "./local-db";
 import { prisma } from "./prisma";
-import {
-  getComboElementsMapping,
-  getDataElementsMapping,
-} from "./data-collector";
-import { convertSegmentPathToStaticExportFilename } from "next/dist/shared/lib/segment-cache/segment-value-encoding";
+import { getComboElementsMapping } from "./data-collector";
 
 const SYNC_URL = process.env.AMEP_SERVER_URL;
-const targetUrl = `${SYNC_URL}/dataValueSets`;
+const targetUrl = `${SYNC_URL}/dataValueSetss`;
 
 /**
- * Find comboid in data by gender and ageband
+ * Find findCategoryOptionCombo in data by gender and ageband
  */
-// function findComboId(
-//   data: any[],
-//   gender: string,
-//   ageband: string
-// ): string | null {
-//   if (!Array.isArray(data) || !data.length) return null;
+function findCategoryOptionCombo(
+  data: any[],
+  gender: string,
+  ageband: string
+): any | null {
+  if (!Array.isArray(data) || !data.length) return null;
 
-//   if (!gender || !gender.trim()) return null;
-//   if (!ageband || !ageband.trim()) return null;
+  if (!gender || !gender.trim()) return null;
+  if (!ageband || !ageband.trim()) return null;
 
-//   for (const record of data) {
-//     // Search through all values in this record
-//     for (const key of Object.keys(record)) {
-//       const cellValue = String(record[key] ?? "")
-//         .trim()
-//         .toLowerCase();
+  const match = data.find((item) => {
+    return (
+      item.gender.toLowerCase() === gender.toLowerCase() &&
+      item.ageband.toLowerCase() === ageband.toLowerCase()
+    );
+  });
 
-//       if (cellValue == gender.trim().toLowerCase()) {
-//         // Found the matching record — return the result column
-//         return record.column2 ?? null; // <-- change column2 if needed
-//       }
-//     }
-//   }
-// }
+  return match ? match : null;
+}
 export async function getIndicators() {
   try {
     const serverUrl = process.env.AMPATH_SERVER_URL;
@@ -106,31 +97,31 @@ export async function syncToAmep(
           continue;
         }
 
-        console.log(data.length);
-
         // Map data variables to data elements
         const dataValues = [];
 
-        // for (const mapping of mappings) {
-
-        //   const comboId = findComboId(mappings,)
-        //   // Find value in data by variable name
-        //   const dataValue = findValueInData(data, mapping.reportVariableName);
-        //   if (dataValue !== null) {
-        //     dataValues.push({
-        //       dataElement: mapping.dataElementId,
-        //       attributeOptionCombo: mapping.attributeOptionComboId,
-        //       categoryOptionCombo: mapping.categoryOptionComboId,
-        //       value: dataValue.toString(),
-        //     });
-        //   }
-        // }
+        for (const element of data) {
+          const categoryOptionCombo = findCategoryOptionCombo(
+            mappings,
+            element.gender,
+            element.age_band
+          );
+          // Find value in data by variable name
+          if (categoryOptionCombo !== null) {
+            dataValues.push({
+              dataElement: report.indicatorCode,
+              attributeOptionCombo: categoryOptionCombo.attributeOptionComboId,
+              categoryOptionCombo: categoryOptionCombo.comboId,
+              value: element.totalcount.toString(),
+            });
+          }
+        }
 
         if (!dataValues.length) {
           console.log(
             `No data values mapped for report ${report.indicatorCode}`
           );
-          continue;
+          return;
         }
 
         const body = {
