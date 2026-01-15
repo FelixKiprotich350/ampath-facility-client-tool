@@ -38,7 +38,7 @@ export async function executeReportQuery(
   // Replace date placeholders
   const finalQuery = replacePlaceholders(
     oldquery,
-    ["{{AMPATH_REPORT_START_DATE}}", "{{AMPATH_REPORT_END_DATE}}"],
+    ["AMPATH_REPORT_START_DATE", "AMPATH_REPORT_END_DATE"],
     [`'${startDate}'`, `'${endDate}'`]
   );
 
@@ -78,11 +78,11 @@ function replacePlaceholders(originalString, placeholders = [], values = []) {
 
   let result = originalString;
 
-  placeholders.forEach((placeholder, index) => {
-    if (!placeholder) return;
+  placeholders.forEach((p, index) => {
+    if (!p) return;
 
+    const placeholder = `'{{${p}}}'`;
     const value = values[index];
-
     // Escape regex special characters in the placeholder
     const escapedPlaceholder = placeholder.replace(
       /[.*+?^${}()|[\]\\]/g,
