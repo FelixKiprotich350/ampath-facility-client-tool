@@ -23,7 +23,7 @@ export default function NewReportPage() {
 
   const fetchReports = async () => {
     try {
-      const response = await fetch("/api/report-types");
+      const response = await fetch("/api/indicators");
       const data = await response.json();
       setReports(data);
     } catch {}
