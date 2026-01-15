@@ -177,8 +177,8 @@ export default function NewReportPage() {
           className="w-full"
         >
           {loading
-            ? "Scheduling..."
-            : `Schedule ${selectedReports.length} Report(s)`}
+            ? "Generating..."
+            : `Geneerate ${selectedReports.length} Indicator(s)`}
         </Button>
 
         {status && (
