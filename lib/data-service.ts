@@ -1,9 +1,9 @@
-import { getUnsyncedIndicators } from "./local-db";
+import { getStagedIndicators } from "./local-db";
 import { prisma } from "./prisma";
 import { getComboElementsMapping } from "./data-collector";
 
 const SYNC_URL = process.env.AMEP_SERVER_URL;
-const targetUrl = `${SYNC_URL}/dataValueSetss`;
+const targetUrl = `${SYNC_URL}/dataValueSets`;
 
 /**
  * Find findCategoryOptionCombo in data by gender and ageband
@@ -54,7 +54,7 @@ export async function syncToAmep(
   let failedSync = [];
 
   try {
-    const pendingReports = await getUnsyncedIndicators();
+    const pendingReports = await getStagedIndicators(false);
 
     if (!pendingReports.length) {
       console.log("No unsynced indicators found");
@@ -131,7 +131,7 @@ export async function syncToAmep(
           orgUnit: "fCj9Bn7iW2m",
           dataValues,
         };
-
+        console.log(`Syncing report ${report.id} to AMEP at ${targetUrl}`);
         const response = await fetch(targetUrl, {
           method: "POST",
           headers,

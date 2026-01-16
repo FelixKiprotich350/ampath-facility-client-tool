@@ -22,7 +22,7 @@ type Report = {
   syncedToAmpathAt: string | null;
 };
 
-export default function ReportsQueuePage() {
+export default function StagedIndicatorsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [pendingData, setPendingData] = useState<Report[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
@@ -176,27 +176,7 @@ export default function ReportsQueuePage() {
             </Button>
           </div>
         </div>
-
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              {/* <div className="text-2xl font-bold">{pending}</div> */}
-              <div className="text-sm text-gray-600">Pending</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              {/* <div className="text-2xl font-bold">{processing}</div> */}
-              <div className="text-sm text-gray-600">Processing</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              {/* <div className="text-2xl font-bold">{failed}</div> */}
-              <div className="text-sm text-gray-600">Failed</div>
-            </CardContent>
-          </Card>
-        </div>
+ 
 
         {loading ? (
           <div className="text-center py-12">

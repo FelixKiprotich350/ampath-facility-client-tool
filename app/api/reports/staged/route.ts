@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getStagedIndicators } from "@/lib/local-db";
 
 export async function GET(request: NextRequest) {
   try {
-    const staged = await prisma.stagedIndicator.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+    const staged = await getStagedIndicators(false);
 
     return NextResponse.json(staged);
   } catch (error: any) {
