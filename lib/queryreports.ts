@@ -41,7 +41,7 @@ export async function executeReportQuery(
     ["AMPATH_REPORT_START_DATE", "AMPATH_REPORT_END_DATE"],
     [`'${startDate}'`, `'${endDate}'`]
   );
-
+  console.log(`Executing report query: ${finalQuery}`);
   const connection = await mysql.createConnection({
     ...kenyaemrDbConfig,
     multipleStatements: true,
@@ -53,7 +53,7 @@ export async function executeReportQuery(
 
     for (const statement of statements) {
       if (statement.trim()) {
-        const [rows] = await connection.execute(statement.trim());
+        const [rows] = await connection.query(statement.trim());
         if (statement.trim().toUpperCase().startsWith("SELECT")) {
           result = rows;
         }

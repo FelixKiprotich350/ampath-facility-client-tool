@@ -28,6 +28,7 @@ export async function addLineList(
 export async function getStagedIndicators(synced: boolean) {
   return prisma.stagedIndicator.findMany({
     where: { syncedToAmpathAt: synced ? { not: null } : null },
+    orderBy: { createdAt: "desc" },
   });
 }
 

@@ -58,7 +58,6 @@ export async function executeSingleIndicator(
 
     const data = await executeReportQuery(indicatorObj, startDate, endDate);
     const recordCount = Array.isArray(data) ? data.length : 0;
-
     // Convert data to CSV-like format for compatibility
     const csvContent = JSON.stringify(data);
     await addStagedResults(indicatorObj, csvContent, startDate, endDate);
