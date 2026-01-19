@@ -5,16 +5,20 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/layout/app-layout";
 
-type Report = {
+type Indicator = {
   code: string;
   name: string;
+  datasetId: string;
+  datasetName: string;
+  datasetSectionId: string;
+  datasetSectionName: string;
 };
 
 export default function NewReportPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
-  const [reports, setReports] = useState<Report[]>([]);
+  const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [selectedReports, setSelectedReports] = useState<string[]>([]);
 
   useEffect(() => {
@@ -25,7 +29,7 @@ export default function NewReportPage() {
     try {
       const response = await fetch("/api/indicators");
       const data = await response.json();
-      setReports(data);
+      setIndicators(data);
     } catch {}
   };
 
@@ -62,15 +66,13 @@ export default function NewReportPage() {
     try {
       const response = await fetch("/api/collect", {
         method: "POST",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           reportType: "indicators",
           reportPeriod: selectedMonth,
           selectedIndicators: selectedReports,
         }),
         headers: { "Content-Type": "application/json" },
       });
-
-     
 
       const result = await response.json();
       if (result.indicators !== undefined) {
@@ -98,10 +100,10 @@ export default function NewReportPage() {
   };
 
   const toggleAll = () => {
-    if (selectedReports.length === reports.length) {
+    if (selectedReports.length === indicators.length) {
       setSelectedReports([]);
     } else {
-      setSelectedReports(reports.map((r) => r.code));
+      setSelectedReports(indicators.map((r) => r.code));
     }
   };
 
@@ -141,29 +143,29 @@ export default function NewReportPage() {
             <CardTitle className="flex items-center justify-between">
               <span>Select Indicators to Generate</span>
               <Button size="sm" variant="outline" onClick={toggleAll}>
-                {selectedReports.length === reports.length
+                {selectedReports.length === indicators.length
                   ? "Deselect All"
                   : "Select All"}
               </Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {reports.length === 0 ? (
-              <div className="text-gray-500">Loading reports...</div>
+            {indicators.length === 0 ? (
+              <div className="text-gray-500">Loading indicators...</div>
             ) : (
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {reports.map((report) => (
+                {indicators.map((indicator) => (
                   <label
-                    key={report.code}
+                    key={indicator.code}
                     className="flex items-center gap-3 p-3 border rounded hover:bg-gray-50 cursor-pointer"
                   >
                     <input
                       type="checkbox"
-                      checked={selectedReports.includes(report.code)}
-                      onChange={() => toggleReport(report.code)}
+                      checked={selectedReports.includes(indicator.code)}
+                      onChange={() => toggleReport(indicator.code)}
                       className="w-4 h-4"
                     />
-                    <span className="text-sm">{report.name}</span>
+                    <span className="text-sm">{indicator.name}</span>
                   </label>
                 ))}
               </div>
