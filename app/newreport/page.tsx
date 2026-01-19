@@ -93,6 +93,33 @@ export default function NewReportPage() {
     }
   };
 
+  const toggleSection = (sectionId: string) => {
+    const sectionIndicators = indicators.filter(i => i.datasetSectionId === sectionId).map(i => i.code);
+    const allSelected = sectionIndicators.every(code => selectedReports.includes(code));
+    
+    if (allSelected) {
+      setSelectedReports(prev => prev.filter(code => !sectionIndicators.includes(code)));
+    } else {
+      setSelectedReports(prev => [...new Set([...prev, ...sectionIndicators])]);
+    }
+  };
+
+  const getGroupedIndicators = () => {
+    const grouped = indicators.reduce((acc, indicator) => {
+      const sectionKey = indicator.datasetSectionId || 'unknown';
+      if (!acc[sectionKey]) {
+        acc[sectionKey] = {
+          sectionName: indicator.datasetSectionName || 'Unknown Section',
+          indicators: []
+        };
+      }
+      acc[sectionKey].indicators.push(indicator);
+      return acc;
+    }, {} as Record<string, { sectionName: string; indicators: Indicator[] }>);
+    
+    return grouped;
+  };
+
   const toggleReport = (uuid: string) => {
     setSelectedReports((prev) =>
       prev.includes(uuid) ? prev.filter((id) => id !== uuid) : [...prev, uuid]
@@ -153,21 +180,44 @@ export default function NewReportPage() {
             {indicators.length === 0 ? (
               <div className="text-gray-500">Loading indicators...</div>
             ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {indicators.map((indicator) => (
-                  <label
-                    key={indicator.code}
-                    className="flex items-center gap-3 p-3 border rounded hover:bg-gray-50 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedReports.includes(indicator.code)}
-                      onChange={() => toggleReport(indicator.code)}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm">{indicator.name}</span>
-                  </label>
-                ))}
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {Object.entries(getGroupedIndicators()).map(([sectionId, section]) => {
+                  const sectionIndicators = section.indicators.map(i => i.code);
+                  const allSectionIndicatorsSelected = sectionIndicators.every(code => selectedReports.includes(code));
+                  
+                  return (
+                    <div key={sectionId} className="border rounded-lg">
+                      <div className="bg-gray-50 p-3 border-b">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={allSectionIndicatorsSelected}
+                            onChange={() => toggleSection(sectionId)}
+                            className="w-4 h-4"
+                          />
+                          <span className="font-medium text-gray-900">{section.sectionName}</span>
+                          <span className="text-sm text-gray-500">({section.indicators.length} indicators)</span>
+                        </label>
+                      </div>
+                      <div className="p-2 space-y-1">
+                        {section.indicators.map((indicator) => (
+                          <label
+                            key={indicator.code}
+                            className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer ml-4"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedReports.includes(indicator.code)}
+                              onChange={() => toggleReport(indicator.code)}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-sm">{indicator.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>
@@ -180,7 +230,7 @@ export default function NewReportPage() {
         >
           {loading
             ? "Generating..."
-            : `Geneerate ${selectedReports.length} Indicator(s)`}
+            : `Generate ${selectedReports.length} Indicator(s)`}
         </Button>
 
         {status && (
