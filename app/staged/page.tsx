@@ -39,11 +39,19 @@ export default function StagedIndicatorsPage() {
     data: any[] | null;
     reportName: string;
   }>({ open: false, data: null, reportName: "" });
+  const [checkingExisting, setCheckingExisting] = useState(false);
+  const [existingDataDialog, setExistingDataDialog] = useState<{
+    open: boolean;
+    data: any[];
+  }>({ open: false, data: [] });
+  const [checkCredentialsDialog, setCheckCredentialsDialog] = useState(false);
+  const [checkCredentials, setCheckCredentials] = useState({
+    username: "",
+    password: "",
+  });
 
   useEffect(() => {
     fetchReports();
-    // const interval = setInterval(fetchReports, 10000);
-    // return () => clearInterval(interval);
   }, []);
 
   const fetchReports = async () => {
@@ -114,6 +122,38 @@ export default function StagedIndicatorsPage() {
       setCredentials({ username: "", password: "", yearMonth: "" });
     }
   };
+
+  const handleCheckExisting = async () => {
+    if (selectedItems.size === 0) {
+      alert("Please select items to check");
+      return;
+    }
+    setCheckCredentialsDialog(true);
+  };
+
+  const performExistingDataCheck = async () => {
+    setCheckingExisting(true);
+    setCheckCredentialsDialog(false);
+    try {
+      const response = await fetch("/api/check-existing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          indicatorIds: Array.from(selectedItems),
+          username: checkCredentials.username,
+          password: checkCredentials.password
+        }),
+      });
+      const result = await response.json();
+      setExistingDataDialog({ open: true, data: result.existingData || [] });
+    } catch (error) {
+      console.error("Failed to check existing data:", error);
+    } finally {
+      setCheckingExisting(false);
+      setCheckCredentials({ username: "", password: "" });
+    }
+  };
+
   const handleSyncClick = () => {
     if (selectedItems.size === 0) {
       alert("Please select items to sync");
@@ -121,6 +161,7 @@ export default function StagedIndicatorsPage() {
     }
     setCredentialsDialog(true);
   };
+
   const handlePreview = (report: Report) => {
     try {
       let data: any[] = [];
@@ -136,7 +177,7 @@ export default function StagedIndicatorsPage() {
   };
 
   const getStatusBadge = (report: Report) => {
-    const synced =  report.syncedToAmpathAt;
+    const synced = report.syncedToAmpathAt;
     const status = synced ? "SYNCED" : "PENDING";
     const style = synced
       ? "bg-green-100 text-green-800"
@@ -147,10 +188,6 @@ export default function StagedIndicatorsPage() {
       </span>
     );
   };
-
-  // const pending = reports.filter((r) => r.status === "PENDING").length;
-  // const processing = reports.filter((r) => r.status === "PROCESSING").length;
-  // const failed = reports.filter((r) => r.status === "FAILED").length;
 
   return (
     <AppLayout
@@ -168,6 +205,13 @@ export default function StagedIndicatorsPage() {
               {loading ? "🔄 Loading..." : "🔄 Refresh"}
             </Button>
             <Button
+              onClick={handleCheckExisting}
+              disabled={selectedItems.size === 0 || checkingExisting}
+              variant="outline"
+            >
+              {checkingExisting ? "🔍 Checking..." : "🔍 Check Existing"}
+            </Button>
+            <Button
               onClick={handleSyncClick}
               disabled={selectedItems.size === 0}
               className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
@@ -176,7 +220,6 @@ export default function StagedIndicatorsPage() {
             </Button>
           </div>
         </div>
- 
 
         {loading ? (
           <div className="text-center py-12">
@@ -337,6 +380,7 @@ export default function StagedIndicatorsPage() {
             </div>
           </DialogContent>
         </Dialog>
+
         <Dialog open={credentialsDialog} onOpenChange={setCredentialsDialog}>
           <DialogContent>
             <DialogHeader>
@@ -403,6 +447,99 @@ export default function StagedIndicatorsPage() {
                   className="bg-green-600 hover:bg-green-700"
                 >
                   Sync
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        <Dialog open={checkCredentialsDialog} onOpenChange={setCheckCredentialsDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Enter AMEP Credentials</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={checkCredentials.username}
+                  onChange={(e) =>
+                    setCheckCredentials({ ...checkCredentials, username: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter username"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={checkCredentials.password}
+                  onChange={(e) =>
+                    setCheckCredentials({ ...checkCredentials, password: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter password"
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={() => setCheckCredentialsDialog(false)}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={performExistingDataCheck}
+                  disabled={!checkCredentials.username || !checkCredentials.password}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Check
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        <Dialog open={existingDataDialog.open} onOpenChange={(open) => setExistingDataDialog({ ...existingDataDialog, open })}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Existing Data Check Results</DialogTitle>
+            </DialogHeader>
+            <div className="mt-4">
+              {existingDataDialog.data.length > 0 ? (
+                <div>
+                  <p className="text-sm text-amber-600 mb-4">
+                    ⚠️ The following indicators already have data in AMEP:
+                  </p>
+                  <div className="space-y-2">
+                    {existingDataDialog.data.map((item) => (
+                      <div key={item.id} className="p-3 bg-amber-50 border border-amber-200 rounded">
+                        <div className="font-medium">{item.indicatorName}</div>
+                        <div className="text-sm text-gray-600">Code: {item.indicatorCode}</div>
+                        <div className="text-sm text-gray-600">Period: {item.period}</div>
+                        <div className="text-sm text-gray-600">
+                          Existing values: {item.existingValues}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-2">✅</div>
+                  <p className="text-green-600 font-medium">No existing data found in AMEP</p>
+                  <p className="text-sm text-gray-600">Selected indicators are safe to sync</p>
+                </div>
+              )}
+              <div className="flex justify-end mt-4">
+                <Button onClick={() => setExistingDataDialog({ open: false, data: [] })} variant="outline">
+                  Close
                 </Button>
               </div>
             </div>
