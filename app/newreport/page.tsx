@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AppLayout } from "@/components/layout/app-layout";
 
 type Indicator = {
@@ -20,6 +21,8 @@ export default function NewReportPage() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [selectedReports, setSelectedReports] = useState<string[]>([]);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [periodDialog, setPeriodDialog] = useState(false);
 
   useEffect(() => {
     fetchReports();
@@ -50,15 +53,16 @@ export default function NewReportPage() {
     return months;
   };
 
-  const handleCollect = async () => {
-    if (!selectedMonth) {
-      alert("Please select a month and year to proceed.");
-      return;
-    }
+  const handleSelectPeriod = () => {
     if (selectedReports.length === 0) {
-      alert("Please select at least one report.");
+      alert("Please select at least one indicator.");
       return;
     }
+    setPeriodDialog(true);
+  };
+
+  const handleCollect = async () => {
+    setPeriodDialog(false);
     setLoading(true);
     setStatus(
       `🔍 Scheduling ${selectedReports.length} reports for ${selectedMonth}...`
@@ -91,6 +95,18 @@ export default function NewReportPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleSectionExpansion = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
   };
 
   const toggleSection = (sectionId: string) => {
@@ -142,31 +158,6 @@ export default function NewReportPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Select Report Period</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Month and Year
-              </label>
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select month...</option>
-                {getLast12Months().map((month) => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Select Indicators to Generate</span>
               <Button size="sm" variant="outline" onClick={toggleAll}>
@@ -180,15 +171,16 @@ export default function NewReportPage() {
             {indicators.length === 0 ? (
               <div className="text-gray-500">Loading indicators...</div>
             ) : (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
                 {Object.entries(getGroupedIndicators()).map(([sectionId, section]) => {
                   const sectionIndicators = section.indicators.map(i => i.code);
                   const allSectionIndicatorsSelected = sectionIndicators.every(code => selectedReports.includes(code));
+                  const isExpanded = expandedSections.has(sectionId);
                   
                   return (
                     <div key={sectionId} className="border rounded-lg">
-                      <div className="bg-gray-50 p-3 border-b">
-                        <label className="flex items-center gap-3 cursor-pointer">
+                      <div className="bg-gray-50 p-3 border-b flex items-center justify-between">
+                        <label className="flex items-center gap-3 cursor-pointer flex-1">
                           <input
                             type="checkbox"
                             checked={allSectionIndicatorsSelected}
@@ -198,23 +190,31 @@ export default function NewReportPage() {
                           <span className="font-medium text-gray-900">{section.sectionName}</span>
                           <span className="text-sm text-gray-500">({section.indicators.length} indicators)</span>
                         </label>
+                        <button
+                          onClick={() => toggleSectionExpansion(sectionId)}
+                          className="p-1 hover:bg-gray-200 rounded"
+                        >
+                          {isExpanded ? '▼' : '▶'}
+                        </button>
                       </div>
-                      <div className="p-2 space-y-1">
-                        {section.indicators.map((indicator) => (
-                          <label
-                            key={indicator.code}
-                            className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer ml-4"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedReports.includes(indicator.code)}
-                              onChange={() => toggleReport(indicator.code)}
-                              className="w-4 h-4"
-                            />
-                            <span className="text-sm">{indicator.name}</span>
-                          </label>
-                        ))}
-                      </div>
+                      {isExpanded && (
+                        <div className="p-2 space-y-1">
+                          {section.indicators.map((indicator) => (
+                            <label
+                              key={indicator.code}
+                              className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer ml-4"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedReports.includes(indicator.code)}
+                                onChange={() => toggleReport(indicator.code)}
+                                className="w-4 h-4"
+                              />
+                              <span className="text-sm">{indicator.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -224,14 +224,54 @@ export default function NewReportPage() {
         </Card>
 
         <Button
-          onClick={handleCollect}
-          disabled={!selectedMonth || selectedReports.length === 0 || loading}
+          onClick={handleSelectPeriod}
+          disabled={selectedReports.length === 0}
           className="w-full"
         >
-          {loading
-            ? "Generating..."
-            : `Generate ${selectedReports.length} Indicator(s)`}
+          Select Period ({selectedReports.length} Indicator{selectedReports.length !== 1 ? 's' : ''})
         </Button>
+
+        <Dialog open={periodDialog} onOpenChange={setPeriodDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Select Report Period</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Month and Year
+                </label>
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select month...</option>
+                  {getLast12Months().map((month) => (
+                    <option key={month.value} value={month.value}>
+                      {month.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={() => setPeriodDialog(false)}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCollect}
+                  disabled={!selectedMonth || loading}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {loading ? "Generating..." : "Generate Report"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {status && (
           <Card>
