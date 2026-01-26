@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 
 export function Sidebar() {
   const pathname = usePathname();
-  
+
   const menuItems = [
     { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-    { href: "/newreport", label: "Generate Report", icon: "⏳" },
+    { href: "/generate", label: "Generate", icon: "⏳" },
     { href: "/staged", label: "Staged Indicators", icon: "⏳" },
+    { href: "/reports", label: "Reports", icon: "📜" },
     { href: "/history", label: "History", icon: "📜" },
-    { href: "/system", label: "System Status", icon: "📜" },
   ];
 
   return (

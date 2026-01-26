@@ -1,5 +1,4 @@
-import { addIndicator, addLineList, addStagedResults } from "./local-db";
-import { addReportToQueue } from "./report-queue";
+import { addStagedResults } from "./local-db";
 import { executeReportQuery } from "./queryreports";
 
 /**
@@ -37,7 +36,7 @@ type ComboDefinition = {
   comboId: string;
   gender: string;
   ageband: string;
-  description?: string; 
+  description?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -48,7 +47,7 @@ type ComboDefinition = {
 export async function executeSingleIndicator(
   indicatorObj: any,
   startDate: string,
-  endDate: string
+  endDate: string,
 ) {
   try {
     console.log(`Starting direct query for indicator: ${indicatorObj}`);
@@ -63,7 +62,7 @@ export async function executeSingleIndicator(
     await addStagedResults(indicatorObj, csvContent, startDate, endDate);
 
     console.log(
-      `Indicator ${indicatorObj} completed: (${recordCount} records)`
+      `Indicator ${indicatorObj} completed: (${recordCount} records)`,
     );
 
     return { records: recordCount, message: "success" };
@@ -111,6 +110,30 @@ export async function getComboElementsMapping(): Promise<ComboDefinition[]> {
     return Array.isArray(reports) ? reports : [];
   } catch (error) {
     console.error("Failed to fetch reports types:", (error as Error).message);
+    return [];
+  }
+}
+
+/**
+ * getReportDefinitions - fetch report definitions from API
+ */
+export async function getReportDefinitions(): Promise<any[]> {
+  try {
+    const serverUrl = process.env.AMPATH_SERVER_URL;
+    if (!serverUrl) {
+      console.warn("SERVER_URL not set - returning empty list");
+      return [];
+    }
+    const response = await fetch(`${serverUrl}/report-definitions`, {
+      headers: { Accept: "application/json" },
+    });
+    const reports = await response.json();
+    return Array.isArray(reports) ? reports : [];
+  } catch (error) {
+    console.error(
+      "Failed to fetch reports definitions:",
+      (error as Error).message,
+    );
     return [];
   }
 }

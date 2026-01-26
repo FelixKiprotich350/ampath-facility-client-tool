@@ -17,8 +17,8 @@ import type * as Prisma from "./prismaNamespace"
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.2.0",
-  "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
+  "clientVersion": "7.3.0",
+  "engineVersion": "9d6ad21cbbceab97458517b147a6a09ff43aa735",
   "activeProvider": "mysql",
   "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../lib/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n}\n\nmodel Facility {\n  id        Int       @id @default(autoincrement())\n  name      String\n  location  String?\n  data      Json?\n  createdAt DateTime  @default(now()) @map(\"created_at\")\n  synced    Boolean   @default(false)\n  syncedAt  DateTime? @map(\"synced_at\")\n\n  @@map(\"facilities\")\n}\n\nmodel FacilityReportType {\n  id                 String                     @id @default(uuid())\n  name               String\n  kenyaEmrReportUuid String                     @unique\n  reportType         FacilityReportTypeCategory\n  isReporting        Boolean                    @default(true)\n  createdAt          DateTime                   @default(now())\n  updatedAt          DateTime                   @updatedAt\n\n  @@map(\"facility_report_types\")\n}\n\nmodel Indicator {\n  id          Int       @id @default(autoincrement())\n  facilityId  String\n  indicatorId String\n  name        String\n  value       String\n  period      String\n  data        Json?\n  createdAt   DateTime  @default(now()) @map(\"created_at\")\n  synced      Boolean   @default(false)\n  syncedAt    DateTime? @map(\"synced_at\")\n\n  @@map(\"indicators\")\n}\n\nmodel LineList {\n  id         Int       @id @default(autoincrement())\n  facilityId String\n  patientId  String?\n  data       Json\n  createdAt  DateTime  @default(now()) @map(\"created_at\")\n  synced     Boolean   @default(false)\n  syncedAt   DateTime? @map(\"synced_at\")\n\n  @@map(\"line_lists\")\n}\n\nmodel IndicatorType {\n  id          Int      @id @default(autoincrement())\n  name        String\n  description String?\n  query       String\n  source      String // 'database' or 'api'\n  apiUrl      String?\n  active      Boolean  @default(true)\n  createdAt   DateTime @default(now()) @map(\"created_at\")\n  updatedAt   DateTime @updatedAt @map(\"updated_at\")\n\n  @@map(\"indicator_types\")\n}\n\nmodel StagedIndicator {\n  id               Int       @id @default(autoincrement())\n  indicatorCode    String\n  indicatorName    String\n  rawResult        Json\n  startDate        DateTime\n  endDate          DateTime\n  createdAt        DateTime  @default(now()) @map(\"requested_at\")\n  syncedToAmpathAt DateTime? @map(\"synced_ampath_at\")\n  syncedValues     Json?\n  syncedBy         String?\n\n  @@map(\"staged_indicators\")\n}\n\nmodel ReportQueue {\n  id                 Int       @id @default(autoincrement())\n  kenyaEmrReportUuid String\n  reportPeriod       String\n  status             String    @default(\"PENDING\")\n  error              String?\n  createdAt          DateTime  @default(now()) @map(\"created_at\")\n  processedAt        DateTime? @map(\"processed_at\")\n\n  @@map(\"report_queue\")\n}\n\nenum FacilityReportTypeCategory {\n  indicator\n  linelist\n}\n",
   "runtimeDataModel": {
@@ -37,12 +37,14 @@ async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Modul
 }
 
 config.compilerWasm = {
-  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_bg.mysql.mjs"),
+  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.mysql.mjs"),
 
   getQueryCompilerWasmModule: async () => {
-    const { wasm } = await import("@prisma/client/runtime/query_compiler_bg.mysql.wasm-base64.mjs")
+    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.mysql.wasm-base64.mjs")
     return await decodeBase64AsWasm(wasm)
-  }
+  },
+
+  importName: "./query_compiler_fast_bg.js"
 }
 
 
