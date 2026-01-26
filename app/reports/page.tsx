@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AppLayout } from "@/components/layout/app-layout";
-import { getReportDefinitions } from "@/lib/data-collector";
 
 type Report = {
   id: number;
@@ -37,15 +36,11 @@ export default function ReportsPage() {
     data: any[] | null;
     reportName: string;
   }>({ open: false, data: null, reportName: "" });
-  const [checkingExisting, setCheckingExisting] = useState(false);
-  const [existingDataDialog, setExistingDataDialog] = useState<{
-    open: boolean;
-    data: any[];
-  }>({ open: false, data: [] });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [periodFilter, setPeriodFilter] = useState("");
   const [indicatorFilter, setIndicatorFilter] = useState("");
+  const [selectedReportId, setSelectedReportId] = useState("");
 
   useEffect(() => {
     fetchReports();
@@ -54,7 +49,8 @@ export default function ReportsPage() {
 
   const loadReportDefinitions = async () => {
     try {
-      const definitions = await getReportDefinitions();
+      const response = await fetch("/api/report-definitions");
+      const definitions = await response.json();
       setReportDefinitions(definitions);
     } catch (error) {
       console.error("Failed to load report definitions:", error);
@@ -75,7 +71,25 @@ export default function ReportsPage() {
     });
   };
 
+  const generateReport = async () => {
+    if (!selectedReportId) return;
 
+    setLoading(true);
+    try {
+      const response = await fetch("/api/reports/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportId: selectedReportId }),
+      });
+      if (response.ok) {
+        fetchReports();
+      }
+    } catch (error) {
+      console.error("Failed to generate report:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchReports = async () => {
     setLoading(true);
@@ -100,59 +114,9 @@ export default function ReportsPage() {
     }
   };
 
-  const toggleSelectAll = () => {
-    const filteredReports = getFilteredReports();
-    if (
-      selectedItems.size === filteredReports.length &&
-      filteredReports.length > 0
-    ) {
-      setSelectedItems(new Set());
-    } else {
-      setSelectedItems(new Set(filteredReports.map((item) => item.id)));
-    }
-  };
-
-  const toggleSelectItem = (id: number) => {
-    const newSelected = new Set(selectedItems);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedItems(newSelected);
-  };
-
-  const handleSync = async () => {
-    setLoading(true);
-    setCredentialsDialog(false);
-    try {
-      const selectedData = pendingData.filter((item) =>
-        selectedItems.has(item.id),
-      );
-      const response = await fetch("/api/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          period,
-          selectedItems: Array.from(selectedItems),
-        }),
-      });
-      const result = await response.json();
-      if (result.successfullSync?.length > 0) {
-        setSelectedItems(new Set());
-        loadPendingData();
-      }
-    } catch {
-      console.error("Sync failed");
-    } finally {
-      setLoading(false);
-      setPeriod("");
-    }
-  };
-
   const handleSelectPeriod = () => {
-    if (selectedItems.size === 0) {
-      alert("Please select items to sync");
+    if (!selectedReportId) {
+      alert("Please select a report first.");
       return;
     }
     setCredentialsDialog(true);
@@ -199,7 +163,7 @@ export default function ReportsPage() {
             </Button>
             <Button
               onClick={handleSelectPeriod}
-              disabled={selectedItems.size === 0}
+              disabled={!selectedReportId || loading}
               className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
             >
               Select Period ({selectedItems.size})
@@ -210,11 +174,11 @@ export default function ReportsPage() {
         <div className="space-y-4">
           <div className="flex gap-4">
             <select
-              value={indicatorFilter}
-              onChange={(e) => setIndicatorFilter(e.target.value)}
+              value={selectedReportId}
+              onChange={(e) => setSelectedReportId(e.target.value)}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All indicators</option>
+              <option value="">Select a report to generate</option>
               {reportDefinitions.map((report) => (
                 <option key={report.id} value={report.id}>
                   {report.name}
@@ -246,18 +210,7 @@ export default function ReportsPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <input
-                          type="checkbox"
-                          checked={
-                            selectedItems.size ===
-                              getFilteredReports().length &&
-                            getFilteredReports().length > 0
-                          }
-                          onChange={toggleSelectAll}
-                          className="rounded"
-                        />
-                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Indicator
                       </th>
@@ -279,7 +232,7 @@ export default function ReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {getFilteredReports().map((report) => (
+                    {/* {getFilteredReports().map((report) => (
                       <tr key={report.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
@@ -318,7 +271,7 @@ export default function ReportsPage() {
                           </Button>
                         </td>
                       </tr>
-                    ))}
+                    ))} */}
                   </tbody>
                 </table>
               </div>
@@ -388,7 +341,7 @@ export default function ReportsPage() {
         <Dialog open={credentialsDialog} onOpenChange={setCredentialsDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Enter Credentials</DialogTitle>
+              <DialogTitle>Enter period</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -413,92 +366,11 @@ export default function ReportsPage() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleSync}
+                  onClick={generateReport}
                   disabled={!period}
                   className="bg-green-600 hover:bg-green-700"
                 >
                   Generate
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog
-          open={existingDataDialog.open}
-          onOpenChange={(open) =>
-            setExistingDataDialog({ ...existingDataDialog, open })
-          }
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Existing Data Check Results</DialogTitle>
-            </DialogHeader>
-            <div className="mt-4">
-              {existingDataDialog.data.length > 0 ? (
-                <div>
-                  <p className="text-sm text-amber-600 mb-4">
-                    ⚠️ The following indicators already have data values in
-                    AMEP:
-                  </p>
-                  <div className="max-h-96 overflow-y-auto">
-                    <table className="w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50 sticky top-0">
-                        <tr>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                            Data Element
-                          </th>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                            Stored By
-                          </th>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                            Period
-                          </th>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                            Existing Values
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {existingDataDialog.data.map((item) => (
-                          <tr key={item.id} className="hover:bg-gray-50">
-                            <td className="px-3 py-2 text-sm font-medium text-gray-900">
-                              {item.dataElement}
-                            </td>
-                            <td className="px-3 py-2 text-sm text-gray-600">
-                              {item.storedBy}
-                            </td>
-                            <td className="px-3 py-2 text-sm text-gray-600">
-                              {item.period}
-                            </td>
-                            <td className="px-3 py-2 text-sm text-gray-600">
-                              {item.value}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-2">✅</div>
-                  <p className="text-green-600 font-medium">
-                    No existing data found in AMEP
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Selected indicators are safe to sync
-                  </p>
-                </div>
-              )}
-              <div className="flex justify-end mt-4">
-                <Button
-                  onClick={() =>
-                    setExistingDataDialog({ open: false, data: [] })
-                  }
-                  variant="outline"
-                >
-                  Close
                 </Button>
               </div>
             </div>
