@@ -88,6 +88,7 @@ model StagedIndicator {
   createdAt        DateTime  @default(now()) @map("requested_at")
   syncedToAmpathAt DateTime? @map("synced_ampath_at")
   syncedValues     Json?
+  syncedBy         String?
 
   @@map("staged_indicators")
 }

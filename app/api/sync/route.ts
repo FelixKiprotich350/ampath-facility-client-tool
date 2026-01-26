@@ -4,12 +4,19 @@ import { syncToAmep } from "@/lib/data-service";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { username, password, yearMonth, selectedItems } = body;
+    const { username, password, yearMonth, selectedItems, importStrategy } =
+      body;
 
     if (!username || !password) {
       return NextResponse.json(
         { error: "Username and password required" },
-        { status: 400 }
+        { status: 400 },
+      );
+    }
+    if (!yearMonth || !importStrategy) {
+      return NextResponse.json(
+        { error: "yearMonth and importStrategy are required" },
+        { status: 400 },
       );
     }
 
@@ -20,7 +27,7 @@ export async function POST(request: NextRequest) {
     ) {
       return NextResponse.json(
         { error: "You must select atleast 1 Report" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -28,7 +35,8 @@ export async function POST(request: NextRequest) {
       yearMonth,
       username,
       password,
-      selectedItems
+      importStrategy,
+      selectedItems,
     );
     if (result.error) {
       return NextResponse.json({ result }, { status: 500 });

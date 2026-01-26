@@ -8,7 +8,7 @@ export async function addIndicator(
   name: string,
   value: string,
   period: string,
-  data: any
+  data: any,
 ) {
   return prisma.indicator.create({
     data: { facilityId, indicatorId, name, value, period, data },
@@ -18,7 +18,7 @@ export async function addIndicator(
 export async function addLineList(
   facilityId: string,
   patientId: string | null,
-  data: any
+  data: any,
 ) {
   return prisma.lineList.create({
     data: { facilityId, patientId, data },
@@ -43,7 +43,7 @@ export async function addStagedResults(
   indicatorObj: any,
   rawResult: any,
   startDate: string,
-  endDate: string
+  endDate: string,
 ) {
   return prisma.stagedIndicator.create({
     data: {
@@ -73,7 +73,7 @@ export async function getDataSummary() {
 export async function checkExistingData(
   indicatorIds: number[],
   username?: string,
-  password?: string
+  password?: string,
 ) {
   try {
     // Get the staged indicators
@@ -103,7 +103,7 @@ export async function checkExistingData(
 
     if (username && password) {
       const credentials = Buffer.from(`${username}:${password}`).toString(
-        "base64"
+        "base64",
       );
       headers.Authorization = `Basic ${credentials}`;
     }
@@ -113,13 +113,13 @@ export async function checkExistingData(
         // Format period from dates (assuming monthly reporting)
         const startDate = new Date(indicator.startDate);
         const period = `${startDate.getFullYear()}${String(
-          startDate.getMonth() + 1
+          startDate.getMonth() + 1,
         ).padStart(2, "0")}`;
 
         // Check AMEP for existing data values
         const checkUrl = `${AMEP_URL}/dataValueSets?dataSet=Lf1skJGdrzj&orgUnit=fCj9Bn7iW2m&period=${period}&dataElement=${indicator.indicatorCode}&format=json`;
         console.log(
-          `Checking existing data for indicator ${indicator.indicatorCode} at ${checkUrl}`
+          `Checking existing data for indicator ${indicator.indicatorCode} at ${checkUrl}`,
         );
         const response = await fetch(checkUrl, {
           headers,
@@ -130,19 +130,23 @@ export async function checkExistingData(
           const data = await response.json();
           // If dataValues exist, this indicator has existing data
           if (data.dataValues && data.dataValues.length > 0) {
-            existingData.push({
-              id: indicator.id,
-              indicatorCode: indicator.indicatorCode,
-              indicatorName: indicator.indicatorName,
-              period: period,
-              existingValues: data.dataValues.length,
-            });
+            for (const dv of data.dataValues) {
+              existingData.push({
+                dataElement: dv.dataElement,
+                categoryOptionCombo: dv.categoryOptionCombo,
+                attributeOptionCombo: dv.attributeOptionCombo,
+                value: dv.value,
+                storedBy: dv.storedBy, 
+                lastUpdated: dv.lastUpdated,
+                period: dv.period,
+              });
+            }
           }
         }
       } catch (error) {
         console.error(
           `Error checking indicator ${indicator.indicatorCode}:`,
-          error
+          error,
         );
       }
     }

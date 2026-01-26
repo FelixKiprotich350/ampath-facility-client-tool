@@ -990,7 +990,8 @@ export const StagedIndicatorScalarFieldEnum = {
   endDate: 'endDate',
   createdAt: 'createdAt',
   syncedToAmpathAt: 'syncedToAmpathAt',
-  syncedValues: 'syncedValues'
+  syncedValues: 'syncedValues',
+  syncedBy: 'syncedBy'
 } as const
 
 export type StagedIndicatorScalarFieldEnum = (typeof StagedIndicatorScalarFieldEnum)[keyof typeof StagedIndicatorScalarFieldEnum]
@@ -1106,7 +1107,8 @@ export type IndicatorTypeOrderByRelevanceFieldEnum = (typeof IndicatorTypeOrderB
 
 export const StagedIndicatorOrderByRelevanceFieldEnum = {
   indicatorCode: 'indicatorCode',
-  indicatorName: 'indicatorName'
+  indicatorName: 'indicatorName',
+  syncedBy: 'syncedBy'
 } as const
 
 export type StagedIndicatorOrderByRelevanceFieldEnum = (typeof StagedIndicatorOrderByRelevanceFieldEnum)[keyof typeof StagedIndicatorOrderByRelevanceFieldEnum]

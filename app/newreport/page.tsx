@@ -23,6 +23,8 @@ export default function NewReportPage() {
   const [selectedReports, setSelectedReports] = useState<string[]>([]);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [periodDialog, setPeriodDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [periodFilter, setPeriodFilter] = useState("");
 
   useEffect(() => {
     fetchReports();
@@ -120,8 +122,22 @@ export default function NewReportPage() {
     }
   };
 
+  const getFilteredIndicators = () => {
+    return indicators.filter(indicator => {
+      const matchesSearch = searchTerm === "" || 
+        indicator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        indicator.code.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesPeriod = periodFilter === "" || 
+        indicator.datasetSectionName.toLowerCase().includes(periodFilter.toLowerCase());
+      
+      return matchesSearch && matchesPeriod;
+    });
+  };
+
   const getGroupedIndicators = () => {
-    const grouped = indicators.reduce((acc, indicator) => {
+    const filteredIndicators = getFilteredIndicators();
+    const grouped = filteredIndicators.reduce((acc, indicator) => {
       const sectionKey = indicator.datasetSectionId || 'unknown';
       if (!acc[sectionKey]) {
         acc[sectionKey] = {
@@ -168,6 +184,25 @@ export default function NewReportPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="space-y-4 mb-4">
+              <input
+                type="text"
+                placeholder="Search indicators..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <select
+                value={periodFilter}
+                onChange={(e) => setPeriodFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All sections</option>
+                {[...new Set(indicators.map(i => i.datasetSectionName))].map(section => (
+                  <option key={section} value={section}>{section}</option>
+                ))}
+              </select>
+            </div>
             {indicators.length === 0 ? (
               <div className="text-gray-500">Loading indicators...</div>
             ) : (

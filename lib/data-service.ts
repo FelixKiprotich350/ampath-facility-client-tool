@@ -11,7 +11,7 @@ const targetUrl = `${SYNC_URL}/dataValueSets`;
 function findCategoryOptionCombo(
   data: any[],
   gender: string,
-  ageband: string
+  ageband: string,
 ): any | null {
   if (!Array.isArray(data) || !data.length) return null;
 
@@ -48,7 +48,8 @@ export async function syncToAmep(
   reportingMonth: string,
   username: string,
   password: string,
-  selectedItems: number[]
+  importStrategy: string,
+  selectedItems: number[],
 ) {
   let successfullSync = [];
   let failedSync = [];
@@ -62,7 +63,7 @@ export async function syncToAmep(
     }
 
     const selectedIndicators = pendingReports.filter((report) =>
-      selectedItems.includes(report.id)
+      selectedItems.includes(report.id),
     );
 
     if (!selectedIndicators.length) {
@@ -79,7 +80,7 @@ export async function syncToAmep(
 
     if (username && password) {
       const credentials = Buffer.from(`${username}:${password}`).toString(
-        "base64"
+        "base64",
       );
       headers.Authorization = `Basic ${credentials}`;
     }
@@ -104,7 +105,7 @@ export async function syncToAmep(
           const categoryOptionCombo = findCategoryOptionCombo(
             mappings,
             element.gender,
-            element.age_band
+            element.age_band,
           );
           // Find value in data by variable name
           if (categoryOptionCombo !== null) {
@@ -119,7 +120,7 @@ export async function syncToAmep(
 
         if (!dataValues.length) {
           console.log(
-            `No data values mapped for report ${report.indicatorCode}`
+            `No data values mapped for report ${report.indicatorCode}`,
           );
           return;
         }
@@ -131,13 +132,18 @@ export async function syncToAmep(
           orgUnit: "fCj9Bn7iW2m",
           dataValues,
         };
-        console.log(`Syncing report ${report.id} to AMEP at ${targetUrl}`);
-        const response = await fetch(targetUrl, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(body),
-          signal: AbortSignal.timeout(35000),
-        });
+        console.log(
+          `Syncing report ${report.id} to AMEP at ${targetUrl + "?importStrategy=" + importStrategy}`,
+        );
+        const response = await fetch(
+          targetUrl + "?importStrategy=" + importStrategy,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(35000),
+          },
+        );
 
         const responseData = await response.json();
         console.log("Response status:", response.status);
@@ -174,7 +180,7 @@ export async function syncToAmep(
       } catch (reportError: any) {
         console.error(
           `Error processing report ${report.id}:`,
-          reportError.message
+          reportError.message,
         );
         failedSync.push({
           id: report.id,
@@ -204,7 +210,7 @@ export async function syncToAmep(
       error.code === "UNABLE_TO_VERIFY_LEAF_SIGNATURE"
     ) {
       console.error(
-        "SSL certificate error - server certificate may be invalid"
+        "SSL certificate error - server certificate may be invalid",
       );
     } else if (error.code === "ECONNREFUSED") {
       console.error("Connection refused - server may be down or port blocked");

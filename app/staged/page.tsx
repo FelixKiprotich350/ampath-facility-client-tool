@@ -33,6 +33,7 @@ export default function StagedIndicatorsPage() {
     username: "",
     password: "",
     yearMonth: "",
+    importStrategy: "CREATE_AND_UPDATE",
   });
   const [previewDialog, setPreviewDialog] = useState<{
     open: boolean;
@@ -49,10 +50,40 @@ export default function StagedIndicatorsPage() {
     username: "",
     password: "",
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [periodFilter, setPeriodFilter] = useState("");
+  const [indicatorFilter, setIndicatorFilter] = useState("");
 
   useEffect(() => {
     fetchReports();
   }, []);
+
+  const getFilteredReports = () => {
+    return reports.filter(report => {
+      const matchesIndicator = indicatorFilter === "" || 
+        report.indicatorName === indicatorFilter;
+      
+      const matchesPeriod = periodFilter === "" || 
+        (report.startDate.includes(periodFilter) || report.endDate.includes(periodFilter));
+      
+      return matchesIndicator && matchesPeriod;
+    });
+  };
+
+  const getUniqueIndicators = () => {
+    return [...new Set(reports.map(report => report.indicatorName))].sort();
+  };
+
+  const getUniquePeriods = () => {
+    const periods = new Set<string>();
+    reports.forEach(report => {
+      const startYear = new Date(report.startDate).getFullYear().toString();
+      const endYear = new Date(report.endDate).getFullYear().toString();
+      periods.add(startYear);
+      if (startYear !== endYear) periods.add(endYear);
+    });
+    return Array.from(periods).sort();
+  };
 
   const fetchReports = async () => {
     setLoading(true);
@@ -78,10 +109,11 @@ export default function StagedIndicatorsPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedItems.size === reports.length) {
+    const filteredReports = getFilteredReports();
+    if (selectedItems.size === filteredReports.length && filteredReports.length > 0) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(reports.map((item) => item.id)));
+      setSelectedItems(new Set(filteredReports.map((item) => item.id)));
     }
   };
 
@@ -119,7 +151,7 @@ export default function StagedIndicatorsPage() {
       console.error("Sync failed");
     } finally {
       setLoading(false);
-      setCredentials({ username: "", password: "", yearMonth: "" });
+      setCredentials({ username: "", password: "", yearMonth: "", importStrategy: "CREATE_AND_UPDATE" });
     }
   };
 
@@ -221,12 +253,36 @@ export default function StagedIndicatorsPage() {
           </div>
         </div>
 
+        <div className="space-y-4">
+          <div className="flex gap-4">
+            <select
+              value={indicatorFilter}
+              onChange={(e) => setIndicatorFilter(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All indicators</option>
+              {getUniqueIndicators().map(indicator => (
+                <option key={indicator} value={indicator}>{indicator}</option>
+              ))}
+            </select>
+            <select
+              value={periodFilter}
+              onChange={(e) => setPeriodFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All periods</option>
+              {getUniquePeriods().map(period => (
+                <option key={period} value={period}>{period}</option>
+              ))}
+            </select>
+          </div>
+
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading staged reports...</p>
           </div>
-        ) : reports.length === 0 ? (
+        ) : getFilteredReports().length === 0 ? (
           <Card className="text-center py-12">
             <CardContent>
               <div className="text-6xl mb-4">📄</div>
@@ -248,8 +304,8 @@ export default function StagedIndicatorsPage() {
                       <input
                         type="checkbox"
                         checked={
-                          selectedItems.size === reports.length &&
-                          reports.length > 0
+                          selectedItems.size === getFilteredReports().length &&
+                          getFilteredReports().length > 0
                         }
                         onChange={toggleSelectAll}
                         className="rounded"
@@ -276,7 +332,7 @@ export default function StagedIndicatorsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {reports.map((report) => (
+                  {getFilteredReports().map((report) => (
                     <tr key={report.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
@@ -321,6 +377,7 @@ export default function StagedIndicatorsPage() {
             </div>
           </div>
         )}
+        </div>
 
         <Dialog
           open={previewDialog.open}
@@ -434,6 +491,25 @@ export default function StagedIndicatorsPage() {
                   maxLength={6}
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Import Strategy
+                </label>
+                <select
+                  value={credentials.importStrategy}
+                  onChange={(e) =>
+                    setCredentials({
+                      ...credentials,
+                      importStrategy: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="CREATE">CREATE</option>
+                  <option value="UPDATE">UPDATE</option>
+                  <option value="CREATE_AND_UPDATE">CREATE_AND_UPDATE</option>
+                </select>
+              </div>
               <div className="flex gap-2 justify-end">
                 <Button
                   onClick={() => setCredentialsDialog(false)}
@@ -515,19 +591,29 @@ export default function StagedIndicatorsPage() {
               {existingDataDialog.data.length > 0 ? (
                 <div>
                   <p className="text-sm text-amber-600 mb-4">
-                    ⚠️ The following indicators already have data in AMEP:
+                    ⚠️ The following indicators already have data values in AMEP:
                   </p>
-                  <div className="space-y-2">
-                    {existingDataDialog.data.map((item) => (
-                      <div key={item.id} className="p-3 bg-amber-50 border border-amber-200 rounded">
-                        <div className="font-medium">{item.indicatorName}</div>
-                        <div className="text-sm text-gray-600">Code: {item.indicatorCode}</div>
-                        <div className="text-sm text-gray-600">Period: {item.period}</div>
-                        <div className="text-sm text-gray-600">
-                          Existing values: {item.existingValues}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="max-h-96 overflow-y-auto">
+                    <table className="w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Data Element</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Stored By</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Existing Values</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {existingDataDialog.data.map((item) => (
+                          <tr key={item.id} className="hover:bg-gray-50">
+                            <td className="px-3 py-2 text-sm font-medium text-gray-900">{item.dataElement}</td>
+                            <td className="px-3 py-2 text-sm text-gray-600">{item.storedBy}</td>
+                            <td className="px-3 py-2 text-sm text-gray-600">{item.period}</td>
+                            <td className="px-3 py-2 text-sm text-gray-600">{item.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               ) : (
