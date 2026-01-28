@@ -55,9 +55,7 @@ export default function StagedIndicatorsPage() {
   });
   const [periodFilter, setPeriodFilter] = useState("");
   const [indicatorFilter, setIndicatorFilter] = useState("");
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(),
-  );
+
   const [syncResultDialog, setSyncResultDialog] = useState<{
     open: boolean;
     result: any;
@@ -87,17 +85,7 @@ export default function StagedIndicatorsPage() {
     return grouped;
   };
 
-  const toggleSectionExpansion = (sectionKey: string) => {
-    setExpandedSections((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(sectionKey)) {
-        newSet.delete(sectionKey);
-      } else {
-        newSet.add(sectionKey);
-      }
-      return newSet;
-    });
-  };
+
 
   const toggleSection = (sectionKey: string) => {
     const sectionData = getGroupedIndicators()[sectionKey];
@@ -360,15 +348,14 @@ export default function StagedIndicatorsPage() {
                   const allSectionSelected = sectionReports.items.every(
                     (report) => selectedItems.has(report.id),
                   );
-                  const isExpanded = expandedSections.has(sectionKey);
 
                   return (
                     <div
                       key={sectionKey}
                       className="bg-white rounded-lg shadow overflow-hidden"
                     >
-                      <div className="bg-gray-50 p-4 border-b flex items-center justify-between">
-                        <label className="flex items-center gap-3 cursor-pointer flex-1">
+                      <div className="bg-gray-50 p-4">
+                        <label className="flex items-center gap-3 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={allSectionSelected}
@@ -382,90 +369,7 @@ export default function StagedIndicatorsPage() {
                             ({sectionReports.items.length} Indicators)
                           </span>
                         </label>
-                        <button
-                          onClick={() => toggleSectionExpansion(sectionKey)}
-                          className="p-1 hover:bg-gray-200 rounded"
-                        >
-                          {isExpanded ? "▼" : "▶"}
-                        </button>
                       </div>
-                      {isExpanded && (
-                        <div className="overflow-x-auto">
-                          <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-100">
-                              <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Select
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Indicator
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Period
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Status
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Created
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Actions
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                              {sectionReports.items.map((indicator) => (
-                                <tr
-                                  key={indicator.id}
-                                  className="hover:bg-gray-50"
-                                >
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedItems.has(indicator.id)}
-                                      onChange={() =>
-                                        toggleSelectItem(indicator.id)
-                                      }
-                                      className="rounded"
-                                    />
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {indicator.indicatorName}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {new Date(
-                                      indicator.startDate,
-                                    ).toLocaleDateString()}{" "}
-                                    -{" "}
-                                    {new Date(
-                                      indicator.endDate,
-                                    ).toLocaleDateString()}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    {getStatusBadge(indicator)}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {new Date(
-                                      indicator.createdAt,
-                                    ).toLocaleString()}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <Button
-                                      onClick={() => handlePreview(indicator)}
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      👁️ Preview
-                                    </Button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
                     </div>
                   );
                 },
