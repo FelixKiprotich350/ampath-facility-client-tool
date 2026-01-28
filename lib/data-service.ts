@@ -6,26 +6,27 @@ const SYNC_URL = process.env.AMEP_SERVER_URL;
 const targetUrl = `${SYNC_URL}/dataValueSets`;
 
 /**
- * Find findCategoryOptionCombo in data by gender and ageband
+ *  getAgeBandsOrder
  */
-function findCategoryOptionCombo(
-  data: any[],
-  gender: string,
-  ageband: string,
-): any | null {
-  if (!Array.isArray(data) || !data.length) return null;
-
-  if (!gender || !gender.trim()) return null;
-  if (!ageband || !ageband.trim()) return null;
-
-  const match = data.find((item) => {
-    return (
-      item.gender.toLowerCase() === gender.toLowerCase() &&
-      item.ageband.toLowerCase() === ageband.toLowerCase()
-    );
-  });
-
-  return match ? match : null;
+export function getAgeBandsOrder(): any[] {
+  return [
+    { "<1": 0 },
+    { "1-4": 1 },
+    { "5-9": 2 },
+    { "10-14": 3 },
+    { "15-19": 4 },
+    { "20-24": 5 },
+    { "25-29": 6 },
+    { "30-34": 7 },
+    { "35-39": 8 },
+    { "40-44": 9 },
+    { "45-49": 10 },
+    { "50+": 11 },
+    { "50-54": 12 },
+    { "55-59": 13 },
+    { "60-64": 14 },
+    { "65+": 15 },
+  ];
 }
 
 export async function getIndicators() {
