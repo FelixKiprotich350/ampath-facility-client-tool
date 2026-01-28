@@ -85,8 +85,6 @@ export default function StagedIndicatorsPage() {
     return grouped;
   };
 
-
-
   const toggleSection = (sectionKey: string) => {
     const sectionData = getGroupedIndicators()[sectionKey];
     const sectionIds = sectionData?.items.map((r) => r.id) || [];
@@ -132,6 +130,7 @@ export default function StagedIndicatorsPage() {
 
   const loadPendingData = async () => {
     setPendingLoading(true);
+    setSelectedItems(new Set());
     try {
       const response = await fetch("/api/pendingdata");
       const data = await response.json();
@@ -151,6 +150,37 @@ export default function StagedIndicatorsPage() {
       newSelected.add(id);
     }
     setSelectedItems(newSelected);
+  };
+
+  const handleDownloadExistingData = () => {
+    const csvContent = [
+      [
+        "Data Element",
+        "Age Band",
+        "Gender",
+        "Stored By",
+        "Period",
+        "Existing Values",
+      ],
+      ...existingDataDialog.data.map((item) => [
+        item.dataElement,
+        item.age_band || "-",
+        item.gender || "-",
+        item.storedBy,
+        item.period,
+        item.value,
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "existing-data-check.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleSync = async () => {
@@ -229,6 +259,33 @@ export default function StagedIndicatorsPage() {
       return;
     }
     setCredentialsDialog(true);
+  };
+
+  const handleGroupPreview = (sectionKey: string) => {
+    const sectionData = getGroupedIndicators()[sectionKey];
+    const combinedData: any[] = [];
+    
+    sectionData.items.forEach(indicator => {
+      try {
+        let data: any[] = [];
+        if (Array.isArray(indicator.rawResult)) {
+          data = indicator.rawResult;
+        } else if (typeof indicator.rawResult === "string") {
+          data = JSON.parse(indicator.rawResult);
+        }
+        data.forEach(row => {
+          combinedData.push({ ...row, indicator: indicator.indicatorName });
+        });
+      } catch (err) {
+        console.error(`Error parsing data for ${indicator.indicatorName}:`, err);
+      }
+    });
+    
+    setPreviewDialog({ 
+      open: true, 
+      data: combinedData, 
+      reportName: sectionData.sectionName 
+    });
   };
 
   const handlePreview = (report: StagedIndicator) => {
@@ -354,7 +411,7 @@ export default function StagedIndicatorsPage() {
                       key={sectionKey}
                       className="bg-white rounded-lg shadow overflow-hidden"
                     >
-                      <div className="bg-gray-50 p-4">
+                      <div className="bg-gray-50 p-4 flex items-center justify-between">
                         <label className="flex items-center gap-3 cursor-pointer">
                           <input
                             type="checkbox"
@@ -369,6 +426,14 @@ export default function StagedIndicatorsPage() {
                             ({sectionReports.items.length} Indicators)
                           </span>
                         </label>
+                        <Button
+                          onClick={() => handleGroupPreview(sectionKey)}
+                          size="sm"
+                          variant="outline"
+                          className="text-xs"
+                        >
+                          👁️ Preview
+                        </Button>
                       </div>
                     </div>
                   );
@@ -617,6 +682,12 @@ export default function StagedIndicatorsPage() {
                             Data Element
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Age Band
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Gender
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                             Stored By
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -632,6 +703,12 @@ export default function StagedIndicatorsPage() {
                           <tr key={item.id} className="hover:bg-gray-50">
                             <td className="px-3 py-2 text-sm font-medium text-gray-900">
                               {item.dataElement}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-gray-600">
+                              {item.age_band || "-"}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-gray-600">
+                              {item.gender || "-"}
                             </td>
                             <td className="px-3 py-2 text-sm text-gray-600">
                               {item.storedBy}
@@ -659,7 +736,14 @@ export default function StagedIndicatorsPage() {
                   </p>
                 </div>
               )}
-              <div className="flex justify-end mt-4">
+              <div className="flex justify-between mt-4">
+                <Button
+                  onClick={handleDownloadExistingData}
+                  variant="outline"
+                  disabled={existingDataDialog.data.length === 0}
+                >
+                  📥 Download CSV
+                </Button>
                 <Button
                   onClick={() =>
                     setExistingDataDialog({ open: false, data: [] })
