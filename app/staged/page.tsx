@@ -132,13 +132,13 @@ export default function StagedIndicatorsPage() {
   const getUniquePeriods = () => {
     const periods = [];
     const now = new Date();
-    
+
     for (let i = 0; i < 12; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       periods.push(yearMonth);
     }
-    
+
     return periods;
   };
 
@@ -181,12 +181,12 @@ export default function StagedIndicatorsPage() {
         }),
       });
       const result = await response.json();
-      
+
       // Show sync results
-      if (result.successfullSync) {
+      if (response.ok && result?.responseData != null) {
         setSyncResultDialog({ open: true, result: result });
       }
-      
+
       if (result.successfullSync?.length > 0) {
         setSelectedItems(new Set());
         loadPendingData();
@@ -771,7 +771,9 @@ export default function StagedIndicatorsPage() {
 
         <Dialog
           open={syncResultDialog.open}
-          onOpenChange={(open) => setSyncResultDialog({ ...syncResultDialog, open })}
+          onOpenChange={(open) =>
+            setSyncResultDialog({ ...syncResultDialog, open })
+          }
         >
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -781,50 +783,110 @@ export default function StagedIndicatorsPage() {
               {syncResultDialog.result && (
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <div className={`text-2xl ${
-                      syncResultDialog.result.status === 'SUCCESS' ? '✅' :
-                      syncResultDialog.result.status === 'WARNING' ? '⚠️' : '❌'
-                    }`}>
-                      {syncResultDialog.result.status === 'SUCCESS' ? '✅' :
-                       syncResultDialog.result.status === 'WARNING' ? '⚠️' : '❌'}
+                    <div
+                      className={`text-2xl ${
+                        syncResultDialog.result.responseData?.status ===
+                        "SUCCESS"
+                          ? "✅"
+                          : syncResultDialog.result.responseData?.status ===
+                              "WARNING"
+                            ? "⚠️"
+                            : "❌"
+                      }`}
+                    >
+                      {syncResultDialog.result.responseData?.status ===
+                      "SUCCESS"
+                        ? "✅"
+                        : syncResultDialog.result.responseData?.status ===
+                            "WARNING"
+                          ? "⚠️"
+                          : "❌"}
                     </div>
                     <div>
-                      <h3 className="font-medium">{syncResultDialog.result.description}</h3>
-                      <p className="text-sm text-gray-600">Status: {syncResultDialog.result.status}</p>
+                      <h3 className="font-medium">
+                        {syncResultDialog.result.responseData?.description}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Status: {syncResultDialog.result.responseData?.status}
+                      </p>
                     </div>
                   </div>
-                  
-                  {syncResultDialog.result.importCount && (
+
+                  {syncResultDialog.result.responseData?.importCount && (
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <h4 className="font-medium mb-2">Import Summary</h4>
                       <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>Imported: <span className="font-medium text-green-600">{syncResultDialog.result.importCount.imported}</span></div>
-                        <div>Updated: <span className="font-medium text-blue-600">{syncResultDialog.result.importCount.updated}</span></div>
-                        <div>Ignored: <span className="font-medium text-yellow-600">{syncResultDialog.result.importCount.ignored}</span></div>
-                        <div>Deleted: <span className="font-medium text-red-600">{syncResultDialog.result.importCount.deleted}</span></div>
+                        <div>
+                          Imported:{" "}
+                          <span className="font-medium text-green-600">
+                            {
+                              syncResultDialog.result.responseData?.importCount
+                                .imported
+                            }
+                          </span>
+                        </div>
+                        <div>
+                          Updated:{" "}
+                          <span className="font-medium text-blue-600">
+                            {
+                              syncResultDialog.result.responseData?.importCount
+                                .updated
+                            }
+                          </span>
+                        </div>
+                        <div>
+                          Ignored:{" "}
+                          <span className="font-medium text-yellow-600">
+                            {
+                              syncResultDialog.result.responseData?.importCount
+                                .ignored
+                            }
+                          </span>
+                        </div>
+                        <div>
+                          Deleted:{" "}
+                          <span className="font-medium text-red-600">
+                            {
+                              syncResultDialog.result.responseData?.importCount
+                                .deleted
+                            }
+                          </span>
+                        </div>
                       </div>
                     </div>
                   )}
-                  
-                  {syncResultDialog.result.conflicts && syncResultDialog.result.conflicts.length > 0 && (
-                    <div className="bg-yellow-50 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2 text-yellow-800">Conflicts</h4>
-                      <div className="space-y-2">
-                        {syncResultDialog.result.conflicts.map((conflict: any, index: number) => (
-                          <div key={index} className="text-sm text-yellow-700">
-                            <strong>Object:</strong> {conflict.object}<br/>
-                            <strong>Issue:</strong> {conflict.value}
-                          </div>
-                        ))}
+
+                  {syncResultDialog.result.responseData?.conflicts &&
+                    syncResultDialog.result.responseData?.conflicts.length >
+                      0 && (
+                      <div className="bg-yellow-50 p-4 rounded-lg">
+                        <h4 className="font-medium mb-2 text-yellow-800">
+                          Conflicts
+                        </h4>
+                        <div className="space-y-2">
+                          {syncResultDialog.result.responseData?.conflicts.map(
+                            (conflict: any, index: number) => (
+                              <div
+                                key={index}
+                                className="text-sm text-yellow-700"
+                              >
+                                <strong>Object:</strong> {conflict.object}
+                                <br />
+                                <strong>Issue:</strong> {conflict.value}
+                              </div>
+                            ),
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               )}
-              
+
               <div className="flex justify-end">
                 <Button
-                  onClick={() => setSyncResultDialog({ open: false, result: null })}
+                  onClick={() =>
+                    setSyncResultDialog({ open: false, result: null })
+                  }
                   variant="outline"
                 >
                   Close

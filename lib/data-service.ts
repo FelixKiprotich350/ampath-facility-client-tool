@@ -84,6 +84,7 @@ export async function syncToAmep(
       );
       headers.Authorization = `Basic ${credentials}`;
     }
+    let dataValues = [];
     // Process each pending indicator
     for (const report of selectedIndicators) {
       try {
@@ -99,8 +100,6 @@ export async function syncToAmep(
         }
 
         // Map data variables to data elements
-        const dataValues = [];
-
         for (const element of data) {
           const categoryOptionCombo = findCategoryOptionCombo(
             mappings,
@@ -117,66 +116,6 @@ export async function syncToAmep(
             });
           }
         }
-
-        if (!dataValues.length) {
-          console.log(
-            `No data values mapped for report ${report.indicatorCode}`,
-          );
-          return;
-        }
-
-        const body = {
-          dataSet: "Lf1skJGdrzj",
-          completeDate: new Date().toISOString().split("T")[0],
-          period: reportingMonth,
-          orgUnit: "fCj9Bn7iW2m",
-          dataValues,
-        };
-        console.log(
-          `Syncing report ${report.id} to AMEP at ${targetUrl + "?importStrategy=" + importStrategy}`,
-        );
-        const response = await fetch(
-          targetUrl + "?dryRun=true&importStrategy=" + importStrategy,
-          {
-            method: "POST",
-            headers,
-            body: JSON.stringify(body),
-            signal: AbortSignal.timeout(35000),
-          },
-        );
-
-        const responseData = await response.json();
-        console.log("Response status:", response.status);
-        console.log("Response body:", responseData);
-
-        if (response.ok) {
-          // await prisma.stagedIndicator.update({
-          //   where: { id: report.id },
-          //   data: {
-          //     syncedToAmpathAt: new Date(),
-          //     syncedValues: JSON.stringify(responseData),
-          //   },
-          // });
-
-          successfullSync.push({
-            id: report.id,
-            response: responseData,
-          });
-          console.log(`Successfully synced report ${report.id}`);
-        } else {
-          failedSync.push({
-            id: report.id,
-            status: response.status,
-            error: `HTTP ${response.status}`,
-            message:
-              responseData.message ||
-              responseData.description ||
-              "Unknown error",
-            conflicts: responseData.conflicts,
-            response: responseData,
-          });
-          console.error(`Failed to sync report ${report.id}:`, responseData);
-        }
       } catch (reportError: any) {
         console.error(
           `Error processing report ${report.id}:`,
@@ -188,39 +127,54 @@ export async function syncToAmep(
         });
       }
     }
-
-    return {
-      successfullSync,
-      failedSync,
-      error: null,
-      message: `Processed ${selectedIndicators.length} reports`,
-      count: successfullSync.length,
-      syncResults: successfullSync.length > 0 ? successfullSync[0].response : null,
-    };
-  } catch (error: any) {
-    console.error("Sync failed with error:", error);
-
-    // Detailed error logging
-    if (
-      error.name === "TimeoutError" ||
-      error.code === "UND_ERR_CONNECT_TIMEOUT"
-    ) {
-      console.error("Connection timeout - check network connectivity");
-    } else if (
-      error.code === "CERT_HAS_EXPIRED" ||
-      error.code === "UNABLE_TO_VERIFY_LEAF_SIGNATURE"
-    ) {
-      console.error(
-        "SSL certificate error - server certificate may be invalid",
-      );
-    } else if (error.code === "ECONNREFUSED") {
-      console.error("Connection refused - server may be down or port blocked");
+    if (!dataValues.length) {
+      console.log(`No data values mapped for syncing to AMEP`);
+      return;
     }
 
+    const body = {
+      dataSet: "Lf1skJGdrzj",
+      completeDate: new Date().toISOString().split("T")[0],
+      period: reportingMonth,
+      orgUnit: "fCj9Bn7iW2m",
+      dataValues,
+    };
+    console.log(
+      `Syncing to AMEP at ${targetUrl + "?importStrategy=" + importStrategy}`,
+    );
+    const response = await fetch(
+      targetUrl +
+        "?dryRun=true&importStrategy=" +
+        importStrategy,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(35000),
+      },
+    );
+
+    const responseData = await response.json();
+    console.log("Response body:", responseData);
+    let error = null;
+    if (response.ok) {
+      // await prisma.stagedIndicator.update({
+      //   where: { id: report.id },
+      //   data: {
+      //     syncedToAmpathAt: new Date(),
+      //     syncedValues: JSON.stringify(responseData),
+      //   },
+      // });
+    } else {
+      console.error(`Failed to sync to AMEP:`, responseData);
+      error = responseData;
+    }
+    return { responseData, error };
+  } catch (error: any) {
+    console.error("Sync failed with error:", error);
     return {
-      successfullSync,
-      failedSync,
-      error: error.message,
+      responseData: null,
+      error: error,
     };
   }
 }

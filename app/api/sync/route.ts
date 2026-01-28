@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       selectedItems,
     );
     if (result.error) {
-      return NextResponse.json({ result }, { status: 500 });
+      return NextResponse.json(result.responseData, { status: 500 });
     }
     return NextResponse.json(result);
   } catch (error) {
