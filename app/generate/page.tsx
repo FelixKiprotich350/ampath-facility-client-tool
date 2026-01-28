@@ -23,6 +23,7 @@ export default function NewReportPage() {
   const [selectedReports, setSelectedReports] = useState<string[]>([]);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [periodDialog, setPeriodDialog] = useState(false);
+  const [warningDialog, setWarningDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [periodFilter, setPeriodFilter] = useState("");
 
@@ -60,6 +61,18 @@ export default function NewReportPage() {
       alert("Please select at least one indicator.");
       return;
     }
+    
+    const filteredIndicators = getFilteredIndicators();
+    if (selectedReports.length !== filteredIndicators.length && filteredIndicators.length > 0) {
+      setWarningDialog(true);
+      return;
+    }
+    
+    setPeriodDialog(true);
+  };
+
+  const proceedWithPartialSelection = () => {
+    setWarningDialog(false);
     setPeriodDialog(true);
   };
 
@@ -265,6 +278,28 @@ export default function NewReportPage() {
         >
           Select Period ({selectedReports.length} Indicator{selectedReports.length !== 1 ? 's' : ''})
         </Button>
+
+        <Dialog open={warningDialog} onOpenChange={setWarningDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Not All Indicators Selected</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                You have selected {selectedReports.length} out of {getFilteredIndicators().length} available indicators. 
+                Are you sure you want to proceed with only the selected indicators?
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setWarningDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={proceedWithPartialSelection}>
+                  Proceed
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={periodDialog} onOpenChange={setPeriodDialog}>
           <DialogContent>

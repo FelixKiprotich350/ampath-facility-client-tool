@@ -45,10 +45,15 @@ export async function addStagedResults(
   startDate: string,
   endDate: string,
 ) {
+  
   return prisma.stagedIndicator.create({
     data: {
       indicatorCode: indicatorObj.code,
       indicatorName: indicatorObj.name,
+      sectionId: indicatorObj.datasetSectionId,
+      sectionName: indicatorObj.DatasetSection?.name??"--",
+      datasetId: indicatorObj.datasetId,
+      datasetName: indicatorObj.Dataset?.name??"--",
       rawResult,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
@@ -136,7 +141,7 @@ export async function checkExistingData(
                 categoryOptionCombo: dv.categoryOptionCombo,
                 attributeOptionCombo: dv.attributeOptionCombo,
                 value: dv.value,
-                storedBy: dv.storedBy, 
+                storedBy: dv.storedBy,
                 lastUpdated: dv.lastUpdated,
                 period: dv.period,
               });

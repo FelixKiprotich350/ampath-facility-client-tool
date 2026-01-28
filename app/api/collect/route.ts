@@ -14,13 +14,13 @@ export async function POST(request: NextRequest) {
           error:
             "reportType, selectedIndicators, and reportPeriod are required",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
     if (selectedIndicators.length <= 0 && !Array.isArray(selectedIndicators)) {
       return NextResponse.json(
         { error: "At least one indicator must be specified" },
-        { status: 400 }
+        { status: 400 },
       );
     }
     const [year, month] = reportPeriod.split("-").map(Number);
@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
       if (!indicatorObj) {
         throw new Error(`Indicator with id ${selected} not found`);
       }
+      console.log(
+        `Executing indicator ${indicatorObj.code} for period ${reportPeriod}`,
+      );
       await executeSingleIndicator(indicatorObj, startDate, endDate);
     });
 
@@ -47,7 +50,7 @@ export async function POST(request: NextRequest) {
         error: "Query execution failed",
         details: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

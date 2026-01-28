@@ -985,6 +985,10 @@ export const StagedIndicatorScalarFieldEnum = {
   id: 'id',
   indicatorCode: 'indicatorCode',
   indicatorName: 'indicatorName',
+  sectionId: 'sectionId',
+  sectionName: 'sectionName',
+  datasetId: 'datasetId',
+  datasetName: 'datasetName',
   rawResult: 'rawResult',
   startDate: 'startDate',
   endDate: 'endDate',
@@ -1108,6 +1112,10 @@ export type IndicatorTypeOrderByRelevanceFieldEnum = (typeof IndicatorTypeOrderB
 export const StagedIndicatorOrderByRelevanceFieldEnum = {
   indicatorCode: 'indicatorCode',
   indicatorName: 'indicatorName',
+  sectionId: 'sectionId',
+  sectionName: 'sectionName',
+  datasetId: 'datasetId',
+  datasetName: 'datasetName',
   syncedBy: 'syncedBy'
 } as const
 

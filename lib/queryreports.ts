@@ -17,7 +17,7 @@ export type DbQueryResult = {
 
 export async function fetchFromKenyaEMRDatabase(
   query: string,
-  params: any[] = []
+  params: any[] = [],
 ) {
   const connection = await mysql.createConnection(kenyaemrDbConfig);
   try {
@@ -31,7 +31,7 @@ export async function fetchFromKenyaEMRDatabase(
 export async function executeReportQuery(
   indicatorObj: any,
   startDate: string,
-  endDate: string
+  endDate: string,
 ) {
   const oldquery = indicatorObj.query as string;
 
@@ -39,7 +39,7 @@ export async function executeReportQuery(
   const finalQuery = replacePlaceholders(
     oldquery,
     ["AMPATH_REPORT_START_DATE", "AMPATH_REPORT_END_DATE"],
-    [`'${startDate}'`, `'${endDate}'`]
+    [`'${startDate}'`, `'${endDate}'`],
   );
   console.log(`Executing report query: ${finalQuery}`);
   const connection = await mysql.createConnection({
@@ -60,6 +60,9 @@ export async function executeReportQuery(
       }
     }
     return result as DbQueryResult[];
+  } catch (error) {
+    console.error("Error executing query:", error);
+    throw error;
   } finally {
     await connection.end();
   }
@@ -86,7 +89,7 @@ function replacePlaceholders(originalString, placeholders = [], values = []) {
     // Escape regex special characters in the placeholder
     const escapedPlaceholder = placeholder.replace(
       /[.*+?^${}()|[\]\\]/g,
-      "\\$&"
+      "\\$&",
     );
     const regex = new RegExp(escapedPlaceholder, "g");
 
