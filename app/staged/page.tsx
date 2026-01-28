@@ -15,6 +15,10 @@ type StagedIndicator = {
   id: number;
   indicatorCode: string;
   indicatorName: string;
+  sectionId: string;
+  sectionName: string;
+  datasetId: string;
+  datasetName: string;
   rawResult: string;
   startDate: string;
   endDate: string;
@@ -63,14 +67,17 @@ export default function StagedIndicatorsPage() {
     const filteredIndicators = getFilteredIndicators();
     const grouped = filteredIndicators.reduce(
       (acc, indicator) => {
-        const sectionKey = indicator.indicatorName.split(" - ")[0] || "Other";
+        const sectionKey = indicator.sectionId;
         if (!acc[sectionKey]) {
-          acc[sectionKey] = [];
+          acc[sectionKey] = {
+            sectionName: indicator.sectionName,
+            items: [],
+          };
         }
-        acc[sectionKey].push(indicator);
+        acc[sectionKey].items.push(indicator);
         return acc;
       },
-      {} as Record<string, StagedIndicator[]>,
+      {} as Record<string, { sectionName: string; items: StagedIndicator[] }>,
     );
 
     return grouped;
@@ -89,8 +96,8 @@ export default function StagedIndicatorsPage() {
   };
 
   const toggleSection = (sectionKey: string) => {
-    const sectionReports = getGroupedIndicators()[sectionKey] || [];
-    const sectionIds = sectionReports.map((r) => r.id);
+    const sectionData = getGroupedIndicators()[sectionKey];
+    const sectionIds = sectionData?.items.map((r) => r.id) || [];
     const allSelected = sectionIds.every((id) => selectedItems.has(id));
 
     if (allSelected) {
@@ -265,10 +272,10 @@ export default function StagedIndicatorsPage() {
           <div className="flex gap-2">
             <Button
               onClick={loadPendingData}
-              disabled={loading}
+              disabled={pendingLoading}
               variant="outline"
             >
-              {loading ? "🔄 Loading..." : "🔄 Refresh"}
+              {pendingLoading ? "🔄 Loading..." : "🔄 Refresh"}
             </Button>
             <Button
               onClick={handleCheckExisting}
@@ -338,8 +345,8 @@ export default function StagedIndicatorsPage() {
             <div className="space-y-4">
               {Object.entries(getGroupedIndicators()).map(
                 ([sectionKey, sectionReports]) => {
-                  const allSectionSelected = sectionReports.every((report) =>
-                    selectedItems.has(report.id),
+                  const allSectionSelected = sectionReports.items.every(
+                    (report) => selectedItems.has(report.id),
                   );
                   const isExpanded = expandedSections.has(sectionKey);
 
@@ -360,7 +367,7 @@ export default function StagedIndicatorsPage() {
                             {sectionKey}
                           </span>
                           <span className="text-sm text-gray-500">
-                            ({sectionReports.length} reports)
+                            ({sectionReports.items.length} Indicators)
                           </span>
                         </label>
                         <button
@@ -396,7 +403,7 @@ export default function StagedIndicatorsPage() {
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                              {sectionReports.map((indicator) => (
+                              {sectionReports.items.map((indicator) => (
                                 <tr
                                   key={indicator.id}
                                   className="hover:bg-gray-50"
