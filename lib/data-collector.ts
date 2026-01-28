@@ -34,6 +34,7 @@ type ReportType = {
 type ComboDefinition = {
   id: string;
   comboId: string;
+  attributeOptionComboId: string;
   gender: string;
   ageband: string;
   description?: string;
