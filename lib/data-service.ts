@@ -84,7 +84,7 @@ export async function syncToAmep(
       );
       headers.Authorization = `Basic ${credentials}`;
     }
-    // Process each pending report
+    // Process each pending indicator
     for (const report of selectedIndicators) {
       try {
         // Parse data content
@@ -136,7 +136,7 @@ export async function syncToAmep(
           `Syncing report ${report.id} to AMEP at ${targetUrl + "?importStrategy=" + importStrategy}`,
         );
         const response = await fetch(
-          targetUrl + "?importStrategy=" + importStrategy,
+          targetUrl + "?dryRun=true&importStrategy=" + importStrategy,
           {
             method: "POST",
             headers,
@@ -150,13 +150,13 @@ export async function syncToAmep(
         console.log("Response body:", responseData);
 
         if (response.ok) {
-          await prisma.stagedIndicator.update({
-            where: { id: report.id },
-            data: {
-              syncedToAmpathAt: new Date(),
-              syncedValues: JSON.stringify(responseData),
-            },
-          });
+          // await prisma.stagedIndicator.update({
+          //   where: { id: report.id },
+          //   data: {
+          //     syncedToAmpathAt: new Date(),
+          //     syncedValues: JSON.stringify(responseData),
+          //   },
+          // });
 
           successfullSync.push({
             id: report.id,
@@ -193,8 +193,9 @@ export async function syncToAmep(
       successfullSync,
       failedSync,
       error: null,
-      message: `Processed ${pendingReports.length} reports`,
+      message: `Processed ${selectedIndicators.length} reports`,
       count: successfullSync.length,
+      syncResults: successfullSync.length > 0 ? successfullSync[0].response : null,
     };
   } catch (error: any) {
     console.error("Sync failed with error:", error);

@@ -58,6 +58,10 @@ export default function StagedIndicatorsPage() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
   );
+  const [syncResultDialog, setSyncResultDialog] = useState<{
+    open: boolean;
+    result: any;
+  }>({ open: false, result: null });
 
   useEffect(() => {
     loadPendingData();
@@ -114,26 +118,28 @@ export default function StagedIndicatorsPage() {
   const getFilteredIndicators = () => {
     return pendingData.filter((indicator) => {
       const matchesIndicator =
-        indicatorFilter === "" || indicator.indicatorName === indicatorFilter;
+        indicatorFilter === "" || indicator.sectionName === indicatorFilter;
 
       const matchesPeriod =
         periodFilter === "" ||
-        indicator.startDate.includes(periodFilter) ||
-        indicator.endDate.includes(periodFilter);
+        indicator.startDate.startsWith(periodFilter) ||
+        indicator.endDate.startsWith(periodFilter);
 
       return matchesIndicator && matchesPeriod;
     });
   };
 
   const getUniquePeriods = () => {
-    const periods = new Set<string>();
-    pendingData.forEach((indicator) => {
-      const startYear = new Date(indicator.startDate).getFullYear().toString();
-      const endYear = new Date(indicator.endDate).getFullYear().toString();
-      periods.add(startYear);
-      if (startYear !== endYear) periods.add(endYear);
-    });
-    return Array.from(periods).sort();
+    const periods = [];
+    const now = new Date();
+    
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      periods.push(yearMonth);
+    }
+    
+    return periods;
   };
 
   const loadPendingData = async () => {
@@ -175,6 +181,12 @@ export default function StagedIndicatorsPage() {
         }),
       });
       const result = await response.json();
+      
+      // Show sync results
+      if (result.successfullSync) {
+        setSyncResultDialog({ open: true, result: result });
+      }
+      
       if (result.successfullSync?.length > 0) {
         setSelectedItems(new Set());
         loadPendingData();
@@ -301,12 +313,12 @@ export default function StagedIndicatorsPage() {
               onChange={(e) => setIndicatorFilter(e.target.value)}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All indicators</option>
-              {[...new Set(pendingData.map((report) => report.indicatorName))]
+              <option value="">All groups</option>
+              {[...new Set(pendingData.map((report) => report.sectionName))]
                 .sort()
-                .map((indicator) => (
-                  <option key={indicator} value={indicator}>
-                    {indicator}
+                .map((sectionName) => (
+                  <option key={sectionName} value={sectionName}>
+                    {sectionName}
                   </option>
                 ))}
             </select>
@@ -364,7 +376,7 @@ export default function StagedIndicatorsPage() {
                             className="w-4 h-4 rounded"
                           />
                           <span className="font-medium text-gray-900">
-                            {sectionKey}
+                            {sectionReports.sectionName}
                           </span>
                           <span className="text-sm text-gray-500">
                             ({sectionReports.items.length} Indicators)
@@ -748,6 +760,71 @@ export default function StagedIndicatorsPage() {
                   onClick={() =>
                     setExistingDataDialog({ open: false, data: [] })
                   }
+                  variant="outline"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={syncResultDialog.open}
+          onOpenChange={(open) => setSyncResultDialog({ ...syncResultDialog, open })}
+        >
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Sync Results</DialogTitle>
+            </DialogHeader>
+            <div className="mt-4 space-y-4">
+              {syncResultDialog.result && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className={`text-2xl ${
+                      syncResultDialog.result.status === 'SUCCESS' ? '✅' :
+                      syncResultDialog.result.status === 'WARNING' ? '⚠️' : '❌'
+                    }`}>
+                      {syncResultDialog.result.status === 'SUCCESS' ? '✅' :
+                       syncResultDialog.result.status === 'WARNING' ? '⚠️' : '❌'}
+                    </div>
+                    <div>
+                      <h3 className="font-medium">{syncResultDialog.result.description}</h3>
+                      <p className="text-sm text-gray-600">Status: {syncResultDialog.result.status}</p>
+                    </div>
+                  </div>
+                  
+                  {syncResultDialog.result.importCount && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="font-medium mb-2">Import Summary</h4>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>Imported: <span className="font-medium text-green-600">{syncResultDialog.result.importCount.imported}</span></div>
+                        <div>Updated: <span className="font-medium text-blue-600">{syncResultDialog.result.importCount.updated}</span></div>
+                        <div>Ignored: <span className="font-medium text-yellow-600">{syncResultDialog.result.importCount.ignored}</span></div>
+                        <div>Deleted: <span className="font-medium text-red-600">{syncResultDialog.result.importCount.deleted}</span></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {syncResultDialog.result.conflicts && syncResultDialog.result.conflicts.length > 0 && (
+                    <div className="bg-yellow-50 p-4 rounded-lg">
+                      <h4 className="font-medium mb-2 text-yellow-800">Conflicts</h4>
+                      <div className="space-y-2">
+                        {syncResultDialog.result.conflicts.map((conflict: any, index: number) => (
+                          <div key={index} className="text-sm text-yellow-700">
+                            <strong>Object:</strong> {conflict.object}<br/>
+                            <strong>Issue:</strong> {conflict.value}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => setSyncResultDialog({ open: false, result: null })}
                   variant="outline"
                 >
                   Close
