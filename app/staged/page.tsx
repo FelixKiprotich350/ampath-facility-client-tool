@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -263,9 +263,12 @@ export default function StagedIndicatorsPage() {
 
   const handleGroupPreview = (sectionKey: string) => {
     const sectionData = getGroupedIndicators()[sectionKey];
-    const combinedData: any[] = [];
-    
-    sectionData.items.forEach(indicator => {
+    const matrixData = new Map();
+    const indicators: string[] = [];
+    const ageBands = new Set();
+
+    // Collect all data and build list of indicators (allowing duplicates)
+    sectionData.items.forEach((indicator, indicatorIndex) => {
       try {
         let data: any[] = [];
         if (Array.isArray(indicator.rawResult)) {
@@ -273,46 +276,47 @@ export default function StagedIndicatorsPage() {
         } else if (typeof indicator.rawResult === "string") {
           data = JSON.parse(indicator.rawResult);
         }
-        data.forEach(row => {
-          combinedData.push({ ...row, indicator: indicator.indicatorName });
+
+        indicators.push(indicator.indicatorName);
+
+        data.forEach((row) => {
+          const ageBand = row.age_band || "Unknown";
+          const gender = row.gender || "Unknown";
+          const value = row.value || 0;
+
+          ageBands.add(ageBand);
+
+          const key = `${indicator.indicatorName}_${indicatorIndex}_${ageBand}_${gender}`;
+          matrixData.set(key, value);
         });
       } catch (err) {
-        console.error(`Error parsing data for ${indicator.indicatorName}:`, err);
+        console.error(
+          `Error parsing data for ${indicator.indicatorName}:`,
+          err,
+        );
       }
     });
-    
-    setPreviewDialog({ 
-      open: true, 
-      data: combinedData, 
-      reportName: sectionData.sectionName 
+
+    // Build matrix rows with indicators as rows (including duplicates)
+    const matrixRows = indicators.map((indicator, index) => {
+      const row: any = { Indicator: indicator };
+
+      Array.from(ageBands).forEach((ageBand) => {
+        const keyF = `${indicator}_${index}_${ageBand}_F`;
+        const keyM = `${indicator}_${index}_${ageBand}_M`;
+        
+        row[`${ageBand} - F`] = matrixData.get(keyF) || 0;
+        row[`${ageBand} - M`] = matrixData.get(keyM) || 0;
+      });
+
+      return row;
     });
-  };
 
-  const handlePreview = (report: StagedIndicator) => {
-    try {
-      let data: any[] = [];
-      if (Array.isArray(report.rawResult)) {
-        data = report.rawResult;
-      } else if (typeof report.rawResult === "string") {
-        data = JSON.parse(report.rawResult);
-      }
-      setPreviewDialog({ open: true, data, reportName: report.indicatorName });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const getStatusBadge = (report: StagedIndicator) => {
-    const synced = report.syncedToAmpathAt;
-    const status = synced ? "SYNCED" : "PENDING";
-    const style = synced
-      ? "bg-green-100 text-green-800"
-      : "bg-yellow-100 text-yellow-800";
-    return (
-      <span className={`px-2 py-1 rounded text-xs font-medium ${style}`}>
-        {status}
-      </span>
-    );
+    setPreviewDialog({
+      open: true,
+      data: matrixRows,
+      reportName: `${sectionData.sectionName} - Matrix View`,
+    });
   };
 
   return (
@@ -463,35 +467,110 @@ export default function StagedIndicatorsPage() {
             <div className="mt-4">
               {previewDialog.data && previewDialog.data.length > 0 ? (
                 <div>
-                  <table className="w-full divide-y divide-gray-200 text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        {Object.keys(previewDialog.data[0]).map((key) => (
-                          <th
-                            key={key}
-                            className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase truncate"
-                          >
-                            {key}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {previewDialog.data.map((row, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                          {Object.values(row).map((value, i) => (
-                            <td
-                              key={i}
-                              className="px-2 py-2 text-xs text-gray-900 truncate max-w-0"
-                              title={value?.toString() || ""}
+                  {previewDialog.reportName.includes("Matrix View") ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full divide-y divide-gray-200 text-sm">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th
+                              rowSpan={2}
+                              className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase border-r"
                             >
-                              {value?.toString() || ""}
-                            </td>
+                              Indicator
+                            </th>
+                            {Array.from(
+                              new Set(
+                                Object.keys(previewDialog.data[0])
+                                  .filter((key) => key !== "Indicator")
+                                  .map((key) => key.split(" - ")[0]),
+                              ),
+                            ).map((ageBand) => (
+                              <th
+                                key={ageBand}
+                                colSpan={2}
+                                className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase border-r"
+                              >
+                                {ageBand}
+                              </th>
+                            ))}
+                          </tr>
+                          <tr>
+                            {Array.from(
+                              new Set(
+                                Object.keys(previewDialog.data[0])
+                                  .filter((key) => key !== "Indicator")
+                                  .map((key) => key.split(" - ")[0]),
+                              ),
+                            ).map((ageBand) => (
+                              <React.Fragment key={ageBand}>
+                                <th className="px-2 py-1 text-center text-xs font-medium text-gray-500 uppercase border-r">
+                                  M
+                                </th>
+                                <th className="px-2 py-1 text-center text-xs font-medium text-gray-500 uppercase border-r">
+                                  F
+                                </th>
+                              </React.Fragment>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {previewDialog.data.map((row, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-2 py-2 text-xs font-medium text-gray-900 border-r">
+                                {row.Indicator}
+                              </td>
+                              {Array.from(
+                                new Set(
+                                  Object.keys(row)
+                                    .filter((key) => key !== "Indicator")
+                                    .map((key) => key.split(" - ")[0]),
+                                ),
+                              ).map((ageBand) => (
+                                <React.Fragment key={ageBand}>
+                                  <td className="px-2 py-2 text-xs text-gray-900 text-center border-r">
+                                    {row[`${ageBand} - M`] || 0}
+                                  </td>
+                                  <td className="px-2 py-2 text-xs text-gray-900 text-center border-r">
+                                    {row[`${ageBand} - F`] || 0}
+                                  </td>
+                                </React.Fragment>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <table className="w-full divide-y divide-gray-200 text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          {Object.keys(previewDialog.data[0]).map((key) => (
+                            <th
+                              key={key}
+                              className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase truncate"
+                            >
+                              {key}
+                            </th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {previewDialog.data.map((row, index) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            {Object.values(row).map((value, i) => (
+                              <td
+                                key={i}
+                                className="px-2 py-2 text-xs text-gray-900 truncate max-w-0"
+                                title={value?.toString() || ""}
+                              >
+                                {value?.toString() || ""}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               ) : (
                 <p className="text-gray-500 text-center py-8">
