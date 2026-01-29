@@ -263,12 +263,11 @@ export default function StagedIndicatorsPage() {
 
   const handleGroupPreview = (sectionKey: string) => {
     const sectionData = getGroupedIndicators()[sectionKey];
-    const matrixData = new Map();
-    const indicators: string[] = [];
-    const ageBands = new Set();
-
-    // Collect all data and build list of indicators (allowing duplicates)
-    sectionData.items.forEach((indicator, indicatorIndex) => {
+    const combinedData: any[] = [];
+    const ageBands = new Set<string>();
+    const indicators = new Map<string, number>();
+    // First pass: collect all data and unique age bands
+    sectionData.items.forEach((indicator) => {
       try {
         let data: any[] = [];
         if (Array.isArray(indicator.rawResult)) {
@@ -277,17 +276,15 @@ export default function StagedIndicatorsPage() {
           data = JSON.parse(indicator.rawResult);
         }
 
-        indicators.push(indicator.indicatorName);
-
         data.forEach((row) => {
           const ageBand = row.age_band || "Unknown";
-          const gender = row.gender || "Unknown";
-          const value = row.value || 0;
-
           ageBands.add(ageBand);
-
-          const key = `${indicator.indicatorName}_${indicatorIndex}_${ageBand}_${gender}`;
-          matrixData.set(key, value);
+          combinedData.push({
+            indicator: indicator.indicatorName,
+            ageBand,
+            gender: row.gender || "Unknown",
+            value: row.totalcount || 0,
+          });
         });
       } catch (err) {
         console.error(
@@ -297,19 +294,43 @@ export default function StagedIndicatorsPage() {
       }
     });
 
-    // Build matrix rows with indicators as rows (including duplicates)
-    const matrixRows = indicators.map((indicator, index) => {
-      const row: any = { Indicator: indicator };
+    // Create matrix: group by indicator and create rows
+    const matrixRows: any[] = [];
+    const processedIndicators = new Set<string>();
 
-      Array.from(ageBands).forEach((ageBand) => {
-        const keyF = `${indicator}_${index}_${ageBand}_F`;
-        const keyM = `${indicator}_${index}_${ageBand}_M`;
-        
-        row[`${ageBand} - F`] = matrixData.get(keyF) || 0;
-        row[`${ageBand} - M`] = matrixData.get(keyM) || 0;
+    sectionData.items.forEach((indicator) => {
+      const indicatorKey = `${indicator.indicatorName}_${indicator.id}`;
+      if (processedIndicators.has(indicatorKey)) return;
+      processedIndicators.add(indicatorKey);
+
+      const row: any = { Indicator: indicator.indicatorName };
+
+      // Initialize all age band/gender combinations to 0
+      Array.from(ageBands).sort((a, b) => {
+        // Handle numeric age ranges
+        const getStartAge = (band: string) => {
+          if (band === 'Unknown') return 999;
+          if (band.includes('+')) return parseInt(band.replace('+', ''));
+          if (band.includes('-')) return parseInt(band.split('-')[0]);
+          return parseInt(band) || 0;
+        };
+        return getStartAge(a) - getStartAge(b);
+      }).forEach((ageBand) => {
+        row[`${ageBand} - M`] = 0;
+        row[`${ageBand} - F`] = 0;
       });
 
-      return row;
+      // Fill in actual values for this specific indicator
+      combinedData
+        .filter((item) => item.indicator === indicator.indicatorName)
+        .forEach((item) => {
+          const columnKey = `${item.ageBand} - ${item.gender}`;
+          if (row.hasOwnProperty(columnKey)) {
+            row[columnKey] = item.value;
+          }
+        });
+
+      matrixRows.push(row);
     });
 
     setPreviewDialog({
