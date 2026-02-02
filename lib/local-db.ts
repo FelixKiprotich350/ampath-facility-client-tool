@@ -162,3 +162,9 @@ export async function checkExistingData(
     return [];
   }
 }
+
+export async function deleteStagedIndicators(ids: number[]) {
+  return prisma.stagedIndicator.deleteMany({
+    where: { id: { in: ids } },
+  });
+}

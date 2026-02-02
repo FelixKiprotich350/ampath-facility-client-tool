@@ -992,6 +992,7 @@ export const StagedIndicatorScalarFieldEnum = {
   rawResult: 'rawResult',
   startDate: 'startDate',
   endDate: 'endDate',
+  deletedDate: 'deletedDate',
   createdAt: 'createdAt',
   syncedToAmpathAt: 'syncedToAmpathAt',
   syncedValues: 'syncedValues',

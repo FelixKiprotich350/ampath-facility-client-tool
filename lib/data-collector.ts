@@ -51,7 +51,6 @@ export async function executeSingleIndicator(
   endDate: string,
 ) {
   try {
-    console.log(`Starting direct query for indicator: ${indicatorObj}`);
     if (!indicatorObj) {
       throw new Error("Indicator object is required for direct database query");
     }

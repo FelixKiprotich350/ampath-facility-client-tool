@@ -104,7 +104,7 @@ export default function ReportsPage() {
   const loadPendingData = async () => {
     setPendingLoading(true);
     try {
-      const response = await fetch("/api/pendingdata");
+      const response = await fetch("/api/staged");
       const data = await response.json();
       setPendingData(data);
     } catch {

@@ -55,6 +55,7 @@ export default function StagedIndicatorsPage() {
   });
   const [periodFilter, setPeriodFilter] = useState("");
   const [indicatorFilter, setIndicatorFilter] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const [syncResultDialog, setSyncResultDialog] = useState<{
     open: boolean;
@@ -132,7 +133,7 @@ export default function StagedIndicatorsPage() {
     setPendingLoading(true);
     setSelectedItems(new Set());
     try {
-      const response = await fetch("/api/pendingdata");
+      const response = await fetch("/api/staged");
       const data = await response.json();
       setPendingData(data);
     } catch {
@@ -261,6 +262,42 @@ export default function StagedIndicatorsPage() {
     setCredentialsDialog(true);
   };
 
+  const handleDelete = async () => {
+    if (selectedItems.size === 0) {
+      alert("Please select items to delete");
+      return;
+    }
+
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedItems.size} selected item(s)?`,
+      )
+    ) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const response = await fetch("/api/staged", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedItems) }),
+      });
+
+      if (response.ok) {
+        setSelectedItems(new Set());
+        loadPendingData();
+      } else {
+        alert("Failed to delete items");
+      }
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Failed to delete items");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleGroupPreview = (sectionKey: string) => {
     const sectionData = getGroupedIndicators()[sectionKey];
     const combinedData: any[] = [];
@@ -306,19 +343,21 @@ export default function StagedIndicatorsPage() {
       const row: any = { Indicator: indicator.indicatorName };
 
       // Initialize all age band/gender combinations to 0
-      Array.from(ageBands).sort((a, b) => {
-        // Handle numeric age ranges
-        const getStartAge = (band: string) => {
-          if (band === 'Unknown') return 999;
-          if (band.includes('+')) return parseInt(band.replace('+', ''));
-          if (band.includes('-')) return parseInt(band.split('-')[0]);
-          return parseInt(band) || 0;
-        };
-        return getStartAge(a) - getStartAge(b);
-      }).forEach((ageBand) => {
-        row[`${ageBand} - M`] = 0;
-        row[`${ageBand} - F`] = 0;
-      });
+      Array.from(ageBands)
+        .sort((a, b) => {
+          // Handle numeric age ranges
+          const getStartAge = (band: string) => {
+            if (band === "Unknown") return 999;
+            if (band.includes("+")) return parseInt(band.replace("+", ""));
+            if (band.includes("-")) return parseInt(band.split("-")[0]);
+            return parseInt(band) || 0;
+          };
+          return getStartAge(a) - getStartAge(b);
+        })
+        .forEach((ageBand) => {
+          row[`${ageBand} - M`] = 0;
+          row[`${ageBand} - F`] = 0;
+        });
 
       // Fill in actual values for this specific indicator
       combinedData
@@ -360,6 +399,14 @@ export default function StagedIndicatorsPage() {
               {pendingLoading ? "🔄 Loading..." : "🔄 Refresh"}
             </Button>
             <Button
+              onClick={handleDelete}
+              disabled={selectedItems.size === 0 || deleting}
+              variant="outline"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              {deleting ? "🗑️ Deleting..." : "🗑️ Delete "}
+            </Button>
+            <Button
               onClick={handleCheckExisting}
               disabled={selectedItems.size === 0 || checkingExisting}
               variant="outline"
@@ -371,7 +418,7 @@ export default function StagedIndicatorsPage() {
               disabled={selectedItems.size === 0}
               className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
             >
-              🚀 Sync Selected ({selectedItems.size})
+              🚀 Sync ({selectedItems.size})
             </Button>
           </div>
         </div>

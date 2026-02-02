@@ -41,7 +41,6 @@ export async function executeReportQuery(
     ["AMPATH_REPORT_START_DATE", "AMPATH_REPORT_END_DATE"],
     [`'${startDate}'`, `'${endDate}'`],
   );
-  console.log(`Executing report query: ${finalQuery}`);
   const connection = await mysql.createConnection({
     ...kenyaemrDbConfig,
     multipleStatements: true,
