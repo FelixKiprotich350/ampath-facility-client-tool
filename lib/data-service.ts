@@ -148,7 +148,7 @@ export async function syncToAmep(
     let error = null;
     if (response.ok) {
       // await prisma.stagedIndicator.update({
-      //   where: { id: report.id },
+      //   where: { id: ind.id },
       //   data: {
       //     syncedToAmpathAt: new Date(),
       //     syncedValues: JSON.stringify(responseData),

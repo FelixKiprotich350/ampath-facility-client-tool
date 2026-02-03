@@ -29,7 +29,7 @@ type StagedIndicator = {
 export default function StagedIndicatorsPage() {
   const [pendingData, setPendingData] = useState<StagedIndicator[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [syncingData, setSyncingData] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [credentialsDialog, setCredentialsDialog] = useState(false);
   const [credentials, setCredentials] = useState({
@@ -56,6 +56,13 @@ export default function StagedIndicatorsPage() {
   const [periodFilter, setPeriodFilter] = useState("");
   const [indicatorFilter, setIndicatorFilter] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [operationStatus, setOperationStatus] = useState<{
+    show: boolean;
+    message: string;
+    type: "info" | "success" | "error";
+  }>({ show: false, message: "", type: "info" });
+
+  const isOperationRunning = syncingData || deleting || checkingExisting || pendingLoading;
 
   const [syncResultDialog, setSyncResultDialog] = useState<{
     open: boolean;
@@ -185,8 +192,13 @@ export default function StagedIndicatorsPage() {
   };
 
   const handleSync = async () => {
-    setLoading(true);
+    setSyncingData(true);
     setCredentialsDialog(false);
+    setOperationStatus({
+      show: true,
+      message: `Syncing ${selectedItems.size} items...`,
+      type: "info",
+    });
     try {
       const selectedData = pendingData.filter((item) =>
         selectedItems.has(item.id),
@@ -204,6 +216,17 @@ export default function StagedIndicatorsPage() {
       // Show sync results
       if (response.ok && result?.responseData != null) {
         setSyncResultDialog({ open: true, result: result });
+        setOperationStatus({
+          show: true,
+          message: "Sync completed!",
+          type: "success",
+        });
+      } else {
+        setOperationStatus({
+          show: true,
+          message: "Sync failed",
+          type: "error",
+        });
       }
 
       if (result.successfullSync?.length > 0) {
@@ -212,14 +235,19 @@ export default function StagedIndicatorsPage() {
       }
     } catch {
       console.error("Sync failed");
+      setOperationStatus({ show: true, message: "Sync failed", type: "error" });
     } finally {
-      setLoading(false);
+      setSyncingData(false);
       setCredentials({
         username: "",
         password: "",
         yearMonth: "",
         importStrategy: "CREATE_AND_UPDATE",
       });
+      setTimeout(
+        () => setOperationStatus({ show: false, message: "", type: "info" }),
+        3000,
+      );
     }
   };
 
@@ -234,6 +262,11 @@ export default function StagedIndicatorsPage() {
   const performExistingDataCheck = async () => {
     setCheckingExisting(true);
     setCheckCredentialsDialog(false);
+    setOperationStatus({
+      show: true,
+      message: `Checking ${selectedItems.size} items...`,
+      type: "info",
+    });
     try {
       const response = await fetch("/api/check-existing", {
         method: "POST",
@@ -246,11 +279,25 @@ export default function StagedIndicatorsPage() {
       });
       const result = await response.json();
       setExistingDataDialog({ open: true, data: result.existingData || [] });
+      setOperationStatus({
+        show: true,
+        message: "Check completed!",
+        type: "success",
+      });
     } catch (error) {
       console.error("Failed to check existing data:", error);
+      setOperationStatus({
+        show: true,
+        message: "Check failed",
+        type: "error",
+      });
     } finally {
       setCheckingExisting(false);
       setCheckCredentials({ username: "", password: "" });
+      setTimeout(
+        () => setOperationStatus({ show: false, message: "", type: "info" }),
+        3000,
+      );
     }
   };
 
@@ -277,6 +324,11 @@ export default function StagedIndicatorsPage() {
     }
 
     setDeleting(true);
+    setOperationStatus({
+      show: true,
+      message: `Deleting ${selectedItems.size} items...`,
+      type: "info",
+    });
     try {
       const response = await fetch("/api/staged", {
         method: "DELETE",
@@ -287,14 +339,31 @@ export default function StagedIndicatorsPage() {
       if (response.ok) {
         setSelectedItems(new Set());
         loadPendingData();
+        setOperationStatus({
+          show: true,
+          message: "Items deleted!",
+          type: "success",
+        });
       } else {
-        alert("Failed to delete items");
+        setOperationStatus({
+          show: true,
+          message: "Delete failed",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("Delete failed:", error);
-      alert("Failed to delete items");
+      setOperationStatus({
+        show: true,
+        message: "Delete failed",
+        type: "error",
+      });
     } finally {
       setDeleting(false);
+      setTimeout(
+        () => setOperationStatus({ show: false, message: "", type: "info" }),
+        3000,
+      );
     }
   };
 
@@ -384,6 +453,28 @@ export default function StagedIndicatorsPage() {
       title="Staged Reports"
       subtitle="Reports ready for synchronization"
     >
+      {operationStatus.show && (
+        <div
+          className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${
+            operationStatus.type === "success"
+              ? "bg-green-100 text-green-800 border border-green-200"
+              : operationStatus.type === "error"
+                ? "bg-red-100 text-red-800 border border-red-200"
+                : "bg-blue-100 text-blue-800 border border-blue-200"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {operationStatus.type === "info" && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            )}
+            {operationStatus.type === "success" && <span>✅</span>}
+            {operationStatus.type === "error" && <span>❌</span>}
+            <span className="text-sm font-medium">
+              {operationStatus.message}
+            </span>
+          </div>
+        </div>
+      )}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -393,14 +484,14 @@ export default function StagedIndicatorsPage() {
           <div className="flex gap-2">
             <Button
               onClick={loadPendingData}
-              disabled={pendingLoading}
+              disabled={isOperationRunning}
               variant="outline"
             >
               {pendingLoading ? "🔄 Loading..." : "🔄 Refresh"}
             </Button>
             <Button
               onClick={handleDelete}
-              disabled={selectedItems.size === 0 || deleting}
+              disabled={selectedItems.size === 0 || isOperationRunning}
               variant="outline"
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
@@ -408,14 +499,14 @@ export default function StagedIndicatorsPage() {
             </Button>
             <Button
               onClick={handleCheckExisting}
-              disabled={selectedItems.size === 0 || checkingExisting}
+              disabled={selectedItems.size === 0 || isOperationRunning}
               variant="outline"
             >
               {checkingExisting ? "🔍 Checking..." : "🔍 Check Existing"}
             </Button>
             <Button
               onClick={handleSyncClick}
-              disabled={selectedItems.size === 0}
+              disabled={selectedItems.size === 0 || isOperationRunning}
               className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
             >
               🚀 Sync ({selectedItems.size})
