@@ -44,16 +44,17 @@ export async function addStagedResults(
   rawResult: any,
   startDate: string,
   endDate: string,
+  reportPeriod: number,
 ) {
-  
   return prisma.stagedIndicator.create({
     data: {
       indicatorCode: indicatorObj.code,
       indicatorName: indicatorObj.name,
       sectionId: indicatorObj.datasetSectionId,
-      sectionName: indicatorObj.DatasetSection?.name??"--",
+      sectionName: indicatorObj.DatasetSection?.name ?? "--",
       datasetId: indicatorObj.datasetId,
-      datasetName: indicatorObj.Dataset?.name??"--",
+      datasetName: indicatorObj.Dataset?.name ?? "--",
+      reportPeriod: parseInt(reportPeriod.toString()),
       rawResult,
       startDate: new Date(startDate),
       endDate: new Date(endDate),

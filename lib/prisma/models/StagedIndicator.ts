@@ -28,10 +28,12 @@ export type AggregateStagedIndicator = {
 
 export type StagedIndicatorAvgAggregateOutputType = {
   id: number | null
+  reportPeriod: number | null
 }
 
 export type StagedIndicatorSumAggregateOutputType = {
   id: number | null
+  reportPeriod: number | null
 }
 
 export type StagedIndicatorMinAggregateOutputType = {
@@ -42,6 +44,7 @@ export type StagedIndicatorMinAggregateOutputType = {
   sectionName: string | null
   datasetId: string | null
   datasetName: string | null
+  reportPeriod: number | null
   startDate: Date | null
   endDate: Date | null
   createdAt: Date | null
@@ -57,6 +60,7 @@ export type StagedIndicatorMaxAggregateOutputType = {
   sectionName: string | null
   datasetId: string | null
   datasetName: string | null
+  reportPeriod: number | null
   startDate: Date | null
   endDate: Date | null
   createdAt: Date | null
@@ -73,6 +77,7 @@ export type StagedIndicatorCountAggregateOutputType = {
   datasetId: number
   datasetName: number
   rawResult: number
+  reportPeriod: number
   startDate: number
   endDate: number
   createdAt: number
@@ -85,10 +90,12 @@ export type StagedIndicatorCountAggregateOutputType = {
 
 export type StagedIndicatorAvgAggregateInputType = {
   id?: true
+  reportPeriod?: true
 }
 
 export type StagedIndicatorSumAggregateInputType = {
   id?: true
+  reportPeriod?: true
 }
 
 export type StagedIndicatorMinAggregateInputType = {
@@ -99,6 +106,7 @@ export type StagedIndicatorMinAggregateInputType = {
   sectionName?: true
   datasetId?: true
   datasetName?: true
+  reportPeriod?: true
   startDate?: true
   endDate?: true
   createdAt?: true
@@ -114,6 +122,7 @@ export type StagedIndicatorMaxAggregateInputType = {
   sectionName?: true
   datasetId?: true
   datasetName?: true
+  reportPeriod?: true
   startDate?: true
   endDate?: true
   createdAt?: true
@@ -130,6 +139,7 @@ export type StagedIndicatorCountAggregateInputType = {
   datasetId?: true
   datasetName?: true
   rawResult?: true
+  reportPeriod?: true
   startDate?: true
   endDate?: true
   createdAt?: true
@@ -234,6 +244,7 @@ export type StagedIndicatorGroupByOutputType = {
   datasetId: string
   datasetName: string
   rawResult: runtime.JsonValue
+  reportPeriod: number
   startDate: Date
   endDate: Date
   createdAt: Date
@@ -274,6 +285,7 @@ export type StagedIndicatorWhereInput = {
   datasetId?: Prisma.StringFilter<"StagedIndicator"> | string
   datasetName?: Prisma.StringFilter<"StagedIndicator"> | string
   rawResult?: Prisma.JsonFilter<"StagedIndicator">
+  reportPeriod?: Prisma.IntFilter<"StagedIndicator"> | number
   startDate?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
   endDate?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
@@ -291,6 +303,7 @@ export type StagedIndicatorOrderByWithRelationInput = {
   datasetId?: Prisma.SortOrder
   datasetName?: Prisma.SortOrder
   rawResult?: Prisma.SortOrder
+  reportPeriod?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -312,6 +325,7 @@ export type StagedIndicatorWhereUniqueInput = Prisma.AtLeast<{
   datasetId?: Prisma.StringFilter<"StagedIndicator"> | string
   datasetName?: Prisma.StringFilter<"StagedIndicator"> | string
   rawResult?: Prisma.JsonFilter<"StagedIndicator">
+  reportPeriod?: Prisma.IntFilter<"StagedIndicator"> | number
   startDate?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
   endDate?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"StagedIndicator"> | Date | string
@@ -329,6 +343,7 @@ export type StagedIndicatorOrderByWithAggregationInput = {
   datasetId?: Prisma.SortOrder
   datasetName?: Prisma.SortOrder
   rawResult?: Prisma.SortOrder
+  reportPeriod?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -354,6 +369,7 @@ export type StagedIndicatorScalarWhereWithAggregatesInput = {
   datasetId?: Prisma.StringWithAggregatesFilter<"StagedIndicator"> | string
   datasetName?: Prisma.StringWithAggregatesFilter<"StagedIndicator"> | string
   rawResult?: Prisma.JsonWithAggregatesFilter<"StagedIndicator">
+  reportPeriod?: Prisma.IntWithAggregatesFilter<"StagedIndicator"> | number
   startDate?: Prisma.DateTimeWithAggregatesFilter<"StagedIndicator"> | Date | string
   endDate?: Prisma.DateTimeWithAggregatesFilter<"StagedIndicator"> | Date | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"StagedIndicator"> | Date | string
@@ -370,6 +386,7 @@ export type StagedIndicatorCreateInput = {
   datasetId: string
   datasetName: string
   rawResult: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reportPeriod: number
   startDate: Date | string
   endDate: Date | string
   createdAt?: Date | string
@@ -387,6 +404,7 @@ export type StagedIndicatorUncheckedCreateInput = {
   datasetId: string
   datasetName: string
   rawResult: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reportPeriod: number
   startDate: Date | string
   endDate: Date | string
   createdAt?: Date | string
@@ -403,6 +421,7 @@ export type StagedIndicatorUpdateInput = {
   datasetId?: Prisma.StringFieldUpdateOperationsInput | string
   datasetName?: Prisma.StringFieldUpdateOperationsInput | string
   rawResult?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reportPeriod?: Prisma.IntFieldUpdateOperationsInput | number
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -420,6 +439,7 @@ export type StagedIndicatorUncheckedUpdateInput = {
   datasetId?: Prisma.StringFieldUpdateOperationsInput | string
   datasetName?: Prisma.StringFieldUpdateOperationsInput | string
   rawResult?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reportPeriod?: Prisma.IntFieldUpdateOperationsInput | number
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -437,6 +457,7 @@ export type StagedIndicatorCreateManyInput = {
   datasetId: string
   datasetName: string
   rawResult: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reportPeriod: number
   startDate: Date | string
   endDate: Date | string
   createdAt?: Date | string
@@ -453,6 +474,7 @@ export type StagedIndicatorUpdateManyMutationInput = {
   datasetId?: Prisma.StringFieldUpdateOperationsInput | string
   datasetName?: Prisma.StringFieldUpdateOperationsInput | string
   rawResult?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reportPeriod?: Prisma.IntFieldUpdateOperationsInput | number
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -470,6 +492,7 @@ export type StagedIndicatorUncheckedUpdateManyInput = {
   datasetId?: Prisma.StringFieldUpdateOperationsInput | string
   datasetName?: Prisma.StringFieldUpdateOperationsInput | string
   rawResult?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  reportPeriod?: Prisma.IntFieldUpdateOperationsInput | number
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -493,6 +516,7 @@ export type StagedIndicatorCountOrderByAggregateInput = {
   datasetId?: Prisma.SortOrder
   datasetName?: Prisma.SortOrder
   rawResult?: Prisma.SortOrder
+  reportPeriod?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -503,6 +527,7 @@ export type StagedIndicatorCountOrderByAggregateInput = {
 
 export type StagedIndicatorAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  reportPeriod?: Prisma.SortOrder
 }
 
 export type StagedIndicatorMaxOrderByAggregateInput = {
@@ -513,6 +538,7 @@ export type StagedIndicatorMaxOrderByAggregateInput = {
   sectionName?: Prisma.SortOrder
   datasetId?: Prisma.SortOrder
   datasetName?: Prisma.SortOrder
+  reportPeriod?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -528,6 +554,7 @@ export type StagedIndicatorMinOrderByAggregateInput = {
   sectionName?: Prisma.SortOrder
   datasetId?: Prisma.SortOrder
   datasetName?: Prisma.SortOrder
+  reportPeriod?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -537,6 +564,7 @@ export type StagedIndicatorMinOrderByAggregateInput = {
 
 export type StagedIndicatorSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  reportPeriod?: Prisma.SortOrder
 }
 
 
@@ -550,6 +578,7 @@ export type StagedIndicatorSelect<ExtArgs extends runtime.Types.Extensions.Inter
   datasetId?: boolean
   datasetName?: boolean
   rawResult?: boolean
+  reportPeriod?: boolean
   startDate?: boolean
   endDate?: boolean
   createdAt?: boolean
@@ -569,6 +598,7 @@ export type StagedIndicatorSelectScalar = {
   datasetId?: boolean
   datasetName?: boolean
   rawResult?: boolean
+  reportPeriod?: boolean
   startDate?: boolean
   endDate?: boolean
   createdAt?: boolean
@@ -577,7 +607,7 @@ export type StagedIndicatorSelectScalar = {
   syncedBy?: boolean
 }
 
-export type StagedIndicatorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "indicatorCode" | "indicatorName" | "sectionId" | "sectionName" | "datasetId" | "datasetName" | "rawResult" | "startDate" | "endDate" | "createdAt" | "syncedToAmpathAt" | "syncedValues" | "syncedBy", ExtArgs["result"]["stagedIndicator"]>
+export type StagedIndicatorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "indicatorCode" | "indicatorName" | "sectionId" | "sectionName" | "datasetId" | "datasetName" | "rawResult" | "reportPeriod" | "startDate" | "endDate" | "createdAt" | "syncedToAmpathAt" | "syncedValues" | "syncedBy", ExtArgs["result"]["stagedIndicator"]>
 
 export type $StagedIndicatorPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "StagedIndicator"
@@ -591,6 +621,7 @@ export type $StagedIndicatorPayload<ExtArgs extends runtime.Types.Extensions.Int
     datasetId: string
     datasetName: string
     rawResult: runtime.JsonValue
+    reportPeriod: number
     startDate: Date
     endDate: Date
     createdAt: Date
@@ -974,6 +1005,7 @@ export interface StagedIndicatorFieldRefs {
   readonly datasetId: Prisma.FieldRef<"StagedIndicator", 'String'>
   readonly datasetName: Prisma.FieldRef<"StagedIndicator", 'String'>
   readonly rawResult: Prisma.FieldRef<"StagedIndicator", 'Json'>
+  readonly reportPeriod: Prisma.FieldRef<"StagedIndicator", 'Int'>
   readonly startDate: Prisma.FieldRef<"StagedIndicator", 'DateTime'>
   readonly endDate: Prisma.FieldRef<"StagedIndicator", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"StagedIndicator", 'DateTime'>

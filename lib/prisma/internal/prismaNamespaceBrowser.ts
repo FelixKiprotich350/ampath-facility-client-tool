@@ -156,6 +156,7 @@ export const StagedIndicatorScalarFieldEnum = {
   datasetId: 'datasetId',
   datasetName: 'datasetName',
   rawResult: 'rawResult',
+  reportPeriod: 'reportPeriod',
   startDate: 'startDate',
   endDate: 'endDate',
   createdAt: 'createdAt',

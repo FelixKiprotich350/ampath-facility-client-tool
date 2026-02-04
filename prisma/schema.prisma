@@ -87,6 +87,7 @@ model StagedIndicator {
   datasetId        String
   datasetName      String
   rawResult        Json
+  reportPeriod     Int
   startDate        DateTime
   endDate          DateTime
   createdAt        DateTime  @default(now()) @map("requested_at")

@@ -49,6 +49,7 @@ export async function executeSingleIndicator(
   indicatorObj: any,
   startDate: string,
   endDate: string,
+  reportPeriod,
 ) {
   try {
     if (!indicatorObj) {
@@ -59,11 +60,14 @@ export async function executeSingleIndicator(
     const recordCount = Array.isArray(data) ? data.length : 0;
     // Convert data to CSV-like format for compatibility
     const csvContent = JSON.stringify(data ?? []);
-    await addStagedResults(indicatorObj, csvContent, startDate, endDate);
-
-    console.log(
-      `Indicator ${indicatorObj} completed: (${recordCount} records)`,
+    await addStagedResults(
+      indicatorObj,
+      csvContent,
+      startDate,
+      endDate,
+      reportPeriod,
     );
+
 
     return { records: recordCount, message: "success" };
   } catch (error) {

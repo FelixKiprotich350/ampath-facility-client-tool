@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       console.log(
         `Executing indicator ${indicatorObj.code} for period ${reportPeriod}`,
       );
-      await executeSingleIndicator(indicatorObj, startDate, endDate);
+      await executeSingleIndicator(indicatorObj, startDate, endDate,reportPeriod);
     });
 
     return NextResponse.json({
