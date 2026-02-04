@@ -57,7 +57,8 @@ export const ModelName = {
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
   StagedIndicator: 'StagedIndicator',
-  ReportQueue: 'ReportQueue'
+  ReportQueue: 'ReportQueue',
+  ReportingPeriod: 'ReportingPeriod'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -157,7 +158,6 @@ export const StagedIndicatorScalarFieldEnum = {
   rawResult: 'rawResult',
   startDate: 'startDate',
   endDate: 'endDate',
-  deletedDate: 'deletedDate',
   createdAt: 'createdAt',
   syncedToAmpathAt: 'syncedToAmpathAt',
   syncedValues: 'syncedValues',
@@ -178,6 +178,18 @@ export const ReportQueueScalarFieldEnum = {
 } as const
 
 export type ReportQueueScalarFieldEnum = (typeof ReportQueueScalarFieldEnum)[keyof typeof ReportQueueScalarFieldEnum]
+
+
+export const ReportingPeriodScalarFieldEnum = {
+  id: 'id',
+  year: 'year',
+  month: 'month',
+  fullName: 'fullName',
+  createdAt: 'createdAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type ReportingPeriodScalarFieldEnum = (typeof ReportingPeriodScalarFieldEnum)[keyof typeof ReportingPeriodScalarFieldEnum]
 
 
 export const SortOrder = {

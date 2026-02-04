@@ -1040,7 +1040,7 @@ export default function StagedIndicatorsPage() {
 
                   {syncResultDialog.result.responseData?.importCount && (
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Import Summary</h4>
+                      <h4 className="font-medium mb-2">Import Summary (Records)</h4>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           Imported:{" "}

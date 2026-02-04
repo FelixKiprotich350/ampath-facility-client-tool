@@ -390,7 +390,8 @@ export const ModelName = {
   LineList: 'LineList',
   IndicatorType: 'IndicatorType',
   StagedIndicator: 'StagedIndicator',
-  ReportQueue: 'ReportQueue'
+  ReportQueue: 'ReportQueue',
+  ReportingPeriod: 'ReportingPeriod'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -406,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "facility" | "facilityReportType" | "indicator" | "lineList" | "indicatorType" | "stagedIndicator" | "reportQueue"
+    modelProps: "facility" | "facilityReportType" | "indicator" | "lineList" | "indicatorType" | "stagedIndicator" | "reportQueue" | "reportingPeriod"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -872,6 +873,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ReportingPeriod: {
+      payload: Prisma.$ReportingPeriodPayload<ExtArgs>
+      fields: Prisma.ReportingPeriodFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReportingPeriodFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportingPeriodPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReportingPeriodFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportingPeriodPayload>
+        }
+        findFirst: {
+          args: Prisma.ReportingPeriodFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportingPeriodPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReportingPeriodFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportingPeriodPayload>
+        }
+        findMany: {
+          args: Prisma.ReportingPeriodFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportingPeriodPayload>[]
+        }
+        create: {
+          args: Prisma.ReportingPeriodCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportingPeriodPayload>
+        }
+        createMany: {
+          args: Prisma.ReportingPeriodCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.ReportingPeriodDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportingPeriodPayload>
+        }
+        update: {
+          args: Prisma.ReportingPeriodUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportingPeriodPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReportingPeriodDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReportingPeriodUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.ReportingPeriodUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportingPeriodPayload>
+        }
+        aggregate: {
+          args: Prisma.ReportingPeriodAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReportingPeriod>
+        }
+        groupBy: {
+          args: Prisma.ReportingPeriodGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReportingPeriodGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReportingPeriodCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReportingPeriodCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -992,7 +1059,6 @@ export const StagedIndicatorScalarFieldEnum = {
   rawResult: 'rawResult',
   startDate: 'startDate',
   endDate: 'endDate',
-  deletedDate: 'deletedDate',
   createdAt: 'createdAt',
   syncedToAmpathAt: 'syncedToAmpathAt',
   syncedValues: 'syncedValues',
@@ -1013,6 +1079,18 @@ export const ReportQueueScalarFieldEnum = {
 } as const
 
 export type ReportQueueScalarFieldEnum = (typeof ReportQueueScalarFieldEnum)[keyof typeof ReportQueueScalarFieldEnum]
+
+
+export const ReportingPeriodScalarFieldEnum = {
+  id: 'id',
+  year: 'year',
+  month: 'month',
+  fullName: 'fullName',
+  createdAt: 'createdAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type ReportingPeriodScalarFieldEnum = (typeof ReportingPeriodScalarFieldEnum)[keyof typeof ReportingPeriodScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1296,6 +1374,7 @@ export type GlobalOmitConfig = {
   indicatorType?: Prisma.IndicatorTypeOmit
   stagedIndicator?: Prisma.StagedIndicatorOmit
   reportQueue?: Prisma.ReportQueueOmit
+  reportingPeriod?: Prisma.ReportingPeriodOmit
 }
 
 /* Types for Logging */

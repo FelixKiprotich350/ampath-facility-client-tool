@@ -74,3 +74,8 @@ export type StagedIndicator = Prisma.StagedIndicatorModel
  * 
  */
 export type ReportQueue = Prisma.ReportQueueModel
+/**
+ * Model ReportingPeriod
+ * 
+ */
+export type ReportingPeriod = Prisma.ReportingPeriodModel

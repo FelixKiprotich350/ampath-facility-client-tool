@@ -109,6 +109,17 @@ model ReportQueue {
   @@map("report_queue")
 }
 
+model ReportingPeriod {
+  id        Int       @id @default(autoincrement())
+  year      Int
+  month     Int
+  fullName  Int
+  createdAt DateTime  @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("reporting_periods")
+}
+
 enum FacilityReportTypeCategory {
   indicator
   linelist
