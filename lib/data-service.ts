@@ -118,6 +118,7 @@ export async function syncToAmep(
         });
       }
     }
+
     if (!dataValues.length) {
       console.log(`No data values mapped for syncing to AMEP`);
       return;
@@ -134,7 +135,7 @@ export async function syncToAmep(
       `Syncing to AMEP at ${targetUrl + "?importStrategy=" + importStrategy}`,
     );
     const response = await fetch(
-      targetUrl + "?dryRun=true&importStrategy=" + importStrategy,
+      targetUrl + "?importStrategy=" + importStrategy,
       {
         method: "POST",
         headers,
@@ -144,16 +145,18 @@ export async function syncToAmep(
     );
 
     const responseData = await response.json();
-    console.log("Response body:", responseData);
     let error = null;
     if (response.ok) {
-      // await prisma.stagedIndicator.update({
-      //   where: { id: ind.id },
-      //   data: {
-      //     syncedToAmpathAt: new Date(),
-      //     syncedValues: JSON.stringify(responseData),
-      //   },
-      // });
+      for (const ind of selectedItems) {
+        await prisma.stagedIndicator.update({
+          where: { id: ind },
+          data: {
+            syncedToAmpathAt: new Date(),
+            syncedValues: JSON.stringify(responseData),
+            syncedBy: username,
+          },
+        });
+      }
     } else {
       console.error(`Failed to sync to AMEP:`, responseData);
       error = responseData;

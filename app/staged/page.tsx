@@ -211,7 +211,7 @@ export default function StagedIndicatorsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...credentials,
-          yearMonth: reportingPeriod ? reportingPeriod.fullName : null,
+          yearMonth: reportingPeriod ? reportingPeriod : null,
           selectedItems: Array.from(selectedItems),
         }),
       });
