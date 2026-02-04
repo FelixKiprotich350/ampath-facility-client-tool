@@ -10,7 +10,7 @@ export function Sidebar() {
     { href: "/dashboard", label: "Dashboard", icon: "🏠" },
     { href: "/generate", label: "Generate", icon: "⏳" },
     { href: "/staged", label: "Staged Indicators", icon: "⏳" },
-    { href: "/reports", label: "Reports", icon: "📜" },
+    // { href: "/reports", label: "Reports", icon: "📜" },
     { href: "/history", label: "History", icon: "📜" },
   ];
 

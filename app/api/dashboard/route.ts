@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   const fac_name = process.env.FACILITY_NAME;
   const pendingData = await prisma.stagedIndicator.count({
-    where: { syncedToAmpathAt: {not: null} },
+    where: { syncedToAmpathAt: null },
   });
   const syncedData = await prisma.stagedIndicator.count({
     where: { syncedToAmpathAt: { not: null } },

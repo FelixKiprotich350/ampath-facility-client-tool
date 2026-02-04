@@ -109,7 +109,7 @@ export default function DashboardPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-orange-800">
-                      <span className="text-2xl">⏳</span> Pending Reports
+                      <span className="text-2xl">⏳</span> Pending Indicators
                     </span>
                     <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
                   </CardTitle>
@@ -121,7 +121,7 @@ export default function DashboardPage() {
                         {facilityDetails.pendingData}
                       </span>
                       <span className="text-sm text-orange-600 mb-1">
-                        reports
+                        indicators
                       </span>
                     </div>
                     <div className="text-sm text-gray-600">
@@ -135,7 +135,7 @@ export default function DashboardPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-green-800">
-                      <span className="text-2xl">✅</span> Synced Reports
+                      <span className="text-2xl">✅</span> Synced indicators
                     </span>
                     <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                   </CardTitle>
@@ -147,7 +147,7 @@ export default function DashboardPage() {
                         {facilityDetails.syncedData}
                       </span>
                       <span className="text-sm text-green-600 mb-1">
-                        reports
+                        indicators
                       </span>
                     </div>
                     <div className="text-sm text-gray-600">
