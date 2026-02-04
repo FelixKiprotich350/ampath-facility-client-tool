@@ -61,6 +61,7 @@ export default function StagedIndicatorsPage() {
     message: string;
     type: "info" | "success" | "error";
   }>({ show: false, message: "", type: "info" });
+  const [hasReportingPeriod, setHasReportingPeriod] = useState<boolean | null>(null);
 
   const isOperationRunning = syncingData || deleting || checkingExisting || pendingLoading;
 
@@ -70,8 +71,18 @@ export default function StagedIndicatorsPage() {
   }>({ open: false, result: null });
 
   useEffect(() => {
+    checkReportingPeriod();
     loadPendingData();
   }, []);
+
+  const checkReportingPeriod = async () => {
+    try {
+      const response = await fetch("/api/reporting-periods/active");
+      setHasReportingPeriod(response.ok);
+    } catch {
+      setHasReportingPeriod(false);
+    }
+  };
 
   const getGroupedIndicators = () => {
     const filteredIndicators = getFilteredIndicators();
@@ -450,9 +461,30 @@ export default function StagedIndicatorsPage() {
 
   return (
     <AppLayout
-      title="Staged Reports"
-      subtitle="Reports ready for synchronization"
+      title="Staged Indicators"
+      subtitle="Indicators ready for synchronization"
     >
+      {hasReportingPeriod === false ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No Active Reporting Period
+            </h3>
+            <p className="text-gray-500">
+              Please create a reporting period in the dashboard before viewing staged reports.
+            </p>
+          </CardContent>
+        </Card>
+      ) : hasReportingPeriod === null ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <div className="animate-spin w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto mb-4"></div>
+            <div className="text-gray-600">Checking reporting period...</div>
+          </CardContent>
+        </Card>
+      ) : (
+      <>
       {operationStatus.show && (
         <div
           className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${
@@ -478,8 +510,8 @@ export default function StagedIndicatorsPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Staged Reports</h2>
-            <p className="text-gray-600">Reports waiting to be synchronized</p>
+            <h2 className="text-2xl font-bold text-gray-900">Staged Indicators</h2>
+            <p className="text-gray-600">Indicators waiting to be synchronized</p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -1122,6 +1154,8 @@ export default function StagedIndicatorsPage() {
           </DialogContent>
         </Dialog>
       </div>
+      </>
+      )}
     </AppLayout>
   );
 }
