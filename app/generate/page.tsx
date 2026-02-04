@@ -23,19 +23,18 @@ type Indicator = {
 export default function GenerateIndicatorsPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState("");
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>([]);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
   );
-  const [periodDialog, setPeriodDialog] = useState(false);
   const [warningDialog, setWarningDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [periodFilter, setPeriodFilter] = useState("");
   const [hasReportingPeriod, setHasReportingPeriod] = useState<boolean | null>(
     null,
   );
+  const [currentPeriod, setCurrentPeriod] = useState<any>(null);
 
   useEffect(() => {
     checkReportingPeriod();
@@ -45,7 +44,13 @@ export default function GenerateIndicatorsPage() {
   const checkReportingPeriod = async () => {
     try {
       const response = await fetch("/api/reporting-periods/active");
-      setHasReportingPeriod(response.ok);
+      if (response.ok) {
+        const result = await response.json();
+        setHasReportingPeriod(true);
+        setCurrentPeriod(result.data);
+      } else {
+        setHasReportingPeriod(false);
+      }
     } catch {
       setHasReportingPeriod(false);
     }
@@ -59,24 +64,7 @@ export default function GenerateIndicatorsPage() {
     } catch {}
   };
 
-  const getLast12Months = () => {
-    const months = [];
-    const now = new Date();
-    for (let i = 0; i < 12; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthYear = `${date.getFullYear()}-${String(
-        date.getMonth() + 1,
-      ).padStart(2, "0")}`;
-      const displayName = date.toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      });
-      months.push({ value: monthYear, label: displayName });
-    }
-    return months;
-  };
-
-  const handleSelectPeriod = () => {
+  const handleGenerate = async () => {
     if (selectedIndicators.length === 0) {
       alert("Please select at least one indicator.");
       return;
@@ -91,26 +79,28 @@ export default function GenerateIndicatorsPage() {
       return;
     }
 
-    setPeriodDialog(true);
+    await handleCollect();
   };
 
-  const proceedWithPartialSelection = () => {
+  const proceedWithPartialSelection = async () => {
     setWarningDialog(false);
-    setPeriodDialog(true);
+    await handleCollect();
   };
 
   const handleCollect = async () => {
-    setPeriodDialog(false);
+    if (!currentPeriod) return;
+    
     setLoading(true);
+    const reportPeriod = `${currentPeriod.year}-${String(currentPeriod.month).padStart(2, '0')}`;
     setStatus(
-      `🔍 Scheduling ${selectedIndicators.length} indicators for ${selectedMonth}...`,
+      `🔍 Scheduling ${selectedIndicators.length} indicators for ${reportPeriod}...`,
     );
     try {
       const response = await fetch("/api/collect", {
         method: "POST",
         body: JSON.stringify({
           reportType: "indicators",
-          reportPeriod: selectedMonth,
+          reportPeriod: reportPeriod,
           selectedIndicators: selectedIndicators,
         }),
         headers: { "Content-Type": "application/json" },
@@ -126,7 +116,6 @@ export default function GenerateIndicatorsPage() {
           `✅ Scheduled ${result.scheduled || selectedIndicators.length} indicators`,
         );
       }
-      setSelectedMonth("");
       setSelectedIndicators([]);
     } catch (error) {
       setStatus("❌ Collection failed");
@@ -352,11 +341,11 @@ export default function GenerateIndicatorsPage() {
           </Card>
 
           <Button
-            onClick={handleSelectPeriod}
+            onClick={handleGenerate}
             disabled={selectedIndicators.length === 0}
             className="w-full"
           >
-            Select Period ({selectedIndicators.length} Indicator
+            Generate Indicators ({selectedIndicators.length} Indicator
             {selectedIndicators.length !== 1 ? "s" : ""})
           </Button>
 

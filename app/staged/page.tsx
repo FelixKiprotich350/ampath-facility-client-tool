@@ -472,7 +472,7 @@ export default function StagedIndicatorsPage() {
               No Active Reporting Period
             </h3>
             <p className="text-gray-500">
-              Please create a reporting period in the dashboard before viewing staged reports.
+              Please create a reporting period in the dashboard before viewing staged Indicators.
             </p>
           </CardContent>
         </Card>
