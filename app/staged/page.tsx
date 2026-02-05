@@ -62,7 +62,7 @@ export default function StagedIndicatorsPage() {
   const [hasReportingPeriod, setHasReportingPeriod] = useState<boolean | null>(
     null,
   );
-  const [reportingPeriod, setReportingPeriod] = useState<any>(null);
+  const [reportingPeriod, setReportingPeriod] = useState<string | null>(null);
 
   const isOperationRunning =
     syncingData || deleting || checkingExisting || pendingLoading;
@@ -74,8 +74,8 @@ export default function StagedIndicatorsPage() {
 
   useEffect(() => {
     checkReportingPeriod();
-    loadPendingData();
-  }, []);
+    loadPendingData(reportingPeriod);
+  }, [reportingPeriod]);
 
   const checkReportingPeriod = async () => {
     try {
@@ -139,15 +139,17 @@ export default function StagedIndicatorsPage() {
     });
   };
 
-  const loadPendingData = async () => {
+  const loadPendingData = async (reportingPeriod = "") => {
     setPendingLoading(true);
     setSelectedItems(new Set());
     try {
-      const response = await fetch("/api/staged");
+      const response = await fetch(
+        "/api/staged?reportPeriod=" + (reportingPeriod ? reportingPeriod : ""),
+      );
       const data = await response.json();
       setPendingData(data);
-    } catch {
-      console.error("Failed to load pending data");
+    } catch (error) {
+      console.error("Failed to load pending data:", error);
     } finally {
       setPendingLoading(false);
     }
@@ -235,10 +237,10 @@ export default function StagedIndicatorsPage() {
 
       if (result.successfullSync?.length > 0) {
         setSelectedItems(new Set());
-        loadPendingData();
       }
-    } catch {
-      console.error("Sync failed");
+      loadPendingData(reportingPeriod);
+    } catch (error) {
+      console.error("Sync failed:", error);
       setOperationStatus({ show: true, message: "Sync failed", type: "error" });
     } finally {
       setSyncingData(false);
@@ -276,6 +278,7 @@ export default function StagedIndicatorsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           indicatorIds: Array.from(selectedItems),
+          reportPeriod: reportingPeriod.toString(),
           username: checkCredentials.username,
           password: checkCredentials.password,
         }),
@@ -512,7 +515,7 @@ export default function StagedIndicatorsPage() {
               </div>
               <div className="flex gap-2">
                 <Button
-                  onClick={loadPendingData}
+                  onClick={() => loadPendingData(reportingPeriod)}
                   disabled={isOperationRunning}
                   variant="outline"
                 >

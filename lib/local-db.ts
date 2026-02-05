@@ -27,9 +27,15 @@ export async function addLineList(
   });
 }
 
-export async function getStagedIndicators(synced: boolean) {
+export async function getStagedIndicators(
+  synced: boolean,
+  reportPeriod: number,
+) {
   return prisma.stagedIndicator.findMany({
-    where: { syncedToAmpathAt: synced ? { not: null } : null },
+    where: {
+      syncedToAmpathAt: synced ? { not: null } : null,
+      reportPeriod: reportPeriod,
+    },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -80,6 +86,7 @@ export async function getDataSummary() {
 
 export async function checkExistingData(
   indicatorIds: number[],
+  reportPeriod: string,
   username?: string,
   password?: string,
 ) {
@@ -116,26 +123,28 @@ export async function checkExistingData(
       headers.Authorization = `Basic ${credentials}`;
     }
 
-    for (const indicator of stagedIndicators) {
-      try {
-        // Format period from dates (assuming monthly reporting)
-        const startDate = new Date(indicator.startDate);
-        const period = `${startDate.getFullYear()}${String(
-          startDate.getMonth() + 1,
-        ).padStart(2, "0")}`;
+    // Format period from dates (assuming monthly reporting)
+    const startDate = new Date(
+      `${reportPeriod.slice(0, 4)}-${reportPeriod.slice(4, 6)}-01`,
+    );
+    const period = `${startDate.getFullYear()}${String(
+      startDate.getMonth() + 1,
+    ).padStart(2, "0")}`;
 
-        // Check AMEP for existing data values
-        const checkUrl = `${AMEP_URL}/dataValueSets?dataSet=Lf1skJGdrzj&orgUnit=${ORGUNIT}&period=${period}&dataElement=${indicator.indicatorCode}&format=json`;
-        console.log(
-          `Checking existing data for indicator ${indicator.indicatorCode} at ${checkUrl}`,
-        );
-        const response = await fetch(checkUrl, {
-          headers,
-          signal: AbortSignal.timeout(10000),
-        });
+    // Check AMEP for existing data values
+    const checkUrl = `${AMEP_URL}/dataValueSets?dataSet=Lf1skJGdrzj&orgUnit=${ORGUNIT}&period=${period}&format=json`;
+    console.log(
+      `Checking existing data for dataset Lf1skJGdrzj at ${checkUrl}`,
+    );
+    const response = await fetch(checkUrl, {
+      headers,
+      signal: AbortSignal.timeout(30000),
+    });
+    const data = await response.json();
 
-        if (response.ok) {
-          const data = await response.json();
+    if (response.ok) {
+      for (const indicator of stagedIndicators) {
+        try {
           // If dataValues exist, this indicator has existing data
           if (data.dataValues && data.dataValues.length > 0) {
             for (const dv of data.dataValues) {
@@ -150,15 +159,14 @@ export async function checkExistingData(
               });
             }
           }
+        } catch (error) {
+          console.error(
+            `Error checking indicator ${indicator.indicatorCode}:`,
+            error,
+          );
         }
-      } catch (error) {
-        console.error(
-          `Error checking indicator ${indicator.indicatorCode}:`,
-          error,
-        );
       }
     }
-
     return existingData;
   } catch (error) {
     console.error("Error in checkExistingData:", error);

@@ -34,7 +34,7 @@ export async function syncToAmep(
   let failedSync = [];
 
   try {
-    const pendingReports = await getStagedIndicators(false);
+    const pendingReports = await getStagedIndicators(false, parseInt(reportingMonth));
 
     if (!pendingReports.length) {
       console.log("No unsynced indicators found");
