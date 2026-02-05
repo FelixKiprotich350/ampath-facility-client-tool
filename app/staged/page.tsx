@@ -504,7 +504,7 @@ export default function StagedIndicatorsPage() {
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Staged Indicators
+                  {`Indicators for the Period - [${reportingPeriod}]`}
                 </h2>
                 <p className="text-gray-600">
                   Indicators waiting to be synchronized

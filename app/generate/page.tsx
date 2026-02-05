@@ -89,9 +89,9 @@ export default function GenerateIndicatorsPage() {
 
   const handleCollect = async () => {
     if (!currentPeriod) return;
-    
+
     setLoading(true);
-    const reportPeriod = `${currentPeriod.year}-${String(currentPeriod.month).padStart(2, '0')}`;
+    const reportPeriod = `${currentPeriod.year}-${String(currentPeriod.month).padStart(2, "0")}`;
     setStatus(
       `🔍 Scheduling ${selectedIndicators.length} indicators for ${reportPeriod}...`,
     );
@@ -236,7 +236,7 @@ export default function GenerateIndicatorsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>Select Indicators to Generate</span>
+                <span>Indicators for the Period - [{currentPeriod?.fullName}]</span>
                 <Button size="sm" variant="outline" onClick={toggleAll}>
                   {selectedIndicators.length === indicators.length
                     ? "Deselect All"
