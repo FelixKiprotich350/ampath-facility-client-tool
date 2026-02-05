@@ -1,5 +1,7 @@
 import { prisma } from "./prisma";
 
+const ORGUNIT = process.env.AMEP_FACILITY_ORGUNIT ?? "";
+
 // the whole CSV as array of rows
 
 export async function addIndicator(
@@ -123,7 +125,7 @@ export async function checkExistingData(
         ).padStart(2, "0")}`;
 
         // Check AMEP for existing data values
-        const checkUrl = `${AMEP_URL}/dataValueSets?dataSet=Lf1skJGdrzj&orgUnit=fCj9Bn7iW2m&period=${period}&dataElement=${indicator.indicatorCode}&format=json`;
+        const checkUrl = `${AMEP_URL}/dataValueSets?dataSet=Lf1skJGdrzj&orgUnit=${ORGUNIT}&period=${period}&dataElement=${indicator.indicatorCode}&format=json`;
         console.log(
           `Checking existing data for indicator ${indicator.indicatorCode} at ${checkUrl}`,
         );

@@ -3,6 +3,7 @@ import { prisma } from "./prisma";
 import { getComboElementsMapping } from "./data-collector";
 
 const SYNC_URL = process.env.AMEP_SERVER_URL;
+const ORGUNIT = process.env.AMEP_FACILITY_ORGUNIT ?? "";
 const targetUrl = `${SYNC_URL}/dataValueSets`;
 
 export async function getIndicators() {
@@ -128,7 +129,7 @@ export async function syncToAmep(
       dataSet: "Lf1skJGdrzj",
       completeDate: new Date().toISOString().split("T")[0],
       period: reportingMonth,
-      orgUnit: "fCj9Bn7iW2m",
+      orgUnit: ORGUNIT,
       dataValues,
     };
     console.log(
