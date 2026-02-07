@@ -262,7 +262,7 @@ from (Select e.patient_id, group_concat(f.infant_feeding) as feeding, d.dob
 2026-02-06T19:56:09.426606Z	 1961 Query	commit
 2026-02-06T19:56:09.774683Z	 1961 Query	SET autocommit=0
 
-##curr on art
+##curr on art including missed appointments 0-30 days
 2026-02-06T19:56:09.775642Z	 1961 Query	select t.patient_id
 from (select fup.visit_date,
              fup.patient_id,
@@ -300,7 +300,94 @@ from (select fup.visit_date,
                    disc_patient is null)
               )
           )) t
+
+
+
 2026-02-06T19:56:10.416476Z	 1961 Query	commit
+
+
+##curr on art (excluding missed appointments)
+select t.patient_id
+from (select fup.visit_date,
+             fup.patient_id,
+             max(e.visit_date)                                                                as enroll_date,
+             greatest(max(fup.visit_date), ifnull(max(d.visit_date), '0000-00-00'))           as latest_vis_date,
+             greatest(mid(max(concat(fup.visit_date, fup.next_appointment_date)), 11),
+                      ifnull(max(d.visit_date), '0000-00-00'))                                as latest_tca,
+             d.patient_id                                                                     as disc_patient,
+             d.effective_disc_date                                                            as effective_disc_date,
+             max(d.visit_date)                                                                as date_discontinued,
+             de.patient_id                                                                    as started_on_drugs
+      from kenyaemr_etl.etl_patient_hiv_followup fup
+               join kenyaemr_etl.etl_patient_demographics p on p.patient_id = fup.patient_id
+               join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id
+                           left join kenyaemr_etl.etl_drug_event de
+                          on e.patient_id = de.patient_id and de.program = 'HIV' and date(de.date_started) <= date('2025-10-31 00:00:00')
+               left outer JOIN
+           (select patient_id,
+                   coalesce(date(effective_discontinuation_date), visit_date) visit_date,
+                   max(date(effective_discontinuation_date)) as               effective_disc_date
+            from kenyaemr_etl.etl_patient_program_discontinuation
+            where date(visit_date) <= date('2025-10-31 00:00:00')
+              and program_name = 'HIV'
+            group by patient_id) d on d.patient_id = fup.patient_id
+      where fup.visit_date <= date('2025-10-31 00:00:00')
+      group by patient_id
+      having (started_on_drugs is not null and started_on_drugs <> '')
+         and (
+          (
+                  (date(latest_tca) >= date('2025-10-31 00:00:00') and
+                   ((date(d.effective_disc_date) > date('2025-10-31 00:00:00') or date(enroll_date) > date(d.effective_disc_date)) or
+                    d.effective_disc_date is null))
+                  and
+                  (date(latest_vis_date) >= date(date_discontinued) or date(latest_tca) >= date(date_discontinued) or
+                   disc_patient is null)
+              )
+          )) t
+
+2026-02-06T19:56:10.595348Z	 1961 Query	SET autocommit=0
+2026-02-06T19:56:10.595348Z	 1961 Query	SET autocommit=0
+
+
+##curr on art defaulters (0-30 days)
+select t.patient_id
+from (select fup.visit_date,
+             fup.patient_id,
+             max(e.visit_date)                                                                as enroll_date,
+             greatest(max(fup.visit_date), ifnull(max(d.visit_date), '0000-00-00'))           as latest_vis_date,
+             greatest(mid(max(concat(fup.visit_date, fup.next_appointment_date)), 11),
+                      ifnull(max(d.visit_date), '0000-00-00'))                                as latest_tca,
+             d.patient_id                                                                     as disc_patient,
+             d.effective_disc_date                                                            as effective_disc_date,
+             max(d.visit_date)                                                                as date_discontinued,
+             de.patient_id                                                                    as started_on_drugs
+      from kenyaemr_etl.etl_patient_hiv_followup fup
+               join kenyaemr_etl.etl_patient_demographics p on p.patient_id = fup.patient_id
+               join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id
+                           left join kenyaemr_etl.etl_drug_event de
+                          on e.patient_id = de.patient_id and de.program = 'HIV' and date(de.date_started) <= date('2025-10-31 00:00:00')
+               left outer JOIN
+           (select patient_id,
+                   coalesce(date(effective_discontinuation_date), visit_date) visit_date,
+                   max(date(effective_discontinuation_date)) as               effective_disc_date
+            from kenyaemr_etl.etl_patient_program_discontinuation
+            where date(visit_date) <= date('2025-10-31 00:00:00')
+              and program_name = 'HIV'
+            group by patient_id) d on d.patient_id = fup.patient_id
+      where fup.visit_date <= date('2025-10-31 00:00:00')
+      group by patient_id
+      having (started_on_drugs is not null and started_on_drugs <> '')
+         and (
+          (
+                  (timestampdiff(DAY, date(latest_tca), date('2025-10-31 00:00:00')) between 1 and 30 and
+                   ((date(d.effective_disc_date) > date('2025-10-31 00:00:00') or date(enroll_date) > date(d.effective_disc_date)) or
+                    d.effective_disc_date is null))
+                  and
+                  (date(latest_vis_date) >= date(date_discontinued) or date(latest_tca) >= date(date_discontinued) or
+                   disc_patient is null)
+              )
+          )) t
+
 2026-02-06T19:56:10.595348Z	 1961 Query	SET autocommit=0
 
 ##tb screening

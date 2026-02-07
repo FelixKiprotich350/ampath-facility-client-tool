@@ -22,7 +22,7 @@ SELECT
         WHEN x.age BETWEEN 60 AND 64 THEN '60-64'
         ELSE '65+'
     END AS age_band,
-    COUNT(*) AS total_patients
+    COUNT(*) AS totalcount
 FROM (
     SELECT
         p.patient_id,
