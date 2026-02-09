@@ -235,7 +235,7 @@ export default function StagedIndicatorsPage() {
         });
       }
 
-      if (result.successfullSync?.length > 0) {
+      if (result?.successfullSync?.length > 0) {
         setSelectedItems(new Set());
       }
       loadPendingData(reportingPeriod);
@@ -446,6 +446,8 @@ export default function StagedIndicatorsPage() {
 
       matrixRows.push(row);
     });
+
+    matrixRows.sort((a, b) => a.Indicator.localeCompare(b.Indicator));
 
     setPreviewDialog({
       open: true,

@@ -141,7 +141,7 @@ export async function syncToAmep(
         method: "POST",
         headers,
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(35000),
+        signal: AbortSignal.timeout(60000),
       },
     );
 
