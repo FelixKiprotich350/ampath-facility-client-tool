@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AppLayout } from "@/components/layout/app-layout";
+import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Trash2, Search, Rocket, Eye, Download, X, Loader2, FileText } from "lucide-react";
 
 type StagedIndicator = {
   id: number;
@@ -464,7 +465,7 @@ export default function StagedIndicatorsPage() {
       {hasReportingPeriod === false ? (
         <Card>
           <CardContent className="text-center py-12">
-            <div className="text-6xl mb-4">⚠️</div>
+            <AlertTriangle className="w-12 h-12 text-yellow-600 mb-4 mx-auto" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No Active Reporting Period
             </h3>
@@ -477,7 +478,7 @@ export default function StagedIndicatorsPage() {
       ) : hasReportingPeriod === null ? (
         <Card>
           <CardContent className="text-center py-12">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto mb-4"></div>
+            <Loader2 className="animate-spin w-8 h-8 text-blue-600 mx-auto mb-4" />
             <div className="text-gray-600">Checking reporting period...</div>
           </CardContent>
         </Card>
@@ -495,10 +496,10 @@ export default function StagedIndicatorsPage() {
             >
               <div className="flex items-center gap-2">
                 {operationStatus.type === "info" && (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <Loader2 className="animate-spin h-4 w-4" />
                 )}
-                {operationStatus.type === "success" && <span>✅</span>}
-                {operationStatus.type === "error" && <span>❌</span>}
+                {operationStatus.type === "success" && <CheckCircle className="w-4 h-4" />}
+                {operationStatus.type === "error" && <XCircle className="w-4 h-4" />}
                 <span className="text-sm font-medium">
                   {operationStatus.message}
                 </span>
@@ -521,7 +522,8 @@ export default function StagedIndicatorsPage() {
                   disabled={isOperationRunning}
                   variant="outline"
                 >
-                  {pendingLoading ? "🔄 Loading..." : "🔄 Refresh"}
+                  <RefreshCw className={`w-4 h-4 mr-2 ${pendingLoading ? "animate-spin" : ""}`} />
+                  {pendingLoading ? "Loading..." : "Refresh"}
                 </Button>
                 <Button
                   onClick={handleDelete}
@@ -529,21 +531,24 @@ export default function StagedIndicatorsPage() {
                   variant="outline"
                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
-                  {deleting ? "🗑️ Deleting..." : "🗑️ Delete "}
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {deleting ? "Deleting..." : "Delete"}
                 </Button>
                 <Button
                   onClick={handleCheckExisting}
                   disabled={selectedItems.size === 0 || isOperationRunning}
                   variant="outline"
                 >
-                  {checkingExisting ? "🔍 Checking..." : "🔍 Check Existing"}
+                  <Search className="w-4 h-4 mr-2" />
+                  {checkingExisting ? "Checking..." : "Check Existing"}
                 </Button>
                 <Button
                   onClick={handleSyncClick}
                   disabled={selectedItems.size === 0 || isOperationRunning}
                   className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
                 >
-                  🚀 Sync ({selectedItems.size})
+                  <Rocket className="w-4 h-4 mr-2" />
+                  Sync ({selectedItems.size})
                 </Button>
               </div>
             </div>
@@ -568,7 +573,7 @@ export default function StagedIndicatorsPage() {
 
               {pendingLoading ? (
                 <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                  <Loader2 className="animate-spin h-12 w-12 text-blue-600 mx-auto" />
                   <p className="mt-4 text-gray-600">
                     Loading staged reports...
                   </p>
@@ -576,7 +581,7 @@ export default function StagedIndicatorsPage() {
               ) : getFilteredIndicators().length === 0 ? (
                 <Card className="text-center py-12">
                   <CardContent>
-                    <div className="text-6xl mb-4">📄</div>
+                    <FileText className="h-12 w-12 mb-4 mx-auto text-gray-400" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No Staged Indicators
                     </h3>
@@ -619,7 +624,7 @@ export default function StagedIndicatorsPage() {
                               variant="outline"
                               className="text-xs"
                             >
-                              👁️ Preview
+                              <Eye className="w-4 h-4 mr-1" /> Preview
                             </Button>
                           </div>
                         </div>
@@ -650,7 +655,7 @@ export default function StagedIndicatorsPage() {
                     variant="outline"
                     size="sm"
                   >
-                    ✕ Close
+                    <X className="w-4 h-4" />
                   </Button>
                 </DialogHeader>
                 <div className="mt-4">
@@ -930,8 +935,8 @@ export default function StagedIndicatorsPage() {
                 <div className="mt-4">
                   {existingDataDialog.data.length > 0 ? (
                     <div>
-                      <p className="text-sm text-amber-600 mb-4">
-                        ⚠️ The following indicators already have data values in
+                      <p className="text-sm text-amber-600 mb-4 flex items-center gap-1">
+                        <AlertTriangle className="w-4 h-4" /> The following indicators already have data values in
                         AMEP:
                       </p>
                       <div className="max-h-96 overflow-y-auto">
@@ -987,7 +992,7 @@ export default function StagedIndicatorsPage() {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <div className="text-4xl mb-2">✅</div>
+                      <CheckCircle className="w-10 h-10 text-green-500 mb-2 mx-auto" />
                       <p className="text-green-600 font-medium">
                         No existing data found in AMEP
                       </p>
@@ -1002,7 +1007,7 @@ export default function StagedIndicatorsPage() {
                       variant="outline"
                       disabled={existingDataDialog.data.length === 0}
                     >
-                      📥 Download CSV
+                      <Download className="w-4 h-4 mr-2" /> Download CSV
                     </Button>
                     <Button
                       onClick={() =>
@@ -1032,23 +1037,25 @@ export default function StagedIndicatorsPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <div
-                          className={`text-2xl ${
+                          className={`${
                             syncResultDialog.result.responseData?.status ===
                             "SUCCESS"
-                              ? "✅"
+                              ? "text-green-500"
                               : syncResultDialog.result.responseData?.status ===
                                   "WARNING"
-                                ? "⚠️"
-                                : "❌"
+                                ? "text-yellow-500"
+                                : "text-red-500"
                           }`}
                         >
                           {syncResultDialog.result.responseData?.status ===
-                          "SUCCESS"
-                            ? "✅"
-                            : syncResultDialog.result.responseData?.status ===
-                                "WARNING"
-                              ? "⚠️"
-                              : "❌"}
+                          "SUCCESS" ? (
+                            <CheckCircle className="w-8 h-8" />
+                          ) : syncResultDialog.result.responseData?.status ===
+                              "WARNING" ? (
+                            <AlertTriangle className="w-8 h-8" />
+                          ) : (
+                            <XCircle className="w-8 h-8" />
+                          )}
                         </div>
                         <div>
                           <h3 className="font-medium">

@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LayoutDashboard, ClipboardList, Database, History, Hospital } from "lucide-react";
 
 export function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-    { href: "/generate", label: "Generate", icon: "⏳" },
-    { href: "/staged", label: "Staged Indicators", icon: "⏳" },
-    // { href: "/reports", label: "Reports", icon: "📜" },
-    { href: "/history", label: "History", icon: "📜" },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/generate", label: "Generate", icon: ClipboardList },
+    { href: "/staged", label: "Staged Indicators", icon: Database },
+    // { href: "/reports", label: "Reports", icon: FileText },
+    { href: "/history", label: "History", icon: History },
   ];
 
   return (
@@ -19,7 +20,7 @@ export function Sidebar() {
       <div className="p-6 border-b">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-            <span className="text-white text-lg">🏥</span>
+            <Hospital className="text-white w-5 h-5" />
           </div>
           <div>
             <h2 className="font-bold text-gray-800">Facility Client</h2>
@@ -39,7 +40,7 @@ export function Sidebar() {
                 : "hover:bg-gray-50 text-gray-600 hover:text-gray-800"
             }`}
           >
-            <span className="text-xl">{item.icon}</span>
+            <item.icon className="w-5 h-5" />
             <span className="font-medium">{item.label}</span>
           </Link>
         ))}

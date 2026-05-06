@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/layout/app-layout";
+import { Circle } from "lucide-react";
 
 export default function SystemStatusPage() {
   const [loading, setLoading] = useState(false);
@@ -68,7 +69,11 @@ export default function SystemStatusPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <div>
-                <strong>Status:</strong> {schedulerRunning ? "🟢 Running" : "🔴 Stopped"}
+                <strong>Status:</strong>{" "}
+                {schedulerRunning
+                  ? <span className="inline-flex items-center gap-1"><Circle className="w-3 h-3 fill-green-500 text-green-500" /> Running</span>
+                  : <span className="inline-flex items-center gap-1"><Circle className="w-3 h-3 fill-red-500 text-red-500" /> Stopped</span>
+                }
               </div>
               <Button onClick={handleSchedulerToggle} disabled={loading}>
                 {schedulerRunning ? "Stop" : "Start"}

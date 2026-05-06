@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AppLayout } from "@/components/layout/app-layout";
+import { AlertTriangle, Loader2, MessageSquare, Hourglass, ChevronDown, ChevronRight } from "lucide-react";
 
 type Indicator = {
   code: string;
@@ -93,7 +94,7 @@ export default function GenerateIndicatorsPage() {
     setLoading(true);
     const reportPeriod = `${currentPeriod.year}-${String(currentPeriod.month).padStart(2, "0")}`;
     setStatus(
-      `🔍 Scheduling ${selectedIndicators.length} indicators for ${reportPeriod}...`,
+      `Scheduling ${selectedIndicators.length} indicators for ${reportPeriod}...`,
     );
     try {
       const response = await fetch("/api/collect", {
@@ -109,16 +110,16 @@ export default function GenerateIndicatorsPage() {
       const result = await response.json();
       if (result.indicators !== undefined) {
         setStatus(
-          `✅ Collected ${result.indicators} indicators, ${result.lineList} line list records`,
+          `Collected ${result.indicators} indicators, ${result.lineList} line list records`,
         );
       } else {
         setStatus(
-          `✅ Scheduled ${result.scheduled || selectedIndicators.length} indicators`,
+          `Scheduled ${result.scheduled || selectedIndicators.length} indicators`,
         );
       }
       setSelectedIndicators([]);
     } catch (error) {
-      setStatus("❌ Collection failed");
+      setStatus("Collection failed");
     } finally {
       setLoading(false);
     }
@@ -214,7 +215,7 @@ export default function GenerateIndicatorsPage() {
       {hasReportingPeriod === false ? (
         <Card>
           <CardContent className="text-center py-12">
-            <div className="text-6xl mb-4">⚠️</div>
+            <AlertTriangle className="w-12 h-12 text-yellow-600 mb-4 mx-auto" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No Active Reporting Period
             </h3>
@@ -227,7 +228,7 @@ export default function GenerateIndicatorsPage() {
       ) : hasReportingPeriod === null ? (
         <Card>
           <CardContent className="text-center py-12">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto mb-4"></div>
+            <Loader2 className="animate-spin w-8 h-8 text-blue-600 mx-auto mb-4" />
             <div className="text-gray-600">Checking reporting period...</div>
           </CardContent>
         </Card>
@@ -304,7 +305,7 @@ export default function GenerateIndicatorsPage() {
                               onClick={() => toggleSectionExpansion(sectionId)}
                               className="p-1 hover:bg-gray-200 rounded"
                             >
-                              {isExpanded ? "▼" : "▶"}
+                              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                             </button>
                           </div>
                           {isExpanded && (
@@ -377,7 +378,7 @@ export default function GenerateIndicatorsPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
-                  <div className="text-2xl">{loading ? "⏳" : "💬"}</div>
+                  <div className="text-2xl">{loading ? <Hourglass className="w-6 h-6 inline" /> : <MessageSquare className="w-6 h-6 inline" />}</div>
                   <div className="flex-1">
                     <div className="text-gray-800 font-medium">{status}</div>
                     <div className="text-xs text-gray-500 mt-1">

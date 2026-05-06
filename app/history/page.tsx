@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StagedIndicator } from "@/lib/prisma/client";
 import { AppLayout } from "@/components/layout/app-layout";
+import { RefreshCw, BookOpen } from "lucide-react";
 
 export default function HistoryPage() {
   const [syncHistory, setSyncHistory] = useState<StagedIndicator[]>([]);
@@ -40,13 +41,14 @@ export default function HistoryPage() {
             disabled={historyLoading}
             variant="outline"
           >
-            {historyLoading ? "🔄 Loading..." : "🔄 Refresh"}
+            <RefreshCw className={`h-4 w-4 mr-2 inline ${historyLoading ? "animate-spin" : ""}`} />
+            {historyLoading ? "Loading..." : "Refresh"}
           </Button>
         </div>
 
         {historyLoading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <RefreshCw className="animate-spin h-12 w-12 text-blue-600 mx-auto" />
             <p className="mt-4 text-gray-600">Loading sync history...</p>
           </div>
         ) : syncHistory.length > 0 ? (
@@ -107,7 +109,7 @@ export default function HistoryPage() {
         ) : (
           <Card className="text-center py-12">
             <CardContent>
-              <div className="text-6xl mb-4">📚</div>
+              <BookOpen className="h-12 w-12 mb-4 mx-auto text-gray-400" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 No Sync History
               </h3>

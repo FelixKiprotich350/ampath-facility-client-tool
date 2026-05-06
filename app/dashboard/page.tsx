@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AppLayout } from "@/components/layout/app-layout";
+import { Hourglass, CheckCircle, Zap, Loader2 } from "lucide-react";
 
 interface ReportingPeriod {
   id: number;
@@ -109,7 +110,7 @@ export default function DashboardPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-orange-800">
-                      <span className="text-2xl">⏳</span> Pending Indicators
+                      <Hourglass className="w-6 h-6" /> Pending Indicators
                     </span>
                     <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
                   </CardTitle>
@@ -135,7 +136,7 @@ export default function DashboardPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-green-800">
-                      <span className="text-2xl">✅</span> Synced indicators
+                      <CheckCircle className="w-6 h-6" /> Synced indicators
                     </span>
                     <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                   </CardTitle>
@@ -160,7 +161,7 @@ export default function DashboardPage() {
               <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-blue-800">
-                    <span className="text-2xl">⚡</span> Facility Details
+                    <Zap className="w-6 h-6" /> Facility Details
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -184,7 +185,7 @@ export default function DashboardPage() {
           ) : (
             <Card className="col-span-full">
               <CardContent className="text-center py-12">
-                <div className="animate-spin w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto mb-4"></div>
+                <Loader2 className="animate-spin w-8 h-8 text-blue-600 mx-auto mb-4" />
                 <div className="text-gray-600">Loading data summary...</div>
               </CardContent>
             </Card>

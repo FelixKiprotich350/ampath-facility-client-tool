@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AppLayout } from "@/components/layout/app-layout";
+import { RefreshCw, FileText, Eye, X, Loader2 } from "lucide-react";
 
 type Report = {
   id: number;
@@ -159,7 +160,8 @@ export default function ReportsPage() {
           </div>
           <div className="flex gap-2">
             <Button onClick={fetchReports} disabled={loading} variant="outline">
-              {loading ? "🔄 Loading..." : "🔄 Refresh"}
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              {loading ? "Loading..." : "Refresh"}
             </Button>
             <Button
               onClick={handleSelectPeriod}
@@ -189,13 +191,13 @@ export default function ReportsPage() {
 
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <Loader2 className="animate-spin h-12 w-12 text-blue-600 mx-auto" />
               <p className="mt-4 text-gray-600">Loading staged reports...</p>
             </div>
           ) : getFilteredReports().length === 0 ? (
             <Card className="text-center py-12">
               <CardContent>
-                <div className="text-6xl mb-4">📄</div>
+                <FileText className="h-12 w-12 mb-4 mx-auto text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   No Staged Reports
                 </h3>
@@ -267,7 +269,7 @@ export default function ReportsPage() {
                             variant="outline"
                             className="text-xs"
                           >
-                            👁️ Preview
+                            <Eye className="h-4 w-4 mr-1 inline" /> Preview
                           </Button>
                         </td>
                       </tr>
@@ -293,7 +295,7 @@ export default function ReportsPage() {
                 variant="outline"
                 size="sm"
               >
-                ✕ Close
+                <X className="h-4 w-4" /> Close
               </Button>
             </DialogHeader>
             <div className="mt-4">
