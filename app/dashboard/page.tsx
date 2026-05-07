@@ -9,8 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AppLayout } from "@/components/layout/app-layout";
 import { Hourglass, CheckCircle, Zap, Loader2 } from "lucide-react";
+import { Header } from "@/components/layout/header";
 
 interface ReportingPeriod {
   id: number;
@@ -98,11 +98,9 @@ export default function DashboardPage() {
   ];
 
   return (
-    <AppLayout
-      title="Dashboard"
-      subtitle="Overview of data collection and sync status"
-    >
-      <div className="space-y-6">
+    <div>
+      <Header title="Dashboard" subtitle="Facility data overview" />
+      <div className="flex-1 p-6">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {facilityDetails ? (
             <>
@@ -197,7 +195,12 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center">
               <CardTitle>Current Reporting Period</CardTitle>
               <div className="flex gap-2">
-                <Button disabled={!!currentPeriod} onClick={() => setShowDialog(true)}>Add Period</Button>
+                <Button
+                  disabled={!!currentPeriod}
+                  onClick={() => setShowDialog(true)}
+                >
+                  Add Period
+                </Button>
                 {currentPeriod && (
                   <Button
                     variant="destructive"
@@ -309,6 +312,6 @@ export default function DashboardPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </AppLayout>
+    </div>
   );
 }

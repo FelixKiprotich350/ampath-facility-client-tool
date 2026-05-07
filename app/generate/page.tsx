@@ -9,8 +9,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AppLayout } from "@/components/layout/app-layout";
-import { AlertTriangle, Loader2, MessageSquare, Hourglass, ChevronDown, ChevronRight } from "lucide-react";
+import { Header } from "@/components/layout/header";
+import {
+  AlertTriangle,
+  Loader2,
+  MessageSquare,
+  Hourglass,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 
 type Indicator = {
   code: string;
@@ -208,189 +215,209 @@ export default function GenerateIndicatorsPage() {
   };
 
   return (
-    <AppLayout
-      title="Generate Indicators"
-      subtitle="Collect data for a specific period"
-    >
-      {hasReportingPeriod === false ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <AlertTriangle className="w-12 h-12 text-yellow-600 mb-4 mx-auto" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No Active Reporting Period
-            </h3>
-            <p className="text-gray-500">
-              Please create a reporting period in the dashboard before
-              generating indicators.
-            </p>
-          </CardContent>
-        </Card>
-      ) : hasReportingPeriod === null ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <Loader2 className="animate-spin w-8 h-8 text-blue-600 mx-auto mb-4" />
-            <div className="text-gray-600">Checking reporting period...</div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
+    <div>
+      <Header
+        title="Generate Indicators"
+        subtitle="Collect data for a specific period"
+      />
+      <div className="flex-1 p-6">
+        {hasReportingPeriod === false ? (
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Indicators for the Period - [{currentPeriod?.fullName}]</span>
-                <Button size="sm" variant="outline" onClick={toggleAll}>
-                  {selectedIndicators.length === indicators.length
-                    ? "Deselect All"
-                    : "Select All"}
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 mb-4">
-                <input
-                  type="text"
-                  placeholder="Search indicators..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <select
-                  value={periodFilter}
-                  onChange={(e) => setPeriodFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All sections</option>
-                  {[
-                    ...new Set(indicators.map((i) => i.datasetSectionName)),
-                  ].map((section) => (
-                    <option key={section} value={section}>
-                      {section}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {indicators.length === 0 ? (
-                <div className="text-gray-500">Loading indicators...</div>
-              ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {Object.entries(getGroupedIndicators()).map(
-                    ([sectionId, section]) => {
-                      const sectionIndicators = section.indicators.map(
-                        (i) => i.code,
-                      );
-                      const allSectionIndicatorsSelected =
-                        sectionIndicators.every((code) =>
-                          selectedIndicators.includes(code),
-                        );
-                      const isExpanded = expandedSections.has(sectionId);
-
-                      return (
-                        <div key={sectionId} className="border rounded-lg">
-                          <div className="bg-gray-50 p-3 border-b flex items-center justify-between">
-                            <label className="flex items-center gap-3 cursor-pointer flex-1">
-                              <input
-                                type="checkbox"
-                                checked={allSectionIndicatorsSelected}
-                                onChange={() => toggleSection(sectionId)}
-                                className="w-4 h-4"
-                              />
-                              <span className="font-medium text-gray-900">
-                                {section.sectionName}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                ({section.indicators.length} indicators)
-                              </span>
-                            </label>
-                            <button
-                              onClick={() => toggleSectionExpansion(sectionId)}
-                              className="p-1 hover:bg-gray-200 rounded"
-                            >
-                              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                            </button>
-                          </div>
-                          {isExpanded && (
-                            <div className="p-2 space-y-1">
-                              {section.indicators.map((indicator) => (
-                                <label
-                                  key={indicator.code}
-                                  className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer ml-4"
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedIndicators.includes(
-                                      indicator.code,
-                                    )}
-                                    onChange={() =>
-                                      toggleIndicators(indicator.code)
-                                    }
-                                    className="w-4 h-4"
-                                  />
-                                  <span className="text-sm">
-                                    {indicator.name}
-                                  </span>
-                                </label>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    },
-                  )}
-                </div>
-              )}
+            <CardContent className="text-center py-12">
+              <AlertTriangle className="w-12 h-12 text-yellow-600 mb-4 mx-auto" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No Active Reporting Period
+              </h3>
+              <p className="text-gray-500">
+                Please create a reporting period in the dashboard before
+                generating indicators.
+              </p>
             </CardContent>
           </Card>
-
-          <Button
-            onClick={handleGenerate}
-            disabled={selectedIndicators.length === 0}
-            className="w-full"
-          >
-            Generate Indicators ({selectedIndicators.length} Indicator
-            {selectedIndicators.length !== 1 ? "s" : ""})
-          </Button>
-
-          <Dialog open={warningDialog} onOpenChange={setWarningDialog}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Not All Indicators Selected</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  You have selected {selectedIndicators.length} out of{" "}
-                  {getFilteredIndicators().length} available indicators. Are you
-                  sure you want to proceed with only the selected indicators?
-                </p>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setWarningDialog(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={proceedWithPartialSelection}>Proceed</Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {status && (
+        ) : hasReportingPeriod === null ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Loader2 className="animate-spin w-8 h-8 text-blue-600 mx-auto mb-4" />
+              <div className="text-gray-600">Checking reporting period...</div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6">
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">{loading ? <Hourglass className="w-6 h-6 inline" /> : <MessageSquare className="w-6 h-6 inline" />}</div>
-                  <div className="flex-1">
-                    <div className="text-gray-800 font-medium">{status}</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {new Date().toLocaleTimeString()}
-                    </div>
-                  </div>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>
+                    Indicators for the Period - [{currentPeriod?.fullName}]
+                  </span>
+                  <Button size="sm" variant="outline" onClick={toggleAll}>
+                    {selectedIndicators.length === indicators.length
+                      ? "Deselect All"
+                      : "Select All"}
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Search indicators..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <select
+                    value={periodFilter}
+                    onChange={(e) => setPeriodFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">All sections</option>
+                    {[
+                      ...new Set(indicators.map((i) => i.datasetSectionName)),
+                    ].map((section) => (
+                      <option key={section} value={section}>
+                        {section}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+                {indicators.length === 0 ? (
+                  <div className="text-gray-500">Loading indicators...</div>
+                ) : (
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {Object.entries(getGroupedIndicators()).map(
+                      ([sectionId, section]) => {
+                        const sectionIndicators = section.indicators.map(
+                          (i) => i.code,
+                        );
+                        const allSectionIndicatorsSelected =
+                          sectionIndicators.every((code) =>
+                            selectedIndicators.includes(code),
+                          );
+                        const isExpanded = expandedSections.has(sectionId);
+
+                        return (
+                          <div key={sectionId} className="border rounded-lg">
+                            <div className="bg-gray-50 p-3 border-b flex items-center justify-between">
+                              <label className="flex items-center gap-3 cursor-pointer flex-1">
+                                <input
+                                  type="checkbox"
+                                  checked={allSectionIndicatorsSelected}
+                                  onChange={() => toggleSection(sectionId)}
+                                  className="w-4 h-4"
+                                />
+                                <span className="font-medium text-gray-900">
+                                  {section.sectionName}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                  ({section.indicators.length} indicators)
+                                </span>
+                              </label>
+                              <button
+                                onClick={() =>
+                                  toggleSectionExpansion(sectionId)
+                                }
+                                className="p-1 hover:bg-gray-200 rounded"
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="w-4 h-4" />
+                                ) : (
+                                  <ChevronRight className="w-4 h-4" />
+                                )}
+                              </button>
+                            </div>
+                            {isExpanded && (
+                              <div className="p-2 space-y-1">
+                                {section.indicators.map((indicator) => (
+                                  <label
+                                    key={indicator.code}
+                                    className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer ml-4"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedIndicators.includes(
+                                        indicator.code,
+                                      )}
+                                      onChange={() =>
+                                        toggleIndicators(indicator.code)
+                                      }
+                                      className="w-4 h-4"
+                                    />
+                                    <span className="text-sm">
+                                      {indicator.name}
+                                    </span>
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
-          )}
-        </div>
-      )}
-    </AppLayout>
+
+            <Button
+              onClick={handleGenerate}
+              disabled={selectedIndicators.length === 0}
+              className="w-full"
+            >
+              Generate Indicators ({selectedIndicators.length} Indicator
+              {selectedIndicators.length !== 1 ? "s" : ""})
+            </Button>
+
+            <Dialog open={warningDialog} onOpenChange={setWarningDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Not All Indicators Selected</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-gray-600">
+                    You have selected {selectedIndicators.length} out of{" "}
+                    {getFilteredIndicators().length} available indicators. Are
+                    you sure you want to proceed with only the selected
+                    indicators?
+                  </p>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setWarningDialog(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={proceedWithPartialSelection}>
+                      Proceed
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {status && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">
+                      {loading ? (
+                        <Hourglass className="w-6 h-6 inline" />
+                      ) : (
+                        <MessageSquare className="w-6 h-6 inline" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-gray-800 font-medium">{status}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date().toLocaleTimeString()}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

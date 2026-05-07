@@ -9,8 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AppLayout } from "@/components/layout/app-layout";
 import { RefreshCw, FileText, Eye, X, Loader2 } from "lucide-react";
+import { Header } from "@/components/layout/header";
 
 type Report = {
   id: number;
@@ -151,90 +151,98 @@ export default function ReportsPage() {
   };
 
   return (
-    <AppLayout title="Reports" subtitle="Reports page">
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">New Report</h2>
-            <p className="text-gray-600">Generate New Reports</p>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={fetchReports} disabled={loading} variant="outline">
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              {loading ? "Loading..." : "Refresh"}
-            </Button>
-            <Button
-              onClick={handleSelectPeriod}
-              disabled={!selectedReportId || loading}
-              className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
-            >
-              Select Period ({selectedItems.size})
-            </Button>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex gap-4">
-            <select
-              value={selectedReportId}
-              onChange={(e) => setSelectedReportId(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select a report to generate</option>
-              {reportDefinitions.map((report) => (
-                <option key={report.id} value={report.id}>
-                  {report.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <Loader2 className="animate-spin h-12 w-12 text-blue-600 mx-auto" />
-              <p className="mt-4 text-gray-600">Loading staged reports...</p>
+    <div>
+      <Header title="Reports" subtitle="Sync Reports" />
+      <div className="flex-1 p-6">
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">New Report</h2>
+              <p className="text-gray-600">Generate New Reports</p>
             </div>
-          ) : getFilteredReports().length === 0 ? (
-            <Card className="text-center py-12">
-              <CardContent>
-                <FileText className="h-12 w-12 mb-4 mx-auto text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No Staged Reports
-                </h3>
-                <p className="text-gray-500">
-                  All reports have been synchronized successfully.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Indicator
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Period
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Created
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Synced
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {/* {getFilteredReports().map((report) => (
+            <div className="flex gap-2">
+              <Button
+                onClick={fetchReports}
+                disabled={loading}
+                variant="outline"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+                />
+                {loading ? "Loading..." : "Refresh"}
+              </Button>
+              <Button
+                onClick={handleSelectPeriod}
+                disabled={!selectedReportId || loading}
+                className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
+              >
+                Select Period ({selectedItems.size})
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <select
+                value={selectedReportId}
+                onChange={(e) => setSelectedReportId(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select a report to generate</option>
+                {reportDefinitions.map((report) => (
+                  <option key={report.id} value={report.id}>
+                    {report.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12">
+                <Loader2 className="animate-spin h-12 w-12 text-blue-600 mx-auto" />
+                <p className="mt-4 text-gray-600">Loading staged reports...</p>
+              </div>
+            ) : getFilteredReports().length === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <FileText className="h-12 w-12 mb-4 mx-auto text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No Staged Reports
+                  </h3>
+                  <p className="text-gray-500">
+                    All reports have been synchronized successfully.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Indicator
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Period
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Created
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Synced
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {/* {getFilteredReports().map((report) => (
                       <tr key={report.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
@@ -274,111 +282,118 @@ export default function ReportsPage() {
                         </td>
                       </tr>
                     ))} */}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <Dialog
-          open={previewDialog.open}
-          onOpenChange={(open) => setPreviewDialog({ ...previewDialog, open })}
-        >
-          <DialogContent className="max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Preview: {previewDialog.reportName}</DialogTitle>
-              <Button
-                onClick={() =>
-                  setPreviewDialog({ open: false, data: null, reportName: "" })
-                }
-                variant="outline"
-                size="sm"
-              >
-                <X className="h-4 w-4" /> Close
-              </Button>
-            </DialogHeader>
-            <div className="mt-4">
-              {previewDialog.data && previewDialog.data.length > 0 ? (
-                <div>
-                  <table className="w-full divide-y divide-gray-200 text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        {Object.keys(previewDialog.data[0]).map((key) => (
-                          <th
-                            key={key}
-                            className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase truncate"
-                          >
-                            {key}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {previewDialog.data.map((row, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                          {Object.values(row).map((value, i) => (
-                            <td
-                              key={i}
-                              className="px-2 py-2 text-xs text-gray-900 truncate max-w-0"
-                              title={value?.toString() || ""}
-                            >
-                              {value?.toString() || ""}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
                     </tbody>
                   </table>
                 </div>
-              ) : (
-                <p className="text-gray-500 text-center py-8">
-                  No data available
-                </p>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+              </div>
+            )}
+          </div>
 
-        <Dialog open={credentialsDialog} onOpenChange={setCredentialsDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Enter period</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Year Month (YYYYMM)
-                </label>
-                <input
-                  type="text"
-                  value={period}
-                  onChange={(e) => setPeriod(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="202501"
-                  pattern="\\d{6}"
-                  maxLength={6}
-                />
-              </div>
-              <div className="flex gap-2 justify-end">
+          <Dialog
+            open={previewDialog.open}
+            onOpenChange={(open) =>
+              setPreviewDialog({ ...previewDialog, open })
+            }
+          >
+            <DialogContent className="max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Preview: {previewDialog.reportName}</DialogTitle>
                 <Button
-                  onClick={() => setCredentialsDialog(false)}
+                  onClick={() =>
+                    setPreviewDialog({
+                      open: false,
+                      data: null,
+                      reportName: "",
+                    })
+                  }
                   variant="outline"
+                  size="sm"
                 >
-                  Cancel
+                  <X className="h-4 w-4" /> Close
                 </Button>
-                <Button
-                  onClick={generateReport}
-                  disabled={!period}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Generate
-                </Button>
+              </DialogHeader>
+              <div className="mt-4">
+                {previewDialog.data && previewDialog.data.length > 0 ? (
+                  <div>
+                    <table className="w-full divide-y divide-gray-200 text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          {Object.keys(previewDialog.data[0]).map((key) => (
+                            <th
+                              key={key}
+                              className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase truncate"
+                            >
+                              {key}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {previewDialog.data.map((row, index) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            {Object.values(row).map((value, i) => (
+                              <td
+                                key={i}
+                                className="px-2 py-2 text-xs text-gray-900 truncate max-w-0"
+                                title={value?.toString() || ""}
+                              >
+                                {value?.toString() || ""}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">
+                    No data available
+                  </p>
+                )}
               </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={credentialsDialog} onOpenChange={setCredentialsDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Enter period</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Year Month (YYYYMM)
+                  </label>
+                  <input
+                    type="text"
+                    value={period}
+                    onChange={(e) => setPeriod(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="202501"
+                    pattern="\\d{6}"
+                    maxLength={6}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    onClick={() => setCredentialsDialog(false)}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={generateReport}
+                    disabled={!period}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Generate
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-    </AppLayout>
+    </div>
   );
 }

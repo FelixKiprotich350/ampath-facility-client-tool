@@ -9,8 +9,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AppLayout } from "@/components/layout/app-layout";
-import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Trash2, Search, Rocket, Eye, Download, X, Loader2, FileText } from "lucide-react";
+import { Header } from "@/components/layout/header";
+import {
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Trash2,
+  Search,
+  Rocket,
+  Eye,
+  Download,
+  X,
+  Loader2,
+  FileText,
+} from "lucide-react";
 
 type StagedIndicator = {
   id: number;
@@ -458,704 +471,724 @@ export default function StagedIndicatorsPage() {
   };
 
   return (
-    <AppLayout
-      title="Staged Indicators"
-      subtitle="Indicators ready for synchronization"
-    >
-      {hasReportingPeriod === false ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <AlertTriangle className="w-12 h-12 text-yellow-600 mb-4 mx-auto" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No Active Reporting Period
-            </h3>
-            <p className="text-gray-500">
-              Please create a reporting period in the dashboard before viewing
-              staged Indicators.
-            </p>
-          </CardContent>
-        </Card>
-      ) : hasReportingPeriod === null ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <Loader2 className="animate-spin w-8 h-8 text-blue-600 mx-auto mb-4" />
-            <div className="text-gray-600">Checking reporting period...</div>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          {operationStatus.show && (
-            <div
-              className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${
-                operationStatus.type === "success"
-                  ? "bg-green-100 text-green-800 border border-green-200"
-                  : operationStatus.type === "error"
-                    ? "bg-red-100 text-red-800 border border-red-200"
-                    : "bg-blue-100 text-blue-800 border border-blue-200"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                {operationStatus.type === "info" && (
-                  <Loader2 className="animate-spin h-4 w-4" />
-                )}
-                {operationStatus.type === "success" && <CheckCircle className="w-4 h-4" />}
-                {operationStatus.type === "error" && <XCircle className="w-4 h-4" />}
-                <span className="text-sm font-medium">
-                  {operationStatus.message}
-                </span>
+    <div>
+      <Header title="Dashboard" subtitle="Facility data overview" />
+      <div className="flex-1 p-6">
+        {hasReportingPeriod === false ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <AlertTriangle className="w-12 h-12 text-yellow-600 mb-4 mx-auto" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No Active Reporting Period
+              </h3>
+              <p className="text-gray-500">
+                Please create a reporting period in the dashboard before viewing
+                staged Indicators.
+              </p>
+            </CardContent>
+          </Card>
+        ) : hasReportingPeriod === null ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Loader2 className="animate-spin w-8 h-8 text-blue-600 mx-auto mb-4" />
+              <div className="text-gray-600">Checking reporting period...</div>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {operationStatus.show && (
+              <div
+                className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${
+                  operationStatus.type === "success"
+                    ? "bg-green-100 text-green-800 border border-green-200"
+                    : operationStatus.type === "error"
+                      ? "bg-red-100 text-red-800 border border-red-200"
+                      : "bg-blue-100 text-blue-800 border border-blue-200"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {operationStatus.type === "info" && (
+                    <Loader2 className="animate-spin h-4 w-4" />
+                  )}
+                  {operationStatus.type === "success" && (
+                    <CheckCircle className="w-4 h-4" />
+                  )}
+                  {operationStatus.type === "error" && (
+                    <XCircle className="w-4 h-4" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {operationStatus.message}
+                  </span>
+                </div>
               </div>
-            </div>
-          )}
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {`Indicators for the Period - [${reportingPeriod}]`}
-                </h2>
-                <p className="text-gray-600">
-                  Indicators waiting to be synchronized
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => loadPendingData(reportingPeriod)}
-                  disabled={isOperationRunning}
-                  variant="outline"
-                >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${pendingLoading ? "animate-spin" : ""}`} />
-                  {pendingLoading ? "Loading..." : "Refresh"}
-                </Button>
-                <Button
-                  onClick={handleDelete}
-                  disabled={selectedItems.size === 0 || isOperationRunning}
-                  variant="outline"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  {deleting ? "Deleting..." : "Delete"}
-                </Button>
-                <Button
-                  onClick={handleCheckExisting}
-                  disabled={selectedItems.size === 0 || isOperationRunning}
-                  variant="outline"
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  {checkingExisting ? "Checking..." : "Check Existing"}
-                </Button>
-                <Button
-                  onClick={handleSyncClick}
-                  disabled={selectedItems.size === 0 || isOperationRunning}
-                  className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
-                >
-                  <Rocket className="w-4 h-4 mr-2" />
-                  Sync ({selectedItems.size})
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <select
-                  value={indicatorFilter}
-                  onChange={(e) => setIndicatorFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All groups</option>
-                  {[...new Set(pendingData.map((report) => report.sectionName))]
-                    .sort()
-                    .map((sectionName) => (
-                      <option key={sectionName} value={sectionName}>
-                        {sectionName}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              {pendingLoading ? (
-                <div className="text-center py-12">
-                  <Loader2 className="animate-spin h-12 w-12 text-blue-600 mx-auto" />
-                  <p className="mt-4 text-gray-600">
-                    Loading staged reports...
+            )}
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {`Indicators for the Period - [${reportingPeriod}]`}
+                  </h2>
+                  <p className="text-gray-600">
+                    Indicators waiting to be synchronized
                   </p>
                 </div>
-              ) : getFilteredIndicators().length === 0 ? (
-                <Card className="text-center py-12">
-                  <CardContent>
-                    <FileText className="h-12 w-12 mb-4 mx-auto text-gray-400" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No Staged Indicators
-                    </h3>
-                    <p className="text-gray-500">
-                      All Indicators have been synchronized successfully.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-4">
-                  {Object.entries(getGroupedIndicators()).map(
-                    ([sectionKey, sectionReports]) => {
-                      const allSectionSelected = sectionReports.items.every(
-                        (report) => selectedItems.has(report.id),
-                      );
-
-                      return (
-                        <div
-                          key={sectionKey}
-                          className="bg-white rounded-lg shadow overflow-hidden"
-                        >
-                          <div className="bg-gray-50 p-4 flex items-center justify-between">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={allSectionSelected}
-                                onChange={() => toggleSection(sectionKey)}
-                                className="w-4 h-4 rounded"
-                              />
-                              <span className="font-medium text-gray-900">
-                                {sectionReports.sectionName}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                ({sectionReports.items.length} Indicators)
-                              </span>
-                            </label>
-                            <Button
-                              onClick={() => handleGroupPreview(sectionKey)}
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              <Eye className="w-4 h-4 mr-1" /> Preview
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    },
-                  )}
-                </div>
-              )}
-            </div>
-
-            <Dialog
-              open={previewDialog.open}
-              onOpenChange={(open) =>
-                setPreviewDialog({ ...previewDialog, open })
-              }
-            >
-              <DialogContent className="max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Preview: {previewDialog.reportName}</DialogTitle>
+                <div className="flex gap-2">
                   <Button
-                    onClick={() =>
-                      setPreviewDialog({
-                        open: false,
-                        data: null,
-                        reportName: "",
-                      })
-                    }
+                    onClick={() => loadPendingData(reportingPeriod)}
+                    disabled={isOperationRunning}
                     variant="outline"
-                    size="sm"
                   >
-                    <X className="w-4 h-4" />
+                    <RefreshCw
+                      className={`w-4 h-4 mr-2 ${pendingLoading ? "animate-spin" : ""}`}
+                    />
+                    {pendingLoading ? "Loading..." : "Refresh"}
                   </Button>
-                </DialogHeader>
-                <div className="mt-4">
-                  {previewDialog.data && previewDialog.data.length > 0 ? (
-                    <div>
-                      {previewDialog.reportName.includes("Matrix View") ? (
-                        <div className="overflow-x-auto">
-                          <table className="w-full divide-y divide-gray-200 text-sm">
-                            <thead className="bg-gray-50">
-                              <tr>
-                                <th
-                                  rowSpan={2}
-                                  className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase border-r"
-                                >
-                                  Indicator
-                                </th>
-                                {Array.from(
-                                  new Set(
-                                    Object.keys(previewDialog.data[0])
-                                      .filter((key) => key !== "Indicator")
-                                      .map((key) => key.split(" - ")[0]),
-                                  ),
-                                ).map((ageBand) => (
+                  <Button
+                    onClick={handleDelete}
+                    disabled={selectedItems.size === 0 || isOperationRunning}
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    {deleting ? "Deleting..." : "Delete"}
+                  </Button>
+                  <Button
+                    onClick={handleCheckExisting}
+                    disabled={selectedItems.size === 0 || isOperationRunning}
+                    variant="outline"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    {checkingExisting ? "Checking..." : "Check Existing"}
+                  </Button>
+                  <Button
+                    onClick={handleSyncClick}
+                    disabled={selectedItems.size === 0 || isOperationRunning}
+                    className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
+                  >
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Sync ({selectedItems.size})
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <select
+                    value={indicatorFilter}
+                    onChange={(e) => setIndicatorFilter(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">All groups</option>
+                    {[
+                      ...new Set(
+                        pendingData.map((report) => report.sectionName),
+                      ),
+                    ]
+                      .sort()
+                      .map((sectionName) => (
+                        <option key={sectionName} value={sectionName}>
+                          {sectionName}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {pendingLoading ? (
+                  <div className="text-center py-12">
+                    <Loader2 className="animate-spin h-12 w-12 text-blue-600 mx-auto" />
+                    <p className="mt-4 text-gray-600">
+                      Loading staged reports...
+                    </p>
+                  </div>
+                ) : getFilteredIndicators().length === 0 ? (
+                  <Card className="text-center py-12">
+                    <CardContent>
+                      <FileText className="h-12 w-12 mb-4 mx-auto text-gray-400" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No Staged Indicators
+                      </h3>
+                      <p className="text-gray-500">
+                        All Indicators have been synchronized successfully.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {Object.entries(getGroupedIndicators()).map(
+                      ([sectionKey, sectionReports]) => {
+                        const allSectionSelected = sectionReports.items.every(
+                          (report) => selectedItems.has(report.id),
+                        );
+
+                        return (
+                          <div
+                            key={sectionKey}
+                            className="bg-white rounded-lg shadow overflow-hidden"
+                          >
+                            <div className="bg-gray-50 p-4 flex items-center justify-between">
+                              <label className="flex items-center gap-3 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={allSectionSelected}
+                                  onChange={() => toggleSection(sectionKey)}
+                                  className="w-4 h-4 rounded"
+                                />
+                                <span className="font-medium text-gray-900">
+                                  {sectionReports.sectionName}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                  ({sectionReports.items.length} Indicators)
+                                </span>
+                              </label>
+                              <Button
+                                onClick={() => handleGroupPreview(sectionKey)}
+                                size="sm"
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                <Eye className="w-4 h-4 mr-1" /> Preview
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <Dialog
+                open={previewDialog.open}
+                onOpenChange={(open) =>
+                  setPreviewDialog({ ...previewDialog, open })
+                }
+              >
+                <DialogContent className="max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>
+                      Preview: {previewDialog.reportName}
+                    </DialogTitle>
+                    <Button
+                      onClick={() =>
+                        setPreviewDialog({
+                          open: false,
+                          data: null,
+                          reportName: "",
+                        })
+                      }
+                      variant="outline"
+                      size="sm"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </DialogHeader>
+                  <div className="mt-4">
+                    {previewDialog.data && previewDialog.data.length > 0 ? (
+                      <div>
+                        {previewDialog.reportName.includes("Matrix View") ? (
+                          <div className="overflow-x-auto">
+                            <table className="w-full divide-y divide-gray-200 text-sm">
+                              <thead className="bg-gray-50">
+                                <tr>
                                   <th
-                                    key={ageBand}
-                                    colSpan={2}
-                                    className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase border-r"
+                                    rowSpan={2}
+                                    className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase border-r"
                                   >
-                                    {ageBand}
+                                    Indicator
                                   </th>
-                                ))}
-                              </tr>
-                              <tr>
-                                {Array.from(
-                                  new Set(
-                                    Object.keys(previewDialog.data[0])
-                                      .filter((key) => key !== "Indicator")
-                                      .map((key) => key.split(" - ")[0]),
-                                  ),
-                                ).map((ageBand) => (
-                                  <React.Fragment key={ageBand}>
-                                    <th className="px-2 py-1 text-center text-xs font-medium text-gray-500 uppercase border-r">
-                                      M
-                                    </th>
-                                    <th className="px-2 py-1 text-center text-xs font-medium text-gray-500 uppercase border-r">
-                                      F
-                                    </th>
-                                  </React.Fragment>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                              {previewDialog.data.map((row, index) => (
-                                <tr key={index} className="hover:bg-gray-50">
-                                  <td className="px-2 py-2 text-xs font-medium text-gray-900 border-r">
-                                    {row.Indicator}
-                                  </td>
                                   {Array.from(
                                     new Set(
-                                      Object.keys(row)
+                                      Object.keys(previewDialog.data[0])
+                                        .filter((key) => key !== "Indicator")
+                                        .map((key) => key.split(" - ")[0]),
+                                    ),
+                                  ).map((ageBand) => (
+                                    <th
+                                      key={ageBand}
+                                      colSpan={2}
+                                      className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase border-r"
+                                    >
+                                      {ageBand}
+                                    </th>
+                                  ))}
+                                </tr>
+                                <tr>
+                                  {Array.from(
+                                    new Set(
+                                      Object.keys(previewDialog.data[0])
                                         .filter((key) => key !== "Indicator")
                                         .map((key) => key.split(" - ")[0]),
                                     ),
                                   ).map((ageBand) => (
                                     <React.Fragment key={ageBand}>
-                                      <td className="px-2 py-2 text-xs text-gray-900 text-center border-r">
-                                        {row[`${ageBand} - M`] || 0}
-                                      </td>
-                                      <td className="px-2 py-2 text-xs text-gray-900 text-center border-r">
-                                        {row[`${ageBand} - F`] || 0}
-                                      </td>
+                                      <th className="px-2 py-1 text-center text-xs font-medium text-gray-500 uppercase border-r">
+                                        M
+                                      </th>
+                                      <th className="px-2 py-1 text-center text-xs font-medium text-gray-500 uppercase border-r">
+                                        F
+                                      </th>
                                     </React.Fragment>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {previewDialog.data.map((row, index) => (
+                                  <tr key={index} className="hover:bg-gray-50">
+                                    <td className="px-2 py-2 text-xs font-medium text-gray-900 border-r">
+                                      {row.Indicator}
+                                    </td>
+                                    {Array.from(
+                                      new Set(
+                                        Object.keys(row)
+                                          .filter((key) => key !== "Indicator")
+                                          .map((key) => key.split(" - ")[0]),
+                                      ),
+                                    ).map((ageBand) => (
+                                      <React.Fragment key={ageBand}>
+                                        <td className="px-2 py-2 text-xs text-gray-900 text-center border-r">
+                                          {row[`${ageBand} - M`] || 0}
+                                        </td>
+                                        <td className="px-2 py-2 text-xs text-gray-900 text-center border-r">
+                                          {row[`${ageBand} - F`] || 0}
+                                        </td>
+                                      </React.Fragment>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <table className="w-full divide-y divide-gray-200 text-sm">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                {Object.keys(previewDialog.data[0]).map(
+                                  (key) => (
+                                    <th
+                                      key={key}
+                                      className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase truncate"
+                                    >
+                                      {key}
+                                    </th>
+                                  ),
+                                )}
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {previewDialog.data.map((row, index) => (
+                                <tr key={index} className="hover:bg-gray-50">
+                                  {Object.values(row).map((value, i) => (
+                                    <td
+                                      key={i}
+                                      className="px-2 py-2 text-xs text-gray-900 truncate max-w-0"
+                                      title={value?.toString() || ""}
+                                    >
+                                      {value?.toString() || ""}
+                                    </td>
                                   ))}
                                 </tr>
                               ))}
                             </tbody>
                           </table>
-                        </div>
-                      ) : (
-                        <table className="w-full divide-y divide-gray-200 text-sm">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              {Object.keys(previewDialog.data[0]).map((key) => (
-                                <th
-                                  key={key}
-                                  className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase truncate"
-                                >
-                                  {key}
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-center py-8">
+                        No data available
+                      </p>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog
+                open={credentialsDialog}
+                onOpenChange={setCredentialsDialog}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Enter Credentials</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        value={credentials.username}
+                        onChange={(e) =>
+                          setCredentials({
+                            ...credentials,
+                            username: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter username"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        value={credentials.password}
+                        onChange={(e) =>
+                          setCredentials({
+                            ...credentials,
+                            password: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter password"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Import Strategy
+                      </label>
+                      <select
+                        value={credentials.importStrategy}
+                        onChange={(e) =>
+                          setCredentials({
+                            ...credentials,
+                            importStrategy: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="CREATE">CREATE</option>
+                        <option value="UPDATE">UPDATE</option>
+                        <option value="CREATE_AND_UPDATE">
+                          CREATE_AND_UPDATE
+                        </option>
+                      </select>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        onClick={() => setCredentialsDialog(false)}
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleSync}
+                        disabled={
+                          !credentials.username || !credentials.password
+                        }
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Sync
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog
+                open={checkCredentialsDialog}
+                onOpenChange={setCheckCredentialsDialog}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Enter AMEP Credentials</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        value={checkCredentials.username}
+                        onChange={(e) =>
+                          setCheckCredentials({
+                            ...checkCredentials,
+                            username: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter username"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        value={checkCredentials.password}
+                        onChange={(e) =>
+                          setCheckCredentials({
+                            ...checkCredentials,
+                            password: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter password"
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        onClick={() => setCheckCredentialsDialog(false)}
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={performExistingDataCheck}
+                        disabled={
+                          !checkCredentials.username ||
+                          !checkCredentials.password
+                        }
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        Check
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog
+                open={existingDataDialog.open}
+                onOpenChange={(open) =>
+                  setExistingDataDialog({ ...existingDataDialog, open })
+                }
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Existing Data Check Results</DialogTitle>
+                  </DialogHeader>
+                  <div className="mt-4">
+                    {existingDataDialog.data.length > 0 ? (
+                      <div>
+                        <p className="text-sm text-amber-600 mb-4 flex items-center gap-1">
+                          <AlertTriangle className="w-4 h-4" /> The following
+                          indicators already have data values in AMEP:
+                        </p>
+                        <div className="max-h-96 overflow-y-auto">
+                          <table className="w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50 sticky top-0">
+                              <tr>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                  Data Element
                                 </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {previewDialog.data.map((row, index) => (
-                              <tr key={index} className="hover:bg-gray-50">
-                                {Object.values(row).map((value, i) => (
-                                  <td
-                                    key={i}
-                                    className="px-2 py-2 text-xs text-gray-900 truncate max-w-0"
-                                    title={value?.toString() || ""}
-                                  >
-                                    {value?.toString() || ""}
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                  Age Band
+                                </th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                  Gender
+                                </th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                  Stored By
+                                </th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                  Period
+                                </th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                  Existing Values
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {existingDataDialog.data.map((item) => (
+                                <tr key={item.id} className="hover:bg-gray-50">
+                                  <td className="px-3 py-2 text-sm font-medium text-gray-900">
+                                    {item.dataElement}
                                   </td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 text-center py-8">
-                      No data available
-                    </p>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog
-              open={credentialsDialog}
-              onOpenChange={setCredentialsDialog}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Enter Credentials</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={credentials.username}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          username: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter username"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      value={credentials.password}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          password: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter password"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Import Strategy
-                    </label>
-                    <select
-                      value={credentials.importStrategy}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          importStrategy: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="CREATE">CREATE</option>
-                      <option value="UPDATE">UPDATE</option>
-                      <option value="CREATE_AND_UPDATE">
-                        CREATE_AND_UPDATE
-                      </option>
-                    </select>
-                  </div>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      onClick={() => setCredentialsDialog(false)}
-                      variant="outline"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSync}
-                      disabled={!credentials.username || !credentials.password}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      Sync
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog
-              open={checkCredentialsDialog}
-              onOpenChange={setCheckCredentialsDialog}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Enter AMEP Credentials</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={checkCredentials.username}
-                      onChange={(e) =>
-                        setCheckCredentials({
-                          ...checkCredentials,
-                          username: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter username"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      value={checkCredentials.password}
-                      onChange={(e) =>
-                        setCheckCredentials({
-                          ...checkCredentials,
-                          password: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter password"
-                    />
-                  </div>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      onClick={() => setCheckCredentialsDialog(false)}
-                      variant="outline"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={performExistingDataCheck}
-                      disabled={
-                        !checkCredentials.username || !checkCredentials.password
-                      }
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      Check
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog
-              open={existingDataDialog.open}
-              onOpenChange={(open) =>
-                setExistingDataDialog({ ...existingDataDialog, open })
-              }
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Existing Data Check Results</DialogTitle>
-                </DialogHeader>
-                <div className="mt-4">
-                  {existingDataDialog.data.length > 0 ? (
-                    <div>
-                      <p className="text-sm text-amber-600 mb-4 flex items-center gap-1">
-                        <AlertTriangle className="w-4 h-4" /> The following indicators already have data values in
-                        AMEP:
-                      </p>
-                      <div className="max-h-96 overflow-y-auto">
-                        <table className="w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50 sticky top-0">
-                            <tr>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                Data Element
-                              </th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                Age Band
-                              </th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                Gender
-                              </th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                Stored By
-                              </th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                Period
-                              </th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                Existing Values
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {existingDataDialog.data.map((item) => (
-                              <tr key={item.id} className="hover:bg-gray-50">
-                                <td className="px-3 py-2 text-sm font-medium text-gray-900">
-                                  {item.dataElement}
-                                </td>
-                                <td className="px-3 py-2 text-sm text-gray-600">
-                                  {item.age_band || "-"}
-                                </td>
-                                <td className="px-3 py-2 text-sm text-gray-600">
-                                  {item.gender || "-"}
-                                </td>
-                                <td className="px-3 py-2 text-sm text-gray-600">
-                                  {item.storedBy}
-                                </td>
-                                <td className="px-3 py-2 text-sm text-gray-600">
-                                  {item.period}
-                                </td>
-                                <td className="px-3 py-2 text-sm text-gray-600">
-                                  {item.value}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                  <td className="px-3 py-2 text-sm text-gray-600">
+                                    {item.age_band || "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-sm text-gray-600">
+                                    {item.gender || "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-sm text-gray-600">
+                                    {item.storedBy}
+                                  </td>
+                                  <td className="px-3 py-2 text-sm text-gray-600">
+                                    {item.period}
+                                  </td>
+                                  <td className="px-3 py-2 text-sm text-gray-600">
+                                    {item.value}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <CheckCircle className="w-10 h-10 text-green-500 mb-2 mx-auto" />
+                        <p className="text-green-600 font-medium">
+                          No existing data found in AMEP
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Selected indicators are safe to sync
+                        </p>
+                      </div>
+                    )}
+                    <div className="flex justify-between mt-4">
+                      <Button
+                        onClick={handleDownloadExistingData}
+                        variant="outline"
+                        disabled={existingDataDialog.data.length === 0}
+                      >
+                        <Download className="w-4 h-4 mr-2" /> Download CSV
+                      </Button>
+                      <Button
+                        onClick={() =>
+                          setExistingDataDialog({ open: false, data: [] })
+                        }
+                        variant="outline"
+                      >
+                        Close
+                      </Button>
                     </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <CheckCircle className="w-10 h-10 text-green-500 mb-2 mx-auto" />
-                      <p className="text-green-600 font-medium">
-                        No existing data found in AMEP
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Selected indicators are safe to sync
-                      </p>
-                    </div>
-                  )}
-                  <div className="flex justify-between mt-4">
-                    <Button
-                      onClick={handleDownloadExistingData}
-                      variant="outline"
-                      disabled={existingDataDialog.data.length === 0}
-                    >
-                      <Download className="w-4 h-4 mr-2" /> Download CSV
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        setExistingDataDialog({ open: false, data: [] })
-                      }
-                      variant="outline"
-                    >
-                      Close
-                    </Button>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
 
-            <Dialog
-              open={syncResultDialog.open}
-              onOpenChange={(open) =>
-                setSyncResultDialog({ ...syncResultDialog, open })
-              }
-            >
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Sync Results</DialogTitle>
-                </DialogHeader>
-                <div className="mt-4 space-y-4">
-                  {syncResultDialog.result && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <div
-                          className={`${
-                            syncResultDialog.result.responseData?.status ===
-                            "SUCCESS"
-                              ? "text-green-500"
-                              : syncResultDialog.result.responseData?.status ===
-                                  "WARNING"
-                                ? "text-yellow-500"
-                                : "text-red-500"
-                          }`}
-                        >
-                          {syncResultDialog.result.responseData?.status ===
-                          "SUCCESS" ? (
-                            <CheckCircle className="w-8 h-8" />
-                          ) : syncResultDialog.result.responseData?.status ===
+              <Dialog
+                open={syncResultDialog.open}
+                onOpenChange={(open) =>
+                  setSyncResultDialog({ ...syncResultDialog, open })
+                }
+              >
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Sync Results</DialogTitle>
+                  </DialogHeader>
+                  <div className="mt-4 space-y-4">
+                    {syncResultDialog.result && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <div
+                            className={`${
+                              syncResultDialog.result.responseData?.status ===
+                              "SUCCESS"
+                                ? "text-green-500"
+                                : syncResultDialog.result.responseData
+                                      ?.status === "WARNING"
+                                  ? "text-yellow-500"
+                                  : "text-red-500"
+                            }`}
+                          >
+                            {syncResultDialog.result.responseData?.status ===
+                            "SUCCESS" ? (
+                              <CheckCircle className="w-8 h-8" />
+                            ) : syncResultDialog.result.responseData?.status ===
                               "WARNING" ? (
-                            <AlertTriangle className="w-8 h-8" />
-                          ) : (
-                            <XCircle className="w-8 h-8" />
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="font-medium">
-                            {syncResultDialog.result.responseData?.description}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            Status:{" "}
-                            {syncResultDialog.result.responseData?.status}
-                          </p>
-                        </div>
-                      </div>
-
-                      {syncResultDialog.result.responseData?.importCount && (
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-2">
-                            Import Summary (Records)
-                          </h4>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              Imported:{" "}
-                              <span className="font-medium text-green-600">
-                                {
-                                  syncResultDialog.result.responseData
-                                    ?.importCount.imported
-                                }
-                              </span>
-                            </div>
-                            <div>
-                              Updated:{" "}
-                              <span className="font-medium text-blue-600">
-                                {
-                                  syncResultDialog.result.responseData
-                                    ?.importCount.updated
-                                }
-                              </span>
-                            </div>
-                            <div>
-                              Ignored:{" "}
-                              <span className="font-medium text-yellow-600">
-                                {
-                                  syncResultDialog.result.responseData
-                                    ?.importCount.ignored
-                                }
-                              </span>
-                            </div>
-                            <div>
-                              Deleted:{" "}
-                              <span className="font-medium text-red-600">
-                                {
-                                  syncResultDialog.result.responseData
-                                    ?.importCount.deleted
-                                }
-                              </span>
-                            </div>
+                              <AlertTriangle className="w-8 h-8" />
+                            ) : (
+                              <XCircle className="w-8 h-8" />
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="font-medium">
+                              {
+                                syncResultDialog.result.responseData
+                                  ?.description
+                              }
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              Status:{" "}
+                              {syncResultDialog.result.responseData?.status}
+                            </p>
                           </div>
                         </div>
-                      )}
 
-                      {syncResultDialog.result.responseData?.conflicts &&
-                        syncResultDialog.result.responseData?.conflicts.length >
-                          0 && (
-                          <div className="bg-yellow-50 p-4 rounded-lg">
-                            <h4 className="font-medium mb-2 text-yellow-800">
-                              Conflicts
+                        {syncResultDialog.result.responseData?.importCount && (
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-medium mb-2">
+                              Import Summary (Records)
                             </h4>
-                            <div className="space-y-2">
-                              {syncResultDialog.result.responseData?.conflicts.map(
-                                (conflict: any, index: number) => (
-                                  <div
-                                    key={index}
-                                    className="text-sm text-yellow-700"
-                                  >
-                                    <strong>Object:</strong> {conflict.object}
-                                    <br />
-                                    <strong>Issue:</strong> {conflict.value}
-                                  </div>
-                                ),
-                              )}
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                Imported:{" "}
+                                <span className="font-medium text-green-600">
+                                  {
+                                    syncResultDialog.result.responseData
+                                      ?.importCount.imported
+                                  }
+                                </span>
+                              </div>
+                              <div>
+                                Updated:{" "}
+                                <span className="font-medium text-blue-600">
+                                  {
+                                    syncResultDialog.result.responseData
+                                      ?.importCount.updated
+                                  }
+                                </span>
+                              </div>
+                              <div>
+                                Ignored:{" "}
+                                <span className="font-medium text-yellow-600">
+                                  {
+                                    syncResultDialog.result.responseData
+                                      ?.importCount.ignored
+                                  }
+                                </span>
+                              </div>
+                              <div>
+                                Deleted:{" "}
+                                <span className="font-medium text-red-600">
+                                  {
+                                    syncResultDialog.result.responseData
+                                      ?.importCount.deleted
+                                  }
+                                </span>
+                              </div>
                             </div>
                           </div>
                         )}
-                    </div>
-                  )}
 
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={() =>
-                        setSyncResultDialog({ open: false, result: null })
-                      }
-                      variant="outline"
-                    >
-                      Close
-                    </Button>
+                        {syncResultDialog.result.responseData?.conflicts &&
+                          syncResultDialog.result.responseData?.conflicts
+                            .length > 0 && (
+                            <div className="bg-yellow-50 p-4 rounded-lg">
+                              <h4 className="font-medium mb-2 text-yellow-800">
+                                Conflicts
+                              </h4>
+                              <div className="space-y-2">
+                                {syncResultDialog.result.responseData?.conflicts.map(
+                                  (conflict: any, index: number) => (
+                                    <div
+                                      key={index}
+                                      className="text-sm text-yellow-700"
+                                    >
+                                      <strong>Object:</strong> {conflict.object}
+                                      <br />
+                                      <strong>Issue:</strong> {conflict.value}
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            </div>
+                          )}
+                      </div>
+                    )}
+
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={() =>
+                          setSyncResultDialog({ open: false, result: null })
+                        }
+                        variant="outline"
+                      >
+                        Close
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </>
-      )}
-    </AppLayout>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

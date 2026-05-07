@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getStagedIndicators } from "@/lib/local-db";
 
 export async function GET(request: NextRequest) {
   try {
-    const staged = await getStagedIndicators(false);
+    const { searchParams } = new URL(request.url);
+    const reportPeriod = parseInt(searchParams.get("reportPeriod") ?? "");
+    const staged = await getStagedIndicators(false, reportPeriod);
 
     return NextResponse.json(staged);
   } catch (error: any) {

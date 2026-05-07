@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AppLayout } from "@/components/layout/app-layout";
+import { Header } from "@/components/layout/header";
 import { Circle } from "lucide-react";
 
 export default function SystemStatusPage() {
@@ -48,17 +48,26 @@ export default function SystemStatusPage() {
   };
 
   return (
-    <AppLayout title="System Statuses" subtitle="Overview of system  status">
+    <div>
+      <Header title="System Statuses" subtitle="Overview of system  status" />
       <div className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Facility Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div><strong>Facility:</strong> {facilityDetails.facilityName}</div>
-            <div><strong>Last Sync:</strong> {facilityDetails.lastSync}</div>
-            <div><strong>Pending Data:</strong> {facilityDetails.pendingData}</div>
-            <div><strong>Synced Data:</strong> {facilityDetails.syncedData}</div>
+            <div>
+              <strong>Facility:</strong> {facilityDetails.facilityName}
+            </div>
+            <div>
+              <strong>Last Sync:</strong> {facilityDetails.lastSync}
+            </div>
+            <div>
+              <strong>Pending Data:</strong> {facilityDetails.pendingData}
+            </div>
+            <div>
+              <strong>Synced Data:</strong> {facilityDetails.syncedData}
+            </div>
           </CardContent>
         </Card>
 
@@ -70,10 +79,17 @@ export default function SystemStatusPage() {
             <div className="flex items-center gap-4">
               <div>
                 <strong>Status:</strong>{" "}
-                {schedulerRunning
-                  ? <span className="inline-flex items-center gap-1"><Circle className="w-3 h-3 fill-green-500 text-green-500" /> Running</span>
-                  : <span className="inline-flex items-center gap-1"><Circle className="w-3 h-3 fill-red-500 text-red-500" /> Stopped</span>
-                }
+                {schedulerRunning ? (
+                  <span className="inline-flex items-center gap-1">
+                    <Circle className="w-3 h-3 fill-green-500 text-green-500" />{" "}
+                    Running
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1">
+                    <Circle className="w-3 h-3 fill-red-500 text-red-500" />{" "}
+                    Stopped
+                  </span>
+                )}
               </div>
               <Button onClick={handleSchedulerToggle} disabled={loading}>
                 {schedulerRunning ? "Stop" : "Start"}
@@ -82,6 +98,6 @@ export default function SystemStatusPage() {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StagedIndicator } from "@/lib/prisma/client";
-import { AppLayout } from "@/components/layout/app-layout";
+import { Header } from "@/components/layout/header";
 import { RefreshCw, BookOpen } from "lucide-react";
 
 export default function HistoryPage() {
@@ -29,8 +29,9 @@ export default function HistoryPage() {
   };
 
   return (
-    <AppLayout title="Sync History" subtitle="Previously synchronized records">
-      <div className="space-y-6">
+    <div>
+      <Header title="Sync History" subtitle="Previously synchronized records" />
+      <div className="flex-1 p-6">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Sync History</h2>
@@ -41,7 +42,9 @@ export default function HistoryPage() {
             disabled={historyLoading}
             variant="outline"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 inline ${historyLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 inline ${historyLoading ? "animate-spin" : ""}`}
+            />
             {historyLoading ? "Loading..." : "Refresh"}
           </Button>
         </div>
@@ -90,10 +93,14 @@ export default function HistoryPage() {
                         {item.reportPeriod}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.startDate ? new Date(item.startDate).toDateString() : "N/A"}
+                        {item.startDate
+                          ? new Date(item.startDate).toDateString()
+                          : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.endDate ? new Date(item.endDate).toDateString() : "N/A"}
+                        {item.endDate
+                          ? new Date(item.endDate).toDateString()
+                          : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {item.syncedToAmpathAt
@@ -120,6 +127,6 @@ export default function HistoryPage() {
           </Card>
         )}
       </div>
-    </AppLayout>
+    </div>
   );
 }
