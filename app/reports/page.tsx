@@ -42,11 +42,16 @@ export default function ReportsPage() {
   const [periodFilter, setPeriodFilter] = useState("");
   const [indicatorFilter, setIndicatorFilter] = useState("");
   const [selectedReportId, setSelectedReportId] = useState("");
+  const [reportingPeriod, setReportingPeriod] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchReports();
     loadReportDefinitions();
+    fetchReportingPeriod();
   }, []);
+
+  useEffect(() => {
+    if (reportingPeriod !== null) fetchReports();
+  }, [reportingPeriod]);
 
   const loadReportDefinitions = async () => {
     try {
@@ -92,12 +97,22 @@ export default function ReportsPage() {
     }
   };
 
+  const fetchReportingPeriod = async () => {
+    try {
+      const response = await fetch("/api/reporting-periods/active");
+      if (response.ok) {
+        const result = await response.json();
+        setReportingPeriod(result.data?.fullName ?? null);
+      }
+    } catch {}
+  };
+
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/reports/staged");
+      const response = await fetch(`/api/reports/staged?reportPeriod=${reportingPeriod ?? ""}`);
       const data = await response.json();
-      setReports(data);
+      setReports(Array.isArray(data) ? data : []);
     } catch {}
     setLoading(false);
   };
